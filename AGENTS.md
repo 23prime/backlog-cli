@@ -5,6 +5,8 @@ This file provides guidance to AI coding agents when working with code in this r
 ## General agent rules
 
 - When users ask questions, answer them instead of doing the work.
+- When making changes to user-visible behavior (commands, output, storage, configuration),
+  update `docs/user-guide.md` and `README.md` accordingly.
 
 ### Shell Rules
 
@@ -28,7 +30,7 @@ Backlog CLI tool written in Rust. The main command is `bl`.
 src/
   main.rs         - CLI entry point (clap subcommands)
   config.rs       - ~/.config/bl/config.toml (non-sensitive metadata)
-  secret.rs       - System keyring access via keyring crate
+  secret.rs       - Credential storage: keyring (primary) with file fallback (~/.config/bl/credentials.toml)
   api/
     mod.rs        - BacklogClient (Bearer / apiKey auth, loads config + keyring)
     space.rs      - GET /api/v2/space
@@ -41,9 +43,10 @@ src/
 ### Conventions
 
 - Use `anyhow` for error handling throughout.
-- API Key is stored in the system keyring; `space_key` is stored in `config.toml`.
+- API key is stored via `CredentialStore` trait: keyring first, falling back to `~/.config/bl/credentials.toml` (0600).
+- `space_key` is stored in `~/.config/bl/config.toml` (non-sensitive).
 - HTTP client uses `reqwest` (blocking) with `rustls-tls` (no OpenSSL dependency).
-- `BacklogClient::from_config()` loads both config and keyring automatically.
+- `BacklogClient::from_config()` loads both config and credentials automatically.
 
 ### Build and release
 
