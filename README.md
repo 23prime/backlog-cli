@@ -5,43 +5,36 @@ An unofficial CLI tool for [Backlog](https://backlog.com).
 ## Installation
 
 ```bash
-cargo install --path .
+curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/main/install.sh | sh
 ```
 
 ## Usage
 
-### Authentication
+1. Issue an API key from Backlog personal settings > API.
 
-Issue an API key from Backlog personal settings → API, then login.
+2. Authenticate.
 
-```bash
-bl auth login
-```
+    ```bash
+    bl auth login
+    ```
 
-Show current auth status and verify credentials against the API.
+3. Run commands.
+    e.g.) Show your space information.
 
-```bash
-bl auth status
-```
+    ```bash
+    bl space
+    ```
 
-Logout and remove stored credentials.
-
-```bash
-bl auth logout
-```
-
-### Space
-
-```bash
-bl space
-```
-
-## Credential storage
-
-The API key is stored in the system keyring (GNOME Keyring / Keychain / Windows Credential Manager).
-Non-sensitive metadata such as the space key is stored in `~/.config/bl/config.toml`.
+See the [User Guide](docs/user-guide.md) for full documentation.
 
 ## Development
+
+### Pre-requirements
+
+- [mise](https://mise.jdx.dev)
+- [rustup](https://rustup.rs)
+
+### Commands
 
 ```bash
 mise run setup   # Install tools
