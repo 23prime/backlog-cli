@@ -11,7 +11,7 @@ An unofficial CLI tool for [Backlog](https://backlog.com).
 ## Installation
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.sh | sh
 ```
 
 ## Usage

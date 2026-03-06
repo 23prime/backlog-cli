@@ -19,14 +19,14 @@
 ### Using the install script (Linux, macOS)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.sh | sh
 ```
 
 The binary is installed to `~/.local/bin/bl` by default.
 To install to a different location, set the `INSTALL_DIR` environment variable:
 
 ```bash
-INSTALL_DIR=/usr/local/bin curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/main/install.sh | sh
+INSTALL_DIR=/usr/local/bin curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.sh | sh
 ```
 
 ### Building from source

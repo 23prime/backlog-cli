@@ -43,3 +43,8 @@ jobs:
         with:
           files: bl-x86_64-unknown-linux-gnu.tar.gz
           generate_release_notes: true
+
+      - name: Update latest tag
+        run: |
+          git tag -f latest
+          git push origin latest --force
