@@ -3,6 +3,7 @@
     "tamasfe.even-better-toml",
     "GitHub.vscode-github-actions",
     "EditorConfig.EditorConfig",
-    "DavidAnson.vscode-markdownlint"
+    "DavidAnson.vscode-markdownlint",
+    "rust-lang.rust-analyzer"
   ]
 }

@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+#MISE description="Bump version and create release tag (usage: mise run release -- <major|minor|patch>)"
+set -euo pipefail
+
+# Check required commands
+for cmd in cargo git jq; do
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    printf "[ERROR] Required command '%s' not found. Please install it.\n" "$cmd" >&2
+    exit 1
+  fi
+done
+
+if ! cargo set-version --help >/dev/null 2>&1; then
+  printf "[ERROR] cargo-edit is not installed. Run: cargo install cargo-edit\n" >&2
+  exit 1
+fi
+
+# Parse bump level argument
+level="${1:-}"
+if [ -z "$level" ]; then
+  printf "Usage: mise run release -- <major|minor|patch>\n" >&2
+  exit 1
+fi
+
+case "$level" in
+  major|minor|patch) ;;
+  *)
+    printf "[ERROR] Invalid bump level '%s'. Must be one of: major, minor, patch\n" "$level" >&2
+    exit 1
+    ;;
+esac
+
+# Get current version
+current_version=$(cargo metadata --no-deps --format-version 1 --quiet | jq -re '.packages[0].version')
+
+if [ -z "$current_version" ] || [ "$current_version" = "null" ]; then
+  printf "[ERROR] Failed to get version from Cargo.toml\n" >&2
+  exit 1
+fi
+
+# Compute next version from bump level
+IFS='.' read -r major minor patch <<< "$current_version"
+case "$level" in
+  major) major=$((major + 1)); minor=0; patch=0 ;;
+  minor) minor=$((minor + 1)); patch=0 ;;
+  patch) patch=$((patch + 1)) ;;
+esac
+next_version="${major}.${minor}.${patch}"
+tag="v${next_version}"
+
+# Check if tag already exists before bumping
+if git rev-parse "$tag" >/dev/null 2>&1; then
+  printf "[ERROR] Tag '%s' already exists\n" "$tag" >&2
+  exit 1
+fi
+
+# Confirm
+printf "Bump version from v%s to %s? [y/N] " "$current_version" "$tag"
+read -r answer
+if [ "$answer" != "y" ] && [ "$answer" != "Y" ]; then
+  printf "Aborted.\n"
+  exit 0
+fi
+
+# Bump version
+cargo set-version --bump "$level"
+
+# Commit version bump
+git add Cargo.toml Cargo.lock
+git commit -m "chore: bump version to ${tag}"
+
+# Create annotated tag
+printf "Creating release tag: %s\n" "$tag"
+git tag -a "$tag" -m "Release ${tag}"
+
+printf "Tag '%s' created successfully\n" "$tag"
+printf "To push, run: mise run tag-push\n"
