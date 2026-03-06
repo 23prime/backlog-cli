@@ -43,15 +43,41 @@ impl BacklogClient {
         let body: serde_json::Value = response.json().context("Failed to parse JSON response")?;
 
         if !status.is_success() {
-            let msg = body
-                .get("errors")
-                .and_then(|e| e.get(0))
-                .and_then(|e| e.get("message"))
-                .and_then(|m| m.as_str())
-                .unwrap_or("Unknown error");
-            anyhow::bail!("API error ({}): {}", status, msg);
+            anyhow::bail!("API error ({}): {}", status, extract_error_message(&body));
         }
 
         Ok(body)
+    }
+}
+
+fn extract_error_message(body: &serde_json::Value) -> &str {
+    body.get("errors")
+        .and_then(|e| e.get(0))
+        .and_then(|e| e.get("message"))
+        .and_then(|m| m.as_str())
+        .unwrap_or("Unknown error")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn extract_error_message_from_errors_array() {
+        let body = json!({"errors": [{"message": "Authentication failure"}]});
+        assert_eq!(extract_error_message(&body), "Authentication failure");
+    }
+
+    #[test]
+    fn extract_error_message_fallback_when_missing() {
+        let body = json!({});
+        assert_eq!(extract_error_message(&body), "Unknown error");
+    }
+
+    #[test]
+    fn extract_error_message_fallback_when_empty_errors() {
+        let body = json!({"errors": []});
+        assert_eq!(extract_error_message(&body), "Unknown error");
     }
 }
