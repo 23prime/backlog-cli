@@ -1,68 +1,57 @@
-# Development Template with mise
+# backlog-cli
 
-A Template for development with [mise](https://mise.jdx.dev).
+An unofficial CLI tool for [Backlog](https://backlog.com).
 
-## Getting started
+## Installation
 
-1. Clone this repository.
+```bash
+cargo install --path .
+```
 
-    ```bash
-    git clone git@github.com:23prime/mise-template.git
-    ```
+## Usage
 
-2. Copy the cloned repository to anywhere..
+### Authentication
 
-    ```bash
-    cp -ar mise-template <your-repo-path>
-    ```
+Issue an API key from Backlog personal settings → API, then login.
 
-3. Into your repository.
+```bash
+bl auth login
+```
 
-    ```bash
-    cd <your-repo-path>
-    ```
+Show current auth status and verify credentials against the API.
 
-4. Rename remote repository to `upstream`.
+```bash
+bl auth status
+```
 
-    ```bash
-    git remote rename origin upstream
-    ```
+Logout and remove stored credentials.
 
-5. Create your remote repository as `origin` and set URL, push.
+```bash
+bl auth logout
+```
 
-    If you use GitHub CLI:
+### Space
 
-    ```bash
-    gh repo create "<your-repo-name>" --private --source=. --remote=origin --push
-    ```
+```bash
+bl space
+```
 
-    If you create repository on GitHub manually:
+## Credential storage
 
-    ```bash
-    git remote set-url origin <your-remote-url>
-    git push -u origin main
-    ```
+The API key is stored in the system keyring (GNOME Keyring / Keychain / Windows Credential Manager).
+Non-sensitive metadata such as the space key is stored in `~/.config/bl/config.toml`.
 
-6. Check remote repositories.
+## Development
 
-    ```bash
-    $ git remote -v
-    origin  <your-remote-url> (fetch)
-    origin  <your-remote-url> (push)
-    upstream        git@github.com:23prime/mise-template.git (fetch)
-    upstream        git@github.com:23prime/mise-template.git (push)
-    ```
+```bash
+mise run setup   # Install tools
+mise run check   # Lint / format / test
+mise run fix     # Auto fix
+```
 
-## Merge from upstream
+### Release
 
-1. Fetch upstream changes.
-
-    ```bash
-    git fetch upstream
-    ```
-
-2. Merge.
-
-    ```bash
-    git merge upstream/main
-    ```
+```bash
+mise run release -- patch   # Bump version (patch / minor / major) and tag
+mise run tag-push           # Push tag to trigger CI release
+```
