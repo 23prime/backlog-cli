@@ -2,6 +2,12 @@
 
 An unofficial CLI tool for [Backlog](https://backlog.com).
 
+## Features
+
+- 🔐 **Secure authentication** — API key stored in the system keyring (GNOME Keyring / Keychain), never in plaintext
+- 📦 **No OpenSSL dependency** — Built with rustls for a clean, portable binary
+- ⚡ **Easy install** — Single-command installation via shell script (Linux / macOS)
+
 ## Installation
 
 ```bash
