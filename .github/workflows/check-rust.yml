@@ -1,0 +1,61 @@
+name: Check Rust
+
+on:
+  push:
+    paths:
+      - "src/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/check-rust.yml"
+  pull_request:
+    paths:
+      - "src/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/check-rust.yml"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo registry
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install system dependencies
+        # libdbus-1-dev is required to build the keyring crate's
+        # dbus-secret-service backend (used for Secret Service / GNOME Keyring)
+        run: sudo apt-get install -y libdbus-1-dev
+
+      - name: Install mise
+        uses: jdx/mise-action@v3
+
+      - name: Fix
+        run: mise run rs-fix
+
+      - name: Commit and Push
+        uses: 23prime/simple-commit-and-push@v1
+        with:
+          commit-message: "style: Auto fix by workflow"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check
+        run: mise run rs-check
