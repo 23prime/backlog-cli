@@ -8,13 +8,13 @@ pub fn login() -> Result<()> {
     let space_key = prompt("Backlog space key (e.g. mycompany for mycompany.backlog.com): ")?;
     let api_key = rpassword::prompt_password("API key: ").context("Failed to read API key")?;
 
-    secret::set(&space_key, &api_key)?;
+    let backend = secret::set(&space_key, &api_key)?;
 
     let mut cfg = config::load()?;
     cfg.auth = Some(AuthConfig { space_key });
     config::save(&cfg)?;
 
-    println!("Logged in successfully.");
+    println!("Logged in successfully. (API key stored in {})", backend);
     Ok(())
 }
 
@@ -39,8 +39,8 @@ pub fn status() -> Result<()> {
 
     println!("Space: {}.backlog.com", auth.space_key);
 
-    let api_key = match secret::get(&auth.space_key) {
-        Ok(k) => k,
+    let (api_key, backend) = match secret::get(&auth.space_key) {
+        Ok(v) => v,
         Err(e) => {
             println!("  ! {}", e);
             return Ok(());
@@ -49,6 +49,7 @@ pub fn status() -> Result<()> {
 
     let masked = format!("{}...", &api_key[..4.min(api_key.len())]);
     println!("  - API key: {}", masked);
+    println!("  - Stored in: {}", backend);
 
     // Verify credentials against the API
     match BacklogClient::from_config().and_then(|c| c.get_myself()) {

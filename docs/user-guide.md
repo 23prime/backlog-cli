@@ -69,6 +69,7 @@ This verifies your credentials against the Backlog API and shows:
 ```text
 Space: mycompany.backlog.com
   - API key: abcd...
+  - Stored in: System keyring
   - Logged in as Your Name (your-id)
 ```
 
@@ -78,7 +79,7 @@ Space: mycompany.backlog.com
 bl auth logout
 ```
 
-Removes the API key from the keyring and clears the stored space key.
+Removes the API key from the keyring and credentials file, and clears the stored space key.
 
 ## Commands
 
@@ -115,7 +116,8 @@ Updated:    2024-06-01T00:00:00Z
 | Location | Contents |
 | --- | --- |
 | `~/.config/bl/config.toml` | Space key (non-sensitive metadata) |
-| System keyring | API key (GNOME Keyring / Keychain / Windows Credential Manager) |
+| System keyring | API key (primary; GNOME Keyring / Keychain) |
+| `~/.config/bl/credentials.toml` | API key fallback (mode 0600, used when keyring is unavailable) |
 
 ### `~/.config/bl/config.toml`
 
@@ -142,7 +144,17 @@ Run `bl auth login` to re-enter your credentials.
 ### Keyring is unavailable
 
 On Linux, the keyring requires a running Secret Service daemon (GNOME Keyring or KWallet).
-If you are in a headless or SSH environment where no daemon is available, `bl auth login`
-may fail to save the API key.
+If no daemon is available (e.g. headless or SSH environments), `bl` automatically falls back
+to storing the API key in `~/.config/bl/credentials.toml` with mode 0600.
 
-In that case, start GNOME Keyring manually or use a tool such as `gnome-keyring-daemon`.
+The `bl auth status` output shows which backend is in use:
+
+```text
+  - Stored in: System keyring
+```
+
+or
+
+```text
+  - Stored in: Credentials file
+```

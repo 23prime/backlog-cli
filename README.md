@@ -4,7 +4,7 @@ An unofficial CLI tool for [Backlog](https://backlog.com).
 
 ## Features
 
-- 🔐 **Secure authentication** — API key stored in the system keyring (GNOME Keyring / Keychain), never in plaintext
+- 🔐 **Secure authentication** — API key stored in the system keyring (GNOME Keyring / Keychain), with automatic fallback to a protected file (`~/.config/bl/credentials.toml`, mode 0600)
 - 📦 **No OpenSSL dependency** — Built with rustls for a clean, portable binary
 - ⚡ **Easy install** — Single-command installation via shell script (Linux / macOS)
 

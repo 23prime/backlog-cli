@@ -17,7 +17,7 @@ impl BacklogClient {
             .auth
             .context("Not logged in. Run `bl auth login` first.")?;
 
-        let api_key = crate::secret::get(&auth.space_key)?;
+        let (api_key, _) = crate::secret::get(&auth.space_key)?;
 
         let client = Client::builder()
             .build()
