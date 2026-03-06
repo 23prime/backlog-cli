@@ -1,0 +1,14 @@
+clippy
+nocapture
+rustup
+softprops
+dtolnay
+esac
+pipefail
+reqwest
+mycompany
+rpassword
+rustls
+serde
+libdbus
+dbus
