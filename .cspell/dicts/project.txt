@@ -10,5 +10,3 @@ mycompany
 rpassword
 rustls
 serde
-libdbus
-dbus

@@ -40,11 +40,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
-      - name: Install system dependencies
-        # libdbus-1-dev is required to build the keyring crate's
-        # dbus-secret-service backend (used for Secret Service / GNOME Keyring)
-        run: sudo apt-get install -y libdbus-1-dev
-
       - name: Install mise
         uses: jdx/mise-action@v3
 
