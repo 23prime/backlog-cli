@@ -1,8 +1,8 @@
 use anyhow::{Context, Result};
 
-use crate::api::BacklogClient;
+use crate::api::{BacklogClient, user::User};
 use crate::config::{self, AuthConfig};
-use crate::secret;
+use crate::secret::{self, Backend};
 
 pub fn login() -> Result<()> {
     let space_key = prompt("Backlog space key (e.g. mycompany for mycompany.backlog.com): ")?;
@@ -30,24 +30,39 @@ pub fn logout() -> Result<()> {
     Ok(())
 }
 
-pub fn status() -> Result<()> {
+pub fn status(json: bool) -> Result<()> {
     let cfg = config::load()?;
     let Some(auth) = cfg.auth else {
-        println!("Not logged in. Run `bl auth login` to authenticate.");
+        if json {
+            println!("{}", serde_json::json!({"error": "Not logged in"}));
+        } else {
+            println!("Not logged in. Run `bl auth login` to authenticate.");
+        }
         return Ok(());
     };
-
-    println!("Space: {}.backlog.com", auth.space_key);
 
     let (api_key, backend) = match secret::get(&auth.space_key) {
         Ok(v) => v,
         Err(e) => {
-            println!("  ! {}", e);
+            if json {
+                println!("{}", serde_json::json!({"error": e.to_string()}));
+            } else {
+                println!("  ! {}", e);
+            }
             return Ok(());
         }
     };
 
+    if json {
+        let user = BacklogClient::from_config()
+            .and_then(|c| c.get_myself())
+            .ok();
+        println!("{}", build_status_json(&auth.space_key, backend, user)?);
+        return Ok(());
+    }
+
     let masked = format!("{}...", &api_key[..4.min(api_key.len())]);
+    println!("Space: {}.backlog.com", auth.space_key);
     println!("  - API key: {}", masked);
     println!("  - Stored in: {}", backend);
 
@@ -95,6 +110,15 @@ pub fn check_keyring() -> Result<()> {
     Ok(())
 }
 
+fn build_status_json(space_key: &str, backend: Backend, user: Option<User>) -> Result<String> {
+    let output = serde_json::json!({
+        "space_key": space_key,
+        "stored_in": backend.to_string(),
+        "user": user,
+    });
+    serde_json::to_string_pretty(&output).context("Failed to serialize JSON")
+}
+
 fn prompt(label: &str) -> Result<String> {
     use std::io::{self, Write};
     print!("{}", label);
@@ -104,4 +128,39 @@ fn prompt(label: &str) -> Result<String> {
         .read_line(&mut input)
         .context("Failed to read input")?;
     Ok(input.trim().to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::api::user::User;
+
+    fn sample_user() -> User {
+        User {
+            id: 1,
+            user_id: "john".to_string(),
+            name: "John Doe".to_string(),
+            mail_address: "john@example.com".to_string(),
+            role_type: 1,
+        }
+    }
+
+    #[test]
+    fn build_status_json_with_user() {
+        let json = build_status_json("mycompany", Backend::Keyring, Some(sample_user())).unwrap();
+        let value: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert_eq!(value["space_key"], "mycompany");
+        assert_eq!(value["stored_in"], "System keyring");
+        assert_eq!(value["user"]["userId"], "john");
+        assert_eq!(value["user"]["name"], "John Doe");
+    }
+
+    #[test]
+    fn build_status_json_without_user() {
+        let json = build_status_json("mycompany", Backend::File, None).unwrap();
+        let value: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert_eq!(value["space_key"], "mycompany");
+        assert_eq!(value["stored_in"], "Credentials file");
+        assert!(value["user"].is_null());
+    }
 }

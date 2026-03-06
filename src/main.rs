@@ -21,7 +21,11 @@ enum Commands {
         action: AuthCommands,
     },
     /// Show space information
-    Space,
+    Space {
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -29,7 +33,11 @@ enum AuthCommands {
     /// Login with your API key
     Login,
     /// Show current auth status
-    Status,
+    Status {
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
     /// Logout and remove stored credentials
     Logout,
     /// Check if the system keyring is available
@@ -41,10 +49,10 @@ fn main() -> Result<()> {
     match cli.command {
         Commands::Auth { action } => match action {
             AuthCommands::Login => cmd::auth::login(),
-            AuthCommands::Status => cmd::auth::status(),
+            AuthCommands::Status { json } => cmd::auth::status(json),
             AuthCommands::Logout => cmd::auth::logout(),
             AuthCommands::Keyring => cmd::auth::check_keyring(),
         },
-        Commands::Space => cmd::space::show(),
+        Commands::Space { json } => cmd::space::show(json),
     }
 }
