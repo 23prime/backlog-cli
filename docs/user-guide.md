@@ -6,6 +6,7 @@
 - [Installation](#installation)
 - [Authentication](#authentication)
 - [Commands](#commands)
+- [Command coverage](#command-coverage)
 - [Configuration](#configuration)
 - [Troubleshooting](#troubleshooting)
 
@@ -110,6 +111,52 @@ Formatting: markdown
 Created:    2020-01-01T00:00:00Z
 Updated:    2024-06-01T00:00:00Z
 ```
+
+## Command coverage
+
+The table below maps Backlog API v2 endpoints to `bl` commands.
+
+### Space
+
+| Command | API endpoint | Status |
+| --- | --- | --- |
+| `bl space` | `GET /api/v2/space` | ✅ Implemented |
+| `bl space activities` | `GET /api/v2/space/activities` | Planned |
+| `bl space disk-usage` | `GET /api/v2/space/diskUsage` | Planned |
+
+### Issues
+
+| Command | API endpoint | Status |
+| --- | --- | --- |
+| `bl issue list` | `GET /api/v2/issues` | Planned |
+| `bl issue show <id>` | `GET /api/v2/issues/{issueIdOrKey}` | Planned |
+| `bl issue create` | `POST /api/v2/issues` | Planned |
+| `bl issue update <id>` | `PATCH /api/v2/issues/{issueIdOrKey}` | Planned |
+| `bl issue delete <id>` | `DELETE /api/v2/issues/{issueIdOrKey}` | Planned |
+| `bl issue comment list <id>` | `GET /api/v2/issues/{issueIdOrKey}/comments` | Planned |
+| `bl issue comment add <id>` | `POST /api/v2/issues/{issueIdOrKey}/comments` | Planned |
+
+### Projects
+
+| Command | API endpoint | Status |
+| --- | --- | --- |
+| `bl project list` | `GET /api/v2/projects` | Planned |
+| `bl project show <key>` | `GET /api/v2/projects/{projectIdOrKey}` | Planned |
+
+### Wiki
+
+| Command | API endpoint | Status |
+| --- | --- | --- |
+| `bl wiki list` | `GET /api/v2/wikis` | Planned |
+| `bl wiki show <id>` | `GET /api/v2/wikis/{wikiId}` | Planned |
+
+### Users
+
+| Command | API endpoint | Status |
+| --- | --- | --- |
+| `bl auth status` | `GET /api/v2/users/myself` | ✅ Implemented (internal) |
+| `bl user list` | `GET /api/v2/users` | Planned |
+| `bl user show <id>` | `GET /api/v2/users/{userId}` | Planned |
 
 ## Configuration
 
