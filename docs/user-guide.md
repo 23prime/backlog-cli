@@ -202,6 +202,22 @@ Updated: (not set)
 (no notification set)
 ```
 
+### `bl project list`
+
+List all projects you have access to.
+
+```bash
+bl project list
+bl project list --json
+```
+
+Example output:
+
+```text
+[TEST] Test Project
+[PROD] Production [archived]
+```
+
 ## Command coverage
 
 The table below maps Backlog API v2 endpoints to `bl` commands.
@@ -220,7 +236,7 @@ Commands that target a specific project accept a `--project <key>` flag.
 
 | Command | API endpoint | Status |
 | --- | --- | --- |
-| `bl project list` | `GET /api/v2/projects` | Planned |
+| `bl project list` | `GET /api/v2/projects` | ✅ Implemented |
 | `bl project show <key>` | `GET /api/v2/projects/{projectIdOrKey}` | Planned |
 | `bl project activities <key>` | `GET /api/v2/projects/{projectIdOrKey}/activities` | Planned |
 | `bl project disk-usage <key>` | `GET /api/v2/projects/{projectIdOrKey}/diskUsage` | Planned |
