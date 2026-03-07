@@ -4,14 +4,23 @@ An unofficial CLI tool for [Backlog](https://backlog.com).
 
 ## Features
 
-- 🔐 **Secure authentication** — API key stored in the system keyring (GNOME Keyring / Keychain), with automatic fallback to a protected file (`~/.config/bl/credentials.toml`, mode 0600)
+- 🌐 **Cross-platform** — Runs on Linux, macOS, and Windows (x86\_64 / aarch64 / Apple Silicon)
+- 🔐 **Secure authentication** — API key stored in the system keyring (GNOME Keyring, macOS Keychain, or Windows Credential Manager); if the keyring is unavailable, falls back to a local `credentials.toml` file (owner-only permissions on Unix)
 - 📦 **No OpenSSL dependency** — Built with rustls for a clean, portable binary
-- ⚡ **Easy install** — Single-command installation via shell script (Linux / macOS)
+- ⚡ **Easy install** — Single-command installation via shell script or PowerShell
 
 ## Installation
 
+### Linux / macOS
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.sh | sh
+```
+
+### Windows
+
+```powershell
+irm https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.ps1 | iex
 ```
 
 ## Usage

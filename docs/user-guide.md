@@ -177,6 +177,31 @@ Git LFS:    128 bytes
 Details:    3 project(s) — use --json for breakdown
 ```
 
+### `bl space notification`
+
+Show the notification message set for your Backlog space.
+
+```bash
+bl space notification
+bl space notification --json
+```
+
+Example output:
+
+```text
+Updated: 2024-06-18T07:55:37Z
+
+Scheduled maintenance on 2024-07-01.
+```
+
+When no notification has been set:
+
+```text
+Updated: (not set)
+
+(no notification set)
+```
+
 ## Command coverage
 
 The table below maps Backlog API v2 endpoints to `bl` commands.
@@ -189,7 +214,7 @@ Commands that target a specific project accept a `--project <key>` flag.
 | `bl space` | `GET /api/v2/space` | ✅ Implemented |
 | `bl space activities` | `GET /api/v2/space/activities` | ✅ Implemented |
 | `bl space disk-usage` | `GET /api/v2/space/diskUsage` | ✅ Implemented |
-| `bl space notification` | `GET /api/v2/space/notification` | Planned |
+| `bl space notification` | `GET /api/v2/space/notification` | ✅ Implemented |
 
 ### Projects
 
