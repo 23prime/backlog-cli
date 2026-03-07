@@ -223,8 +223,8 @@ Example output:
 Show details of a specific project.
 
 ```bash
-bl project show <key>
-bl project show <key> --json
+bl project show <id-or-key>
+bl project show <id-or-key> --json
 ```
 
 Example output:
@@ -256,7 +256,7 @@ Commands that target a specific project accept a `--project <key>` flag.
 | Command | API endpoint | Status |
 | --- | --- | --- |
 | `bl project list` | `GET /api/v2/projects` | ✅ Implemented |
-| `bl project show <key>` | `GET /api/v2/projects/{projectIdOrKey}` | ✅ Implemented |
+| `bl project show <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}` | ✅ Implemented |
 | `bl project activities <key>` | `GET /api/v2/projects/{projectIdOrKey}/activities` | Planned |
 | `bl project disk-usage <key>` | `GET /api/v2/projects/{projectIdOrKey}/diskUsage` | Planned |
 | `bl project user list <key>` | `GET /api/v2/projects/{projectIdOrKey}/users` | Planned |
