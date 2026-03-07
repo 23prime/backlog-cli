@@ -162,6 +162,10 @@ mod tests {
                 .clone()
                 .ok_or_else(|| anyhow!("invalid credentials"))
         }
+
+        fn get_space_activities(&self) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
+            unimplemented!()
+        }
     }
 
     fn sample_user() -> User {
