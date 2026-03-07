@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use super::BacklogClient;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SpaceNotification {
     pub content: String,
     pub updated: Option<String>,
