@@ -1,31 +1,31 @@
 use anstream::println;
 use anyhow::{Context, Result};
 
-use crate::api::{BacklogApi, BacklogClient, project::Project};
+use crate::api::{BacklogApi, BacklogClient, project::ProjectUser};
 
-pub fn show(key: &str, json: bool) -> Result<()> {
+pub fn list(key: &str, json: bool) -> Result<()> {
     let client = BacklogClient::from_config()?;
-    show_with(key, json, &client)
+    list_with(key, json, &client)
 }
 
-pub fn show_with(key: &str, json: bool, api: &dyn BacklogApi) -> Result<()> {
-    let project = api.get_project(key)?;
+pub fn list_with(key: &str, json: bool, api: &dyn BacklogApi) -> Result<()> {
+    let users = api.get_project_users(key)?;
     if json {
         println!(
             "{}",
-            serde_json::to_string_pretty(&project).context("Failed to serialize JSON")?
+            serde_json::to_string_pretty(&users).context("Failed to serialize JSON")?
         );
     } else {
-        println!("{}", format_project_detail(&project));
+        for u in &users {
+            println!("{}", format_user_row(u));
+        }
     }
     Ok(())
 }
 
-fn format_project_detail(p: &Project) -> String {
-    format!(
-        "ID:         {}\nKey:        {}\nName:       {}\nFormatting: {}\nArchived:   {}",
-        p.id, p.project_key, p.name, p.text_formatting_rule, p.archived,
-    )
+fn format_user_row(u: &ProjectUser) -> String {
+    let id = u.user_id.as_deref().unwrap_or("-");
+    format!("[{}] {}", id, u.name)
 }
 
 #[cfg(test)]
@@ -35,7 +35,7 @@ mod tests {
     use std::collections::BTreeMap;
 
     struct MockApi {
-        project: Option<Project>,
+        users: Option<Vec<ProjectUser>>,
     }
 
     impl crate::api::BacklogApi for MockApi {
@@ -56,11 +56,11 @@ mod tests {
         ) -> anyhow::Result<crate::api::space_notification::SpaceNotification> {
             unimplemented!()
         }
-        fn get_projects(&self) -> anyhow::Result<Vec<Project>> {
+        fn get_projects(&self) -> anyhow::Result<Vec<crate::api::project::Project>> {
             unimplemented!()
         }
-        fn get_project(&self, _key: &str) -> anyhow::Result<Project> {
-            self.project.clone().ok_or_else(|| anyhow!("no project"))
+        fn get_project(&self, _key: &str) -> anyhow::Result<crate::api::project::Project> {
+            unimplemented!()
         }
         fn get_project_activities(
             &self,
@@ -74,11 +74,8 @@ mod tests {
         ) -> anyhow::Result<crate::api::project::ProjectDiskUsage> {
             unimplemented!()
         }
-        fn get_project_users(
-            &self,
-            _key: &str,
-        ) -> anyhow::Result<Vec<crate::api::project::ProjectUser>> {
-            unimplemented!()
+        fn get_project_users(&self, _key: &str) -> anyhow::Result<Vec<ProjectUser>> {
+            self.users.clone().ok_or_else(|| anyhow!("no users"))
         }
         fn get_project_statuses(
             &self,
@@ -106,49 +103,55 @@ mod tests {
         }
     }
 
-    fn sample_project() -> Project {
-        Project {
+    fn sample_user() -> ProjectUser {
+        ProjectUser {
             id: 1,
-            project_key: "TEST".to_string(),
-            name: "Test Project".to_string(),
-            chart_enabled: false,
-            subtasking_enabled: false,
-            project_leader_can_edit_project_leader: false,
-            text_formatting_rule: "markdown".to_string(),
-            archived: false,
+            user_id: Some("john".to_string()),
+            name: "John Doe".to_string(),
+            role_type: 1,
+            lang: Some("ja".to_string()),
+            mail_address: Some("john@example.com".to_string()),
+            last_login_time: None,
             extra: BTreeMap::new(),
         }
     }
 
     #[test]
-    fn show_with_text_output_succeeds() {
+    fn format_user_row_with_user_id() {
+        let text = format_user_row(&sample_user());
+        assert!(text.contains("[john]"));
+        assert!(text.contains("John Doe"));
+    }
+
+    #[test]
+    fn format_user_row_without_user_id() {
+        let mut u = sample_user();
+        u.user_id = None;
+        let text = format_user_row(&u);
+        assert!(text.contains("[-]"));
+        assert!(text.contains("John Doe"));
+    }
+
+    #[test]
+    fn list_with_text_output_succeeds() {
         let api = MockApi {
-            project: Some(sample_project()),
+            users: Some(vec![sample_user()]),
         };
-        assert!(show_with("TEST", false, &api).is_ok());
+        assert!(list_with("TEST", false, &api).is_ok());
     }
 
     #[test]
-    fn show_with_json_output_succeeds() {
+    fn list_with_json_output_succeeds() {
         let api = MockApi {
-            project: Some(sample_project()),
+            users: Some(vec![sample_user()]),
         };
-        assert!(show_with("TEST", true, &api).is_ok());
+        assert!(list_with("TEST", true, &api).is_ok());
     }
 
     #[test]
-    fn show_with_propagates_api_error() {
-        let api = MockApi { project: None };
-        let err = show_with("MISSING", false, &api).unwrap_err();
-        assert!(err.to_string().contains("no project"));
-    }
-
-    #[test]
-    fn format_project_detail_contains_fields() {
-        let text = format_project_detail(&sample_project());
-        assert!(text.contains("TEST"));
-        assert!(text.contains("Test Project"));
-        assert!(text.contains("markdown"));
-        assert!(text.contains("false"));
+    fn list_with_propagates_api_error() {
+        let api = MockApi { users: None };
+        let err = list_with("TEST", false, &api).unwrap_err();
+        assert!(err.to_string().contains("no users"));
     }
 }

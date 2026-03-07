@@ -1,0 +1,158 @@
+use anstream::println;
+use anyhow::{Context, Result};
+
+use crate::api::{BacklogApi, BacklogClient, project::ProjectDiskUsage};
+
+pub fn disk_usage(key: &str, json: bool) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    disk_usage_with(key, json, &client)
+}
+
+pub fn disk_usage_with(key: &str, json: bool, api: &dyn BacklogApi) -> Result<()> {
+    let usage = api.get_project_disk_usage(key)?;
+    if json {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&usage).context("Failed to serialize JSON")?
+        );
+    } else {
+        println!("{}", format_disk_usage_text(&usage));
+    }
+    Ok(())
+}
+
+fn format_disk_usage_text(usage: &ProjectDiskUsage) -> String {
+    format!(
+        "Issue:      {} bytes\nWiki:       {} bytes\nDocument:   {} bytes\nFile:       {} bytes\nSubversion: {} bytes\nGit:        {} bytes\nGit LFS:    {} bytes",
+        usage.issue,
+        usage.wiki,
+        usage.document,
+        usage.file,
+        usage.subversion,
+        usage.git,
+        usage.git_lfs,
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use anyhow::anyhow;
+
+    struct MockApi {
+        disk_usage: Option<ProjectDiskUsage>,
+    }
+
+    impl crate::api::BacklogApi for MockApi {
+        fn get_space(&self) -> anyhow::Result<crate::api::space::Space> {
+            unimplemented!()
+        }
+        fn get_myself(&self) -> anyhow::Result<crate::api::user::User> {
+            unimplemented!()
+        }
+        fn get_space_activities(&self) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
+            unimplemented!()
+        }
+        fn get_space_disk_usage(&self) -> anyhow::Result<crate::api::disk_usage::DiskUsage> {
+            unimplemented!()
+        }
+        fn get_space_notification(
+            &self,
+        ) -> anyhow::Result<crate::api::space_notification::SpaceNotification> {
+            unimplemented!()
+        }
+        fn get_projects(&self) -> anyhow::Result<Vec<crate::api::project::Project>> {
+            unimplemented!()
+        }
+        fn get_project(&self, _key: &str) -> anyhow::Result<crate::api::project::Project> {
+            unimplemented!()
+        }
+        fn get_project_activities(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
+            unimplemented!()
+        }
+        fn get_project_disk_usage(&self, _key: &str) -> anyhow::Result<ProjectDiskUsage> {
+            self.disk_usage
+                .clone()
+                .ok_or_else(|| anyhow!("no disk usage"))
+        }
+        fn get_project_users(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::project::ProjectUser>> {
+            unimplemented!()
+        }
+        fn get_project_statuses(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::project::ProjectStatus>> {
+            unimplemented!()
+        }
+        fn get_project_issue_types(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::project::ProjectIssueType>> {
+            unimplemented!()
+        }
+        fn get_project_categories(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::project::ProjectCategory>> {
+            unimplemented!()
+        }
+        fn get_project_versions(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::project::ProjectVersion>> {
+            unimplemented!()
+        }
+    }
+
+    fn sample_disk_usage() -> ProjectDiskUsage {
+        ProjectDiskUsage {
+            project_id: 1,
+            issue: 2048,
+            wiki: 512,
+            document: 0,
+            file: 1024,
+            subversion: 64,
+            git: 256,
+            git_lfs: 128,
+        }
+    }
+
+    #[test]
+    fn disk_usage_with_text_output_succeeds() {
+        let api = MockApi {
+            disk_usage: Some(sample_disk_usage()),
+        };
+        assert!(disk_usage_with("TEST", false, &api).is_ok());
+    }
+
+    #[test]
+    fn disk_usage_with_json_output_succeeds() {
+        let api = MockApi {
+            disk_usage: Some(sample_disk_usage()),
+        };
+        assert!(disk_usage_with("TEST", true, &api).is_ok());
+    }
+
+    #[test]
+    fn disk_usage_with_propagates_api_error() {
+        let api = MockApi { disk_usage: None };
+        let err = disk_usage_with("TEST", false, &api).unwrap_err();
+        assert!(err.to_string().contains("no disk usage"));
+    }
+
+    #[test]
+    fn format_disk_usage_text_contains_fields() {
+        let text = format_disk_usage_text(&sample_disk_usage());
+        assert!(text.contains("2048"));
+        assert!(text.contains("512"));
+        assert!(text.contains("128"));
+        assert!(text.contains("Issue:"));
+        assert!(text.contains("Git LFS:"));
+    }
+}

@@ -270,6 +270,126 @@ Formatting: markdown
 Archived:   false
 ```
 
+### `bl project activities`
+
+Show recent activities for a specific project.
+
+```bash
+bl project activities <id-or-key>
+bl project activities <id-or-key> --json
+```
+
+Example output:
+
+```text
+[123] type=1 project=TEST user=John Doe created=2024-06-01T00:00:00Z
+```
+
+### `bl project disk-usage`
+
+Show disk usage for a specific project.
+Requires Space Administrator privileges. Non-admin users will receive `403 Forbidden`.
+
+```bash
+bl project disk-usage <id-or-key>
+bl project disk-usage <id-or-key> --json
+```
+
+Example output:
+
+```text
+Issue:      2048 bytes
+Wiki:       512 bytes
+Document:   0 bytes
+File:       1024 bytes
+Subversion: 64 bytes
+Git:        256 bytes
+Git LFS:    128 bytes
+```
+
+### `bl project user list`
+
+List users who are members of a specific project.
+
+```bash
+bl project user list <id-or-key>
+bl project user list <id-or-key> --json
+```
+
+Example output:
+
+```text
+[john] John Doe
+[jane] Jane Smith
+```
+
+### `bl project status list`
+
+List issue statuses defined for a specific project.
+
+```bash
+bl project status list <id-or-key>
+bl project status list <id-or-key> --json
+```
+
+Example output:
+
+```text
+[1] Open
+[2] In Progress
+[3] Resolved
+[4] Closed
+```
+
+### `bl project issue-type list`
+
+List issue types defined for a specific project.
+
+```bash
+bl project issue-type list <id-or-key>
+bl project issue-type list <id-or-key> --json
+```
+
+Example output:
+
+```text
+[1] Bug
+[2] Task
+[3] Feature Request
+```
+
+### `bl project category list`
+
+List categories defined for a specific project.
+
+```bash
+bl project category list <id-or-key>
+bl project category list <id-or-key> --json
+```
+
+Example output:
+
+```text
+[11] Development
+[12] Design
+```
+
+### `bl project version list`
+
+List versions (milestones) defined for a specific project.
+
+```bash
+bl project version list <id-or-key>
+bl project version list <id-or-key> --json
+```
+
+Example output:
+
+```text
+[3] Version 0.1 (2024-01-01T00:00:00Z → 2024-01-31T00:00:00Z)
+[4] Version 0.2 [archived]
+```
+
 ## Command coverage
 
 The table below maps Backlog API v2 endpoints to `bl` commands.
@@ -290,13 +410,13 @@ Commands that target a specific project accept a `--project <key>` flag.
 | --- | --- | --- |
 | `bl project list` | `GET /api/v2/projects` | ✅ Implemented |
 | `bl project show <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}` | ✅ Implemented |
-| `bl project activities <key>` | `GET /api/v2/projects/{projectIdOrKey}/activities` | Planned |
-| `bl project disk-usage <key>` | `GET /api/v2/projects/{projectIdOrKey}/diskUsage` | Planned |
-| `bl project user list <key>` | `GET /api/v2/projects/{projectIdOrKey}/users` | Planned |
-| `bl project status list <key>` | `GET /api/v2/projects/{projectIdOrKey}/statuses` | Planned |
-| `bl project issue-type list <key>` | `GET /api/v2/projects/{projectIdOrKey}/issueTypes` | Planned |
-| `bl project category list <key>` | `GET /api/v2/projects/{projectIdOrKey}/categories` | Planned |
-| `bl project version list <key>` | `GET /api/v2/projects/{projectIdOrKey}/versions` | Planned |
+| `bl project activities <key>` | `GET /api/v2/projects/{projectIdOrKey}/activities` | ✅ Implemented |
+| `bl project disk-usage <key>` | `GET /api/v2/projects/{projectIdOrKey}/diskUsage` | ✅ Implemented |
+| `bl project user list <key>` | `GET /api/v2/projects/{projectIdOrKey}/users` | ✅ Implemented |
+| `bl project status list <key>` | `GET /api/v2/projects/{projectIdOrKey}/statuses` | ✅ Implemented |
+| `bl project issue-type list <key>` | `GET /api/v2/projects/{projectIdOrKey}/issueTypes` | ✅ Implemented |
+| `bl project category list <key>` | `GET /api/v2/projects/{projectIdOrKey}/categories` | ✅ Implemented |
+| `bl project version list <key>` | `GET /api/v2/projects/{projectIdOrKey}/versions` | ✅ Implemented |
 
 ### Issues
 
