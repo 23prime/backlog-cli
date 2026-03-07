@@ -3,14 +3,18 @@ use anyhow::{Context, Result};
 
 use crate::api::{BacklogApi, BacklogClient, space_notification::SpaceNotification};
 
-pub fn notification(json: bool) -> Result<()> {
-    let client = BacklogClient::from_config()?;
-    notification_with(json, &client)
+pub struct SpaceNotificationArgs {
+    pub json: bool,
 }
 
-pub fn notification_with(json: bool, api: &dyn BacklogApi) -> Result<()> {
+pub fn notification(args: &SpaceNotificationArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    notification_with(args, &client)
+}
+
+pub fn notification_with(args: &SpaceNotificationArgs, api: &dyn BacklogApi) -> Result<()> {
     let n = api.get_space_notification()?;
-    if json {
+    if args.json {
         println!(
             "{}",
             serde_json::to_string_pretty(&n).context("Failed to serialize JSON")?
@@ -182,7 +186,7 @@ mod tests {
         let api = MockApi {
             notification: Some(sample_notification()),
         };
-        assert!(notification_with(false, &api).is_ok());
+        assert!(notification_with(&SpaceNotificationArgs { json: false }, &api).is_ok());
     }
 
     #[test]
@@ -190,13 +194,13 @@ mod tests {
         let api = MockApi {
             notification: Some(sample_notification()),
         };
-        assert!(notification_with(true, &api).is_ok());
+        assert!(notification_with(&SpaceNotificationArgs { json: true }, &api).is_ok());
     }
 
     #[test]
     fn notification_with_propagates_api_error() {
         let api = MockApi { notification: None };
-        let err = notification_with(false, &api).unwrap_err();
+        let err = notification_with(&SpaceNotificationArgs { json: false }, &api).unwrap_err();
         assert!(err.to_string().contains("no notification"));
     }
 

@@ -36,7 +36,12 @@ pub fn logout() -> Result<()> {
     Ok(())
 }
 
-pub fn status(json: bool) -> Result<()> {
+pub struct AuthStatusArgs {
+    pub json: bool,
+}
+
+pub fn status(args: &AuthStatusArgs) -> Result<()> {
+    let json = args.json;
     let cfg = config::load()?;
     let Some(auth) = cfg.auth else {
         if json {

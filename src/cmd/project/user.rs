@@ -3,14 +3,19 @@ use anyhow::{Context, Result};
 
 use crate::api::{BacklogApi, BacklogClient, project::ProjectUser};
 
-pub fn list(key: &str, json: bool) -> Result<()> {
-    let client = BacklogClient::from_config()?;
-    list_with(key, json, &client)
+pub struct ProjectUserListArgs {
+    pub key: String,
+    pub json: bool,
 }
 
-pub fn list_with(key: &str, json: bool, api: &dyn BacklogApi) -> Result<()> {
-    let users = api.get_project_users(key)?;
-    if json {
+pub fn list(args: &ProjectUserListArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    list_with(args, &client)
+}
+
+pub fn list_with(args: &ProjectUserListArgs, api: &dyn BacklogApi) -> Result<()> {
+    let users = api.get_project_users(&args.key)?;
+    if args.json {
         println!(
             "{}",
             serde_json::to_string_pretty(&users).context("Failed to serialize JSON")?
@@ -204,7 +209,16 @@ mod tests {
         let api = MockApi {
             users: Some(vec![sample_user()]),
         };
-        assert!(list_with("TEST", false, &api).is_ok());
+        assert!(
+            list_with(
+                &ProjectUserListArgs {
+                    key: "TEST".to_string(),
+                    json: false
+                },
+                &api
+            )
+            .is_ok()
+        );
     }
 
     #[test]
@@ -212,13 +226,29 @@ mod tests {
         let api = MockApi {
             users: Some(vec![sample_user()]),
         };
-        assert!(list_with("TEST", true, &api).is_ok());
+        assert!(
+            list_with(
+                &ProjectUserListArgs {
+                    key: "TEST".to_string(),
+                    json: true
+                },
+                &api
+            )
+            .is_ok()
+        );
     }
 
     #[test]
     fn list_with_propagates_api_error() {
         let api = MockApi { users: None };
-        let err = list_with("TEST", false, &api).unwrap_err();
+        let err = list_with(
+            &ProjectUserListArgs {
+                key: "TEST".to_string(),
+                json: false,
+            },
+            &api,
+        )
+        .unwrap_err();
         assert!(err.to_string().contains("no users"));
     }
 }

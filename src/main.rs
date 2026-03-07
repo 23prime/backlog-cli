@@ -6,6 +6,7 @@ mod secret;
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
+use cmd::auth::AuthStatusArgs;
 use cmd::issue::attachment::IssueAttachmentListArgs;
 use cmd::issue::comment::{
     IssueCommentAddArgs, IssueCommentDeleteArgs, IssueCommentListArgs, IssueCommentUpdateArgs,
@@ -14,6 +15,13 @@ use cmd::issue::{
     IssueCountArgs, IssueCreateArgs, IssueDeleteArgs, IssueListArgs, IssueShowArgs,
     IssueUpdateArgs, ParentChild,
 };
+use cmd::project::category::ProjectCategoryListArgs;
+use cmd::project::issue_type::ProjectIssueTypeListArgs;
+use cmd::project::status::ProjectStatusListArgs;
+use cmd::project::user::ProjectUserListArgs;
+use cmd::project::version::ProjectVersionListArgs;
+use cmd::project::{ProjectActivitiesArgs, ProjectDiskUsageArgs, ProjectListArgs, ProjectShowArgs};
+use cmd::space::{SpaceActivitiesArgs, SpaceDiskUsageArgs, SpaceNotificationArgs, SpaceShowArgs};
 
 #[derive(Parser)]
 #[command(name = "bl", version, about = "Backlog CLI")]
@@ -428,42 +436,66 @@ fn main() -> Result<()> {
     match cli.command {
         Commands::Auth { action } => match action {
             AuthCommands::Login => cmd::auth::login(),
-            AuthCommands::Status { json } => cmd::auth::status(json),
+            AuthCommands::Status { json } => cmd::auth::status(&AuthStatusArgs { json }),
             AuthCommands::Logout => cmd::auth::logout(),
             AuthCommands::Keyring => cmd::auth::check_keyring(),
         },
         Commands::Project { action } => match action {
-            ProjectCommands::List { json } => cmd::project::list(json),
-            ProjectCommands::Show { id_or_key, json } => cmd::project::show(&id_or_key, json),
+            ProjectCommands::List { json } => cmd::project::list(&ProjectListArgs { json }),
+            ProjectCommands::Show { id_or_key, json } => cmd::project::show(&ProjectShowArgs {
+                key: id_or_key,
+                json,
+            }),
             ProjectCommands::Activities { id_or_key, json } => {
-                cmd::project::activities(&id_or_key, json)
+                cmd::project::activities(&ProjectActivitiesArgs {
+                    key: id_or_key,
+                    json,
+                })
             }
             ProjectCommands::DiskUsage { id_or_key, json } => {
-                cmd::project::disk_usage(&id_or_key, json)
+                cmd::project::disk_usage(&ProjectDiskUsageArgs {
+                    key: id_or_key,
+                    json,
+                })
             }
             ProjectCommands::User { action } => match action {
                 ProjectUserCommands::List { id_or_key, json } => {
-                    cmd::project::user::list(&id_or_key, json)
+                    cmd::project::user::list(&ProjectUserListArgs {
+                        key: id_or_key,
+                        json,
+                    })
                 }
             },
             ProjectCommands::Status { action } => match action {
                 ProjectStatusCommands::List { id_or_key, json } => {
-                    cmd::project::status::list(&id_or_key, json)
+                    cmd::project::status::list(&ProjectStatusListArgs {
+                        key: id_or_key,
+                        json,
+                    })
                 }
             },
             ProjectCommands::IssueType { action } => match action {
                 ProjectIssueTypeCommands::List { id_or_key, json } => {
-                    cmd::project::issue_type::list(&id_or_key, json)
+                    cmd::project::issue_type::list(&ProjectIssueTypeListArgs {
+                        key: id_or_key,
+                        json,
+                    })
                 }
             },
             ProjectCommands::Category { action } => match action {
                 ProjectCategoryCommands::List { id_or_key, json } => {
-                    cmd::project::category::list(&id_or_key, json)
+                    cmd::project::category::list(&ProjectCategoryListArgs {
+                        key: id_or_key,
+                        json,
+                    })
                 }
             },
             ProjectCommands::Version { action } => match action {
                 ProjectVersionCommands::List { id_or_key, json } => {
-                    cmd::project::version::list(&id_or_key, json)
+                    cmd::project::version::list(&ProjectVersionListArgs {
+                        key: id_or_key,
+                        json,
+                    })
                 }
             },
         },
@@ -609,15 +641,21 @@ fn main() -> Result<()> {
             },
         },
         Commands::Space { action, json } => match action {
-            None => cmd::space::show(json),
+            None => cmd::space::show(&SpaceShowArgs { json }),
             Some(SpaceCommands::Activities { json: sub_json }) => {
-                cmd::space::activities(json || sub_json)
+                cmd::space::activities(&SpaceActivitiesArgs {
+                    json: json || sub_json,
+                })
             }
             Some(SpaceCommands::DiskUsage { json: sub_json }) => {
-                cmd::space::disk_usage(json || sub_json)
+                cmd::space::disk_usage(&SpaceDiskUsageArgs {
+                    json: json || sub_json,
+                })
             }
             Some(SpaceCommands::Notification { json: sub_json }) => {
-                cmd::space::notification(json || sub_json)
+                cmd::space::notification(&SpaceNotificationArgs {
+                    json: json || sub_json,
+                })
             }
         },
     }

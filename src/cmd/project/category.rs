@@ -3,14 +3,19 @@ use anyhow::{Context, Result};
 
 use crate::api::{BacklogApi, BacklogClient, project::ProjectCategory};
 
-pub fn list(key: &str, json: bool) -> Result<()> {
-    let client = BacklogClient::from_config()?;
-    list_with(key, json, &client)
+pub struct ProjectCategoryListArgs {
+    pub key: String,
+    pub json: bool,
 }
 
-pub fn list_with(key: &str, json: bool, api: &dyn BacklogApi) -> Result<()> {
-    let categories = api.get_project_categories(key)?;
-    if json {
+pub fn list(args: &ProjectCategoryListArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    list_with(args, &client)
+}
+
+pub fn list_with(args: &ProjectCategoryListArgs, api: &dyn BacklogApi) -> Result<()> {
+    let categories = api.get_project_categories(&args.key)?;
+    if args.json {
         println!(
             "{}",
             serde_json::to_string_pretty(&categories).context("Failed to serialize JSON")?
@@ -188,7 +193,16 @@ mod tests {
         let api = MockApi {
             categories: Some(vec![sample_category()]),
         };
-        assert!(list_with("TEST", false, &api).is_ok());
+        assert!(
+            list_with(
+                &ProjectCategoryListArgs {
+                    key: "TEST".to_string(),
+                    json: false
+                },
+                &api
+            )
+            .is_ok()
+        );
     }
 
     #[test]
@@ -196,13 +210,29 @@ mod tests {
         let api = MockApi {
             categories: Some(vec![sample_category()]),
         };
-        assert!(list_with("TEST", true, &api).is_ok());
+        assert!(
+            list_with(
+                &ProjectCategoryListArgs {
+                    key: "TEST".to_string(),
+                    json: true
+                },
+                &api
+            )
+            .is_ok()
+        );
     }
 
     #[test]
     fn list_with_propagates_api_error() {
         let api = MockApi { categories: None };
-        let err = list_with("TEST", false, &api).unwrap_err();
+        let err = list_with(
+            &ProjectCategoryListArgs {
+                key: "TEST".to_string(),
+                json: false,
+            },
+            &api,
+        )
+        .unwrap_err();
         assert!(err.to_string().contains("no categories"));
     }
 }

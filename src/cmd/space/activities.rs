@@ -3,14 +3,18 @@ use anyhow::{Context, Result};
 
 use crate::api::{BacklogApi, BacklogClient, activity::Activity};
 
-pub fn activities(json: bool) -> Result<()> {
-    let client = BacklogClient::from_config()?;
-    activities_with(json, &client)
+pub struct SpaceActivitiesArgs {
+    pub json: bool,
 }
 
-pub fn activities_with(json: bool, api: &dyn BacklogApi) -> Result<()> {
+pub fn activities(args: &SpaceActivitiesArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    activities_with(args, &client)
+}
+
+pub fn activities_with(args: &SpaceActivitiesArgs, api: &dyn BacklogApi) -> Result<()> {
     let activities = api.get_space_activities()?;
-    if json {
+    if args.json {
         println!(
             "{}",
             serde_json::to_string_pretty(&activities).context("Failed to serialize JSON")?
@@ -209,7 +213,7 @@ mod tests {
         let api = MockApi {
             activities: Some(vec![sample_activity()]),
         };
-        assert!(activities_with(false, &api).is_ok());
+        assert!(activities_with(&SpaceActivitiesArgs { json: false }, &api).is_ok());
     }
 
     #[test]
@@ -217,13 +221,13 @@ mod tests {
         let api = MockApi {
             activities: Some(vec![sample_activity()]),
         };
-        assert!(activities_with(true, &api).is_ok());
+        assert!(activities_with(&SpaceActivitiesArgs { json: true }, &api).is_ok());
     }
 
     #[test]
     fn activities_with_propagates_api_error() {
         let api = MockApi { activities: None };
-        let err = activities_with(false, &api).unwrap_err();
+        let err = activities_with(&SpaceActivitiesArgs { json: false }, &api).unwrap_err();
         assert!(err.to_string().contains("no activities"));
     }
 }

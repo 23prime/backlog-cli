@@ -3,14 +3,19 @@ use anyhow::{Context, Result};
 
 use crate::api::{BacklogApi, BacklogClient, activity::Activity};
 
-pub fn activities(key: &str, json: bool) -> Result<()> {
-    let client = BacklogClient::from_config()?;
-    activities_with(key, json, &client)
+pub struct ProjectActivitiesArgs {
+    pub key: String,
+    pub json: bool,
 }
 
-pub fn activities_with(key: &str, json: bool, api: &dyn BacklogApi) -> Result<()> {
-    let activities = api.get_project_activities(key)?;
-    if json {
+pub fn activities(args: &ProjectActivitiesArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    activities_with(args, &client)
+}
+
+pub fn activities_with(args: &ProjectActivitiesArgs, api: &dyn BacklogApi) -> Result<()> {
+    let activities = api.get_project_activities(&args.key)?;
+    if args.json {
         println!(
             "{}",
             serde_json::to_string_pretty(&activities).context("Failed to serialize JSON")?
@@ -209,7 +214,16 @@ mod tests {
         let api = MockApi {
             activities: Some(vec![sample_activity()]),
         };
-        assert!(activities_with("TEST", false, &api).is_ok());
+        assert!(
+            activities_with(
+                &ProjectActivitiesArgs {
+                    key: "TEST".to_string(),
+                    json: false
+                },
+                &api
+            )
+            .is_ok()
+        );
     }
 
     #[test]
@@ -217,13 +231,29 @@ mod tests {
         let api = MockApi {
             activities: Some(vec![sample_activity()]),
         };
-        assert!(activities_with("TEST", true, &api).is_ok());
+        assert!(
+            activities_with(
+                &ProjectActivitiesArgs {
+                    key: "TEST".to_string(),
+                    json: true
+                },
+                &api
+            )
+            .is_ok()
+        );
     }
 
     #[test]
     fn activities_with_propagates_api_error() {
         let api = MockApi { activities: None };
-        let err = activities_with("TEST", false, &api).unwrap_err();
+        let err = activities_with(
+            &ProjectActivitiesArgs {
+                key: "TEST".to_string(),
+                json: false,
+            },
+            &api,
+        )
+        .unwrap_err();
         assert!(err.to_string().contains("no activities"));
     }
 }

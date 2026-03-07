@@ -3,14 +3,18 @@ use anyhow::{Context, Result};
 
 use crate::api::{BacklogApi, BacklogClient, space::Space};
 
-pub fn show(json: bool) -> Result<()> {
-    let client = BacklogClient::from_config()?;
-    show_with(json, &client)
+pub struct SpaceShowArgs {
+    pub json: bool,
 }
 
-pub fn show_with(json: bool, api: &dyn BacklogApi) -> Result<()> {
+pub fn show(args: &SpaceShowArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    show_with(args, &client)
+}
+
+pub fn show_with(args: &SpaceShowArgs, api: &dyn BacklogApi) -> Result<()> {
     let space = api.get_space()?;
-    if json {
+    if args.json {
         println!(
             "{}",
             serde_json::to_string_pretty(&space).context("Failed to serialize JSON")?
@@ -191,7 +195,7 @@ mod tests {
         let api = MockApi {
             space: Some(sample_space()),
         };
-        assert!(show_with(false, &api).is_ok());
+        assert!(show_with(&SpaceShowArgs { json: false }, &api).is_ok());
     }
 
     #[test]
@@ -199,13 +203,13 @@ mod tests {
         let api = MockApi {
             space: Some(sample_space()),
         };
-        assert!(show_with(true, &api).is_ok());
+        assert!(show_with(&SpaceShowArgs { json: true }, &api).is_ok());
     }
 
     #[test]
     fn show_with_propagates_api_error() {
         let api = MockApi { space: None };
-        let err = show_with(false, &api).unwrap_err();
+        let err = show_with(&SpaceShowArgs { json: false }, &api).unwrap_err();
         assert!(err.to_string().contains("no space"));
     }
 

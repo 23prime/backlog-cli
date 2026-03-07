@@ -3,14 +3,19 @@ use anyhow::{Context, Result};
 
 use crate::api::{BacklogApi, BacklogClient, project::ProjectDiskUsage};
 
-pub fn disk_usage(key: &str, json: bool) -> Result<()> {
-    let client = BacklogClient::from_config()?;
-    disk_usage_with(key, json, &client)
+pub struct ProjectDiskUsageArgs {
+    pub key: String,
+    pub json: bool,
 }
 
-pub fn disk_usage_with(key: &str, json: bool, api: &dyn BacklogApi) -> Result<()> {
-    let usage = api.get_project_disk_usage(key)?;
-    if json {
+pub fn disk_usage(args: &ProjectDiskUsageArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    disk_usage_with(args, &client)
+}
+
+pub fn disk_usage_with(args: &ProjectDiskUsageArgs, api: &dyn BacklogApi) -> Result<()> {
+    let usage = api.get_project_disk_usage(&args.key)?;
+    if args.json {
         println!(
             "{}",
             serde_json::to_string_pretty(&usage).context("Failed to serialize JSON")?
@@ -193,7 +198,16 @@ mod tests {
         let api = MockApi {
             disk_usage: Some(sample_disk_usage()),
         };
-        assert!(disk_usage_with("TEST", false, &api).is_ok());
+        assert!(
+            disk_usage_with(
+                &ProjectDiskUsageArgs {
+                    key: "TEST".to_string(),
+                    json: false
+                },
+                &api
+            )
+            .is_ok()
+        );
     }
 
     #[test]
@@ -201,13 +215,29 @@ mod tests {
         let api = MockApi {
             disk_usage: Some(sample_disk_usage()),
         };
-        assert!(disk_usage_with("TEST", true, &api).is_ok());
+        assert!(
+            disk_usage_with(
+                &ProjectDiskUsageArgs {
+                    key: "TEST".to_string(),
+                    json: true
+                },
+                &api
+            )
+            .is_ok()
+        );
     }
 
     #[test]
     fn disk_usage_with_propagates_api_error() {
         let api = MockApi { disk_usage: None };
-        let err = disk_usage_with("TEST", false, &api).unwrap_err();
+        let err = disk_usage_with(
+            &ProjectDiskUsageArgs {
+                key: "TEST".to_string(),
+                json: false,
+            },
+            &api,
+        )
+        .unwrap_err();
         assert!(err.to_string().contains("no disk usage"));
     }
 

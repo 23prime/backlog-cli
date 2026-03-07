@@ -4,14 +4,18 @@ use owo_colors::OwoColorize;
 
 use crate::api::{BacklogApi, BacklogClient};
 
-pub fn list(json: bool) -> Result<()> {
-    let client = BacklogClient::from_config()?;
-    list_with(json, &client)
+pub struct ProjectListArgs {
+    pub json: bool,
 }
 
-pub fn list_with(json: bool, api: &dyn BacklogApi) -> Result<()> {
+pub fn list(args: &ProjectListArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    list_with(args, &client)
+}
+
+pub fn list_with(args: &ProjectListArgs, api: &dyn BacklogApi) -> Result<()> {
     let projects = api.get_projects()?;
-    if json {
+    if args.json {
         println!(
             "{}",
             serde_json::to_string_pretty(&projects).context("Failed to serialize JSON")?
@@ -204,7 +208,7 @@ mod tests {
         let api = MockApi {
             projects: Some(vec![sample_project()]),
         };
-        assert!(list_with(false, &api).is_ok());
+        assert!(list_with(&ProjectListArgs { json: false }, &api).is_ok());
     }
 
     #[test]
@@ -212,13 +216,13 @@ mod tests {
         let api = MockApi {
             projects: Some(vec![sample_project()]),
         };
-        assert!(list_with(true, &api).is_ok());
+        assert!(list_with(&ProjectListArgs { json: true }, &api).is_ok());
     }
 
     #[test]
     fn list_with_propagates_api_error() {
         let api = MockApi { projects: None };
-        let err = list_with(false, &api).unwrap_err();
+        let err = list_with(&ProjectListArgs { json: false }, &api).unwrap_err();
         assert!(err.to_string().contains("no projects"));
     }
 

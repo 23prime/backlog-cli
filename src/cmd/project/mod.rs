@@ -8,7 +8,7 @@ pub mod status;
 pub mod user;
 pub mod version;
 
-pub use activities::activities;
-pub use disk_usage::disk_usage;
-pub use list::list;
-pub use show::show;
+pub use activities::{ProjectActivitiesArgs, activities};
+pub use disk_usage::{ProjectDiskUsageArgs, disk_usage};
+pub use list::{ProjectListArgs, list};
+pub use show::{ProjectShowArgs, show};

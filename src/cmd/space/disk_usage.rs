@@ -3,14 +3,18 @@ use anyhow::{Context, Result};
 
 use crate::api::{BacklogApi, BacklogClient, disk_usage::DiskUsage};
 
-pub fn disk_usage(json: bool) -> Result<()> {
-    let client = BacklogClient::from_config()?;
-    disk_usage_with(json, &client)
+pub struct SpaceDiskUsageArgs {
+    pub json: bool,
 }
 
-pub fn disk_usage_with(json: bool, api: &dyn BacklogApi) -> Result<()> {
+pub fn disk_usage(args: &SpaceDiskUsageArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    disk_usage_with(args, &client)
+}
+
+pub fn disk_usage_with(args: &SpaceDiskUsageArgs, api: &dyn BacklogApi) -> Result<()> {
     let usage = api.get_space_disk_usage()?;
-    if json {
+    if args.json {
         println!(
             "{}",
             serde_json::to_string_pretty(&usage).context("Failed to serialize JSON")?
@@ -204,7 +208,7 @@ mod tests {
         let api = MockApi {
             disk_usage: Some(sample_disk_usage()),
         };
-        assert!(disk_usage_with(false, &api).is_ok());
+        assert!(disk_usage_with(&SpaceDiskUsageArgs { json: false }, &api).is_ok());
     }
 
     #[test]
@@ -212,13 +216,13 @@ mod tests {
         let api = MockApi {
             disk_usage: Some(sample_disk_usage()),
         };
-        assert!(disk_usage_with(true, &api).is_ok());
+        assert!(disk_usage_with(&SpaceDiskUsageArgs { json: true }, &api).is_ok());
     }
 
     #[test]
     fn disk_usage_with_propagates_api_error() {
         let api = MockApi { disk_usage: None };
-        let err = disk_usage_with(false, &api).unwrap_err();
+        let err = disk_usage_with(&SpaceDiskUsageArgs { json: false }, &api).unwrap_err();
         assert!(err.to_string().contains("no disk usage"));
     }
 
