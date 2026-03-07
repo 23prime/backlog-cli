@@ -2,6 +2,7 @@ use anyhow::{Context, Result};
 
 use crate::api::{
     BacklogApi, BacklogClient, activity::Activity, disk_usage::DiskUsage, space::Space,
+    space_notification::SpaceNotification,
 };
 
 pub fn show(json: bool) -> Result<()> {
@@ -86,6 +87,29 @@ fn format_disk_usage_text(usage: &DiskUsage) -> String {
     )
 }
 
+pub fn notification(json: bool) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    notification_with(json, &client)
+}
+
+pub fn notification_with(json: bool, api: &dyn BacklogApi) -> Result<()> {
+    let n = api.get_space_notification()?;
+    if json {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&n).context("Failed to serialize JSON")?
+        );
+    } else {
+        println!("{}", format_notification_text(&n));
+    }
+    Ok(())
+}
+
+fn format_notification_text(n: &SpaceNotification) -> String {
+    let updated = n.updated.as_deref().unwrap_or("(not set)");
+    format!("Updated: {}\n\n{}", updated, n.content)
+}
+
 fn format_space_text(space: &Space) -> String {
     format!(
         "Space key:  {}\nName:       {}\nLanguage:   {}\nTimezone:   {}\nFormatting: {}\nCreated:    {}\nUpdated:    {}",
@@ -110,6 +134,7 @@ mod tests {
         space: Option<Space>,
         activities: Option<Vec<Activity>>,
         disk_usage: Option<DiskUsage>,
+        notification: Option<SpaceNotification>,
     }
 
     impl BacklogApi for MockApi {
@@ -131,6 +156,12 @@ mod tests {
             self.disk_usage
                 .clone()
                 .ok_or_else(|| anyhow!("no disk usage"))
+        }
+
+        fn get_space_notification(&self) -> Result<SpaceNotification> {
+            self.notification
+                .clone()
+                .ok_or_else(|| anyhow!("no notification"))
         }
     }
 
@@ -189,6 +220,7 @@ mod tests {
             space: Some(sample_space()),
             activities: None,
             disk_usage: None,
+            notification: None,
         };
         assert!(show_with(false, &api).is_ok());
     }
@@ -199,6 +231,7 @@ mod tests {
             space: Some(sample_space()),
             activities: None,
             disk_usage: None,
+            notification: None,
         };
         assert!(show_with(true, &api).is_ok());
     }
@@ -209,6 +242,7 @@ mod tests {
             space: None,
             activities: None,
             disk_usage: None,
+            notification: None,
         };
         let err = show_with(false, &api).unwrap_err();
         assert!(err.to_string().contains("no space"));
@@ -230,6 +264,7 @@ mod tests {
             space: None,
             activities: Some(vec![sample_activity()]),
             disk_usage: None,
+            notification: None,
         };
         assert!(activities_with(false, &api).is_ok());
     }
@@ -240,6 +275,7 @@ mod tests {
             space: None,
             activities: Some(vec![sample_activity()]),
             disk_usage: None,
+            notification: None,
         };
         assert!(activities_with(true, &api).is_ok());
     }
@@ -250,6 +286,7 @@ mod tests {
             space: None,
             activities: None,
             disk_usage: None,
+            notification: None,
         };
         let err = activities_with(false, &api).unwrap_err();
         assert!(err.to_string().contains("no activities"));
@@ -284,6 +321,7 @@ mod tests {
             space: None,
             activities: None,
             disk_usage: Some(sample_disk_usage()),
+            notification: None,
         };
         assert!(disk_usage_with(false, &api).is_ok());
     }
@@ -294,6 +332,7 @@ mod tests {
             space: None,
             activities: None,
             disk_usage: Some(sample_disk_usage()),
+            notification: None,
         };
         assert!(disk_usage_with(true, &api).is_ok());
     }
@@ -304,9 +343,69 @@ mod tests {
             space: None,
             activities: None,
             disk_usage: None,
+            notification: None,
         };
         let err = disk_usage_with(false, &api).unwrap_err();
         assert!(err.to_string().contains("no disk usage"));
+    }
+
+    fn sample_notification() -> SpaceNotification {
+        SpaceNotification {
+            content: "Scheduled maintenance on 2024-07-01.".to_string(),
+            updated: Some("2024-06-18T07:55:37Z".to_string()),
+        }
+    }
+
+    #[test]
+    fn notification_with_text_output_succeeds() {
+        let api = MockApi {
+            space: None,
+            activities: None,
+            disk_usage: None,
+            notification: Some(sample_notification()),
+        };
+        assert!(notification_with(false, &api).is_ok());
+    }
+
+    #[test]
+    fn notification_with_json_output_succeeds() {
+        let api = MockApi {
+            space: None,
+            activities: None,
+            disk_usage: None,
+            notification: Some(sample_notification()),
+        };
+        assert!(notification_with(true, &api).is_ok());
+    }
+
+    #[test]
+    fn notification_with_propagates_api_error() {
+        let api = MockApi {
+            space: None,
+            activities: None,
+            disk_usage: None,
+            notification: None,
+        };
+        let err = notification_with(false, &api).unwrap_err();
+        assert!(err.to_string().contains("no notification"));
+    }
+
+    #[test]
+    fn format_notification_text_contains_fields() {
+        let text = format_notification_text(&sample_notification());
+        assert!(text.contains("2024-06-18T07:55:37Z"));
+        assert!(text.contains("Scheduled maintenance on 2024-07-01."));
+    }
+
+    #[test]
+    fn format_notification_text_with_null_updated() {
+        let n = SpaceNotification {
+            content: "Hello".to_string(),
+            updated: None,
+        };
+        let text = format_notification_text(&n);
+        assert!(text.contains("(not set)"));
+        assert!(text.contains("Hello"));
     }
 
     #[test]

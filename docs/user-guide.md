@@ -189,7 +189,7 @@ Commands that target a specific project accept a `--project <key>` flag.
 | `bl space` | `GET /api/v2/space` | ✅ Implemented |
 | `bl space activities` | `GET /api/v2/space/activities` | ✅ Implemented |
 | `bl space disk-usage` | `GET /api/v2/space/diskUsage` | ✅ Implemented |
-| `bl space notification` | `GET /api/v2/space/notification` | Planned |
+| `bl space notification` | `GET /api/v2/space/notification` | ✅ Implemented |
 
 ### Projects
 

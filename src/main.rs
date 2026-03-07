@@ -44,6 +44,12 @@ enum SpaceCommands {
         #[arg(long)]
         json: bool,
     },
+    /// Show space notification
+    Notification {
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -78,6 +84,9 @@ fn main() -> Result<()> {
             }
             Some(SpaceCommands::DiskUsage { json: sub_json }) => {
                 cmd::space::disk_usage(json || sub_json)
+            }
+            Some(SpaceCommands::Notification { json: sub_json }) => {
+                cmd::space::notification(json || sub_json)
             }
         },
     }

@@ -4,11 +4,13 @@ use reqwest::blocking::Client;
 pub mod activity;
 pub mod disk_usage;
 pub mod space;
+pub mod space_notification;
 pub mod user;
 
 use activity::Activity;
 use disk_usage::DiskUsage;
 use space::Space;
+use space_notification::SpaceNotification;
 use user::User;
 
 pub trait BacklogApi {
@@ -16,6 +18,7 @@ pub trait BacklogApi {
     fn get_myself(&self) -> Result<User>;
     fn get_space_activities(&self) -> Result<Vec<Activity>>;
     fn get_space_disk_usage(&self) -> Result<DiskUsage>;
+    fn get_space_notification(&self) -> Result<SpaceNotification>;
 }
 
 impl BacklogApi for BacklogClient {
@@ -33,6 +36,10 @@ impl BacklogApi for BacklogClient {
 
     fn get_space_disk_usage(&self) -> Result<DiskUsage> {
         self.get_space_disk_usage()
+    }
+
+    fn get_space_notification(&self) -> Result<SpaceNotification> {
+        self.get_space_notification()
     }
 }
 
