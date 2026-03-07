@@ -34,8 +34,13 @@ pub struct ActivityUser {
 impl BacklogClient {
     pub fn get_space_activities(&self) -> Result<Vec<Activity>> {
         let value = self.get("/space/activities")?;
-        serde_json::from_value(value)
-            .map_err(|e| anyhow::anyhow!("Failed to deserialize activities response: {}", e))
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize activities response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
     }
 }
 
