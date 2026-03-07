@@ -107,7 +107,12 @@ pub fn notification_with(json: bool, api: &dyn BacklogApi) -> Result<()> {
 
 fn format_notification_text(n: &SpaceNotification) -> String {
     let updated = n.updated.as_deref().unwrap_or("(not set)");
-    format!("Updated: {}\n\n{}", updated, n.content)
+    let content = if n.content.trim().is_empty() {
+        "(no notification set)"
+    } else {
+        n.content.as_str()
+    };
+    format!("Updated: {}\n\n{}", updated, content)
 }
 
 fn format_space_text(space: &Space) -> String {
@@ -406,6 +411,16 @@ mod tests {
         let text = format_notification_text(&n);
         assert!(text.contains("(not set)"));
         assert!(text.contains("Hello"));
+    }
+
+    #[test]
+    fn format_notification_text_with_empty_content() {
+        let n = SpaceNotification {
+            content: "".to_string(),
+            updated: None,
+        };
+        let text = format_notification_text(&n);
+        assert!(text.contains("(no notification set)"));
     }
 
     #[test]
