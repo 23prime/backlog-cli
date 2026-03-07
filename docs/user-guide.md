@@ -91,8 +91,9 @@ To also remove stored credentials and configuration files, pass `-Purge`:
 & ([scriptblock]::Create((irm https://raw.githubusercontent.com/23prime/backlog-cli/latest/uninstall.ps1))) -Purge
 ```
 
-> **Note:** `--purge` / `-Purge` runs `bl auth logout` before removing the binary,
-> which clears the API key from the system keyring and deletes the configuration directory.
+> **Note:** With `--purge` / `-Purge`, the uninstall script first runs `bl auth logout`,
+> which clears the API key from the system keyring and resets authentication in the config file,
+> and then deletes the Backlog CLI configuration directory along with the binary.
 > Without this flag, only the binary is removed and credentials are left intact
 > (useful if you plan to reinstall later).
 
