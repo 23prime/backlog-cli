@@ -74,7 +74,7 @@ pub fn disk_usage_with(json: bool, api: &dyn BacklogApi) -> Result<()> {
 
 fn format_disk_usage_text(usage: &DiskUsage) -> String {
     format!(
-        "Capacity:   {} bytes\nIssue:      {} bytes\nWiki:       {} bytes\nFile:       {} bytes\nSubversion: {} bytes\nGit:        {} bytes\nGit LFS:    {} bytes",
+        "Capacity:   {} bytes\nIssue:      {} bytes\nWiki:       {} bytes\nFile:       {} bytes\nSubversion: {} bytes\nGit:        {} bytes\nGit LFS:    {} bytes\nDetails:    {} project(s) — use --json for breakdown",
         usage.capacity,
         usage.issue,
         usage.wiki,
@@ -82,6 +82,7 @@ fn format_disk_usage_text(usage: &DiskUsage) -> String {
         usage.subversion,
         usage.git,
         usage.git_lfs,
+        usage.details.len(),
     )
 }
 
@@ -255,6 +256,7 @@ mod tests {
     }
 
     fn sample_disk_usage() -> DiskUsage {
+        use crate::api::disk_usage::DiskUsageDetail;
         DiskUsage {
             capacity: 5242880,
             issue: 2048,
@@ -263,7 +265,16 @@ mod tests {
             subversion: 64,
             git: 256,
             git_lfs: 128,
-            details: vec![],
+            details: vec![DiskUsageDetail {
+                project_id: 1,
+                issue: 1024,
+                wiki: 256,
+                document: 0,
+                file: 512,
+                subversion: 32,
+                git: 128,
+                git_lfs: 64,
+            }],
         }
     }
 
@@ -304,5 +315,7 @@ mod tests {
         assert!(text.contains("5242880"));
         assert!(text.contains("2048"));
         assert!(text.contains("128"));
+        assert!(text.contains("1 project(s)"));
+        assert!(text.contains("--json"));
     }
 }

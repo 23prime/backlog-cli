@@ -148,6 +148,7 @@ File:       1024 bytes
 Subversion: 64 bytes
 Git:        256 bytes
 Git LFS:    128 bytes
+Details:    3 project(s) — use --json for breakdown
 ```
 
 ## Command coverage
