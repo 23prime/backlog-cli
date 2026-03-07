@@ -131,6 +131,7 @@ Example output:
 ### `bl space disk-usage`
 
 Show disk usage of your Backlog space.
+Requires Space Administrator privileges. Non-admin users will receive `403 Forbidden`.
 
 ```bash
 bl space disk-usage
