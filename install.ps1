@@ -16,12 +16,10 @@ try {
     $release = Invoke-RestMethod "https://api.github.com/repos/$Repo/releases/latest"
 } catch {
     Write-Error "Failed to fetch release info from GitHub API: $_"
-    exit 1
 }
 $tag = $release.tag_name
 if (-not $tag) {
     Write-Error 'Failed to fetch latest release tag.'
-    exit 1
 }
 Write-Host "Latest version: $tag"
 
@@ -47,7 +45,6 @@ try {
     $actual   = (Get-FileHash $zipPath -Algorithm SHA256).Hash.ToLower()
     if ($expected -ne $actual) {
         Write-Error "Checksum mismatch!`n  expected: $expected`n  actual:   $actual"
-        exit 1
     }
 
     # Extract and install
@@ -61,11 +58,13 @@ try {
     Write-Host "Installed bl to $InstallDir\bl.exe"
 
     # PATH hint
-    $userPath = [System.Environment]::GetEnvironmentVariable('PATH', 'User')
-    if ($userPath -notlike "*$InstallDir*") {
+    $effectivePathEntries = ($env:PATH -split ';') | Where-Object { $_ }
+    if ($effectivePathEntries -notcontains $InstallDir) {
+        $userPath = [System.Environment]::GetEnvironmentVariable('PATH', 'User')
+        $newUserPath = if ([string]::IsNullOrWhiteSpace($userPath)) { $InstallDir } else { "$InstallDir;$userPath" }
         Write-Host ""
         Write-Host "Note: $InstallDir is not in your PATH. Add it with:"
-        Write-Host "  [System.Environment]::SetEnvironmentVariable('PATH', `"$InstallDir;`$env:PATH`", 'User')"
+        Write-Host "  [System.Environment]::SetEnvironmentVariable('PATH', `"$newUserPath`", 'User')"
     }
 } finally {
     Remove-Item -Recurse -Force $tmpDir -ErrorAction SilentlyContinue
