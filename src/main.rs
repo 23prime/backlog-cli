@@ -65,6 +65,14 @@ enum ProjectCommands {
         #[arg(long)]
         json: bool,
     },
+    /// Show a project
+    Show {
+        /// Project key (e.g. TEST)
+        key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -94,6 +102,7 @@ fn main() -> Result<()> {
         },
         Commands::Project { action } => match action {
             ProjectCommands::List { json } => cmd::project::list(json),
+            ProjectCommands::Show { key, json } => cmd::project::show(&key, json),
         },
         Commands::Space { action, json } => match action {
             None => cmd::space::show(json),

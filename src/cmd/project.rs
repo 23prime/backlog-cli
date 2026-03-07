@@ -2,6 +2,31 @@ use anyhow::{Context, Result};
 
 use crate::api::{BacklogApi, BacklogClient, project::Project};
 
+pub fn show(key: &str, json: bool) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    show_with(key, json, &client)
+}
+
+pub fn show_with(key: &str, json: bool, api: &dyn BacklogApi) -> Result<()> {
+    let project = api.get_project(key)?;
+    if json {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&project).context("Failed to serialize JSON")?
+        );
+    } else {
+        println!("{}", format_project_detail(&project));
+    }
+    Ok(())
+}
+
+fn format_project_detail(p: &Project) -> String {
+    format!(
+        "ID:         {}\nKey:        {}\nName:       {}\nFormatting: {}\nArchived:   {}",
+        p.id, p.project_key, p.name, p.text_formatting_rule, p.archived,
+    )
+}
+
 pub fn list(json: bool) -> Result<()> {
     let client = BacklogClient::from_config()?;
     list_with(json, &client)
@@ -38,6 +63,7 @@ mod tests {
     use std::collections::BTreeMap;
 
     struct MockApi {
+        project: Option<Project>,
         projects: Option<Vec<Project>>,
     }
 
@@ -65,6 +91,10 @@ mod tests {
         fn get_projects(&self) -> anyhow::Result<Vec<Project>> {
             self.projects.clone().ok_or_else(|| anyhow!("no projects"))
         }
+
+        fn get_project(&self, _key: &str) -> anyhow::Result<Project> {
+            self.project.clone().ok_or_else(|| anyhow!("no project"))
+        }
     }
 
     fn sample_project() -> Project {
@@ -89,8 +119,46 @@ mod tests {
     }
 
     #[test]
+    fn show_with_text_output_succeeds() {
+        let api = MockApi {
+            project: Some(sample_project()),
+            projects: None,
+        };
+        assert!(show_with("TEST", false, &api).is_ok());
+    }
+
+    #[test]
+    fn show_with_json_output_succeeds() {
+        let api = MockApi {
+            project: Some(sample_project()),
+            projects: None,
+        };
+        assert!(show_with("TEST", true, &api).is_ok());
+    }
+
+    #[test]
+    fn show_with_propagates_api_error() {
+        let api = MockApi {
+            project: None,
+            projects: None,
+        };
+        let err = show_with("MISSING", false, &api).unwrap_err();
+        assert!(err.to_string().contains("no project"));
+    }
+
+    #[test]
+    fn format_project_detail_contains_fields() {
+        let text = format_project_detail(&sample_project());
+        assert!(text.contains("TEST"));
+        assert!(text.contains("Test Project"));
+        assert!(text.contains("markdown"));
+        assert!(text.contains("false"));
+    }
+
+    #[test]
     fn list_with_text_output_succeeds() {
         let api = MockApi {
+            project: None,
             projects: Some(vec![sample_project()]),
         };
         assert!(list_with(false, &api).is_ok());
@@ -99,6 +167,7 @@ mod tests {
     #[test]
     fn list_with_json_output_succeeds() {
         let api = MockApi {
+            project: None,
             projects: Some(vec![sample_project()]),
         };
         assert!(list_with(true, &api).is_ok());
@@ -106,7 +175,10 @@ mod tests {
 
     #[test]
     fn list_with_propagates_api_error() {
-        let api = MockApi { projects: None };
+        let api = MockApi {
+            project: None,
+            projects: None,
+        };
         let err = list_with(false, &api).unwrap_err();
         assert!(err.to_string().contains("no projects"));
     }
