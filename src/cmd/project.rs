@@ -54,6 +54,11 @@ pub fn list_with(json: bool, api: &dyn BacklogApi) -> Result<()> {
     Ok(())
 }
 
+fn format_project_row(p: &Project) -> String {
+    let archived = if p.archived { " [archived]" } else { "" };
+    format!("[{}] {}{}", p.project_key, p.name, archived)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -63,11 +68,6 @@ mod tests {
     };
     use anyhow::anyhow;
     use std::collections::BTreeMap;
-
-    fn format_project_text(p: &Project) -> String {
-        let archived = if p.archived { " [archived]" } else { "" };
-        format!("[{}] {}{}", p.project_key, p.name, archived)
-    }
 
     struct MockApi {
         project: Option<Project>,
@@ -191,16 +191,16 @@ mod tests {
     }
 
     #[test]
-    fn format_project_text_active() {
-        let text = format_project_text(&sample_project());
+    fn format_project_row_active() {
+        let text = format_project_row(&sample_project());
         assert!(text.contains("[TEST]"));
         assert!(text.contains("Test Project"));
         assert!(!text.contains("[archived]"));
     }
 
     #[test]
-    fn format_project_text_archived() {
-        let text = format_project_text(&sample_archived_project());
+    fn format_project_row_archived() {
+        let text = format_project_row(&sample_archived_project());
         assert!(text.contains("[archived]"));
     }
 }
