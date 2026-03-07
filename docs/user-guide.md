@@ -19,7 +19,7 @@
 
 ### Using the install script (Linux, macOS)
 
-Requires `curl`, `tar`, and `sha256sum` (standard on Linux; on macOS install via `brew install coreutils`).
+Requires `curl` and `tar`. The script automatically selects a SHA-256 tool: `sha256sum` (standard on Linux) or `shasum` (built-in on macOS).
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.sh | sh

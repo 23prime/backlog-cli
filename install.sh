@@ -7,12 +7,22 @@ INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
 ASSET_NAME="bl-x86_64-unknown-linux-gnu.tar.gz"
 
 # Check required commands
-for cmd in curl tar sha256sum; do
+for cmd in curl tar; do
   if ! command -v "$cmd" >/dev/null 2>&1; then
     printf "[ERROR] Required command '%s' not found. Please install it.\n" "$cmd" >&2
     exit 1
   fi
 done
+
+# Detect SHA-256 tool
+if command -v sha256sum >/dev/null 2>&1; then
+  SHA256_CMD="sha256sum"
+elif command -v shasum >/dev/null 2>&1; then
+  SHA256_CMD="shasum -a 256"
+else
+  printf "[ERROR] No SHA-256 tool found. Install sha256sum or shasum.\n" >&2
+  exit 1
+fi
 
 # Get latest version from GitHub API
 printf "Fetching latest release...\n"
@@ -41,7 +51,7 @@ curl -fsSL "$url" -o "${tmpdir}/${ASSET_NAME}"
 curl -fsSL "$checksum_url" -o "${tmpdir}/${ASSET_NAME}.sha256"
 
 printf "Verifying checksum...\n"
-(cd "$tmpdir" && sha256sum -c "${ASSET_NAME}.sha256") || {
+(cd "$tmpdir" && $SHA256_CMD -c "${ASSET_NAME}.sha256") || {
   printf "[ERROR] Checksum verification failed\n" >&2
   exit 1
 }
