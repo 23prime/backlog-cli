@@ -67,8 +67,8 @@ enum ProjectCommands {
     },
     /// Show a project
     Show {
-        /// Project key (e.g. TEST)
-        key: String,
+        /// Project ID or key (e.g. TEST or 123)
+        id_or_key: String,
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -102,7 +102,7 @@ fn main() -> Result<()> {
         },
         Commands::Project { action } => match action {
             ProjectCommands::List { json } => cmd::project::list(json),
-            ProjectCommands::Show { key, json } => cmd::project::show(&key, json),
+            ProjectCommands::Show { id_or_key, json } => cmd::project::show(&id_or_key, json),
         },
         Commands::Space { action, json } => match action {
             None => cmd::space::show(json),
