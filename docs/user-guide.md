@@ -225,13 +225,23 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 
 ## Configuration
 
+### Linux / macOS
+
 | Location | Contents |
 | --- | --- |
 | `~/.config/bl/config.toml` | Space key (non-sensitive metadata) |
 | System keyring | API key (primary; GNOME Keyring / Keychain) |
 | `~/.config/bl/credentials.toml` | API key fallback (mode 0600, used when keyring is unavailable) |
 
-### `~/.config/bl/config.toml`
+### Windows
+
+| Location | Contents |
+| --- | --- |
+| `%APPDATA%\bl\config.toml` | Space key (non-sensitive metadata) |
+| Windows Credential Manager | API key (primary) |
+| `%APPDATA%\bl\credentials.toml` | API key fallback (used when Credential Manager is unavailable) |
+
+### Config file format
 
 ```toml
 [auth]
@@ -258,6 +268,9 @@ Run `bl auth login` to re-enter your credentials.
 On Linux, the keyring requires a running Secret Service daemon (GNOME Keyring or KWallet).
 If no daemon is available (e.g. headless or SSH environments), `bl` automatically falls back
 to storing the API key in `~/.config/bl/credentials.toml` with mode 0600.
+
+On macOS, the system Keychain is used. On Windows, the Windows Credential Manager is used.
+If the Credential Manager is unavailable, `bl` falls back to `%APPDATA%\bl\credentials.toml`.
 
 The `bl auth status` output shows which backend is in use:
 
