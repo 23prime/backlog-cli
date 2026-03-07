@@ -410,13 +410,13 @@ Commands that target a specific project accept a `--project <key>` flag.
 | --- | --- | --- |
 | `bl project list` | `GET /api/v2/projects` | ✅ Implemented |
 | `bl project show <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}` | ✅ Implemented |
-| `bl project activities <key>` | `GET /api/v2/projects/{projectIdOrKey}/activities` | ✅ Implemented |
-| `bl project disk-usage <key>` | `GET /api/v2/projects/{projectIdOrKey}/diskUsage` | ✅ Implemented |
-| `bl project user list <key>` | `GET /api/v2/projects/{projectIdOrKey}/users` | ✅ Implemented |
-| `bl project status list <key>` | `GET /api/v2/projects/{projectIdOrKey}/statuses` | ✅ Implemented |
-| `bl project issue-type list <key>` | `GET /api/v2/projects/{projectIdOrKey}/issueTypes` | ✅ Implemented |
-| `bl project category list <key>` | `GET /api/v2/projects/{projectIdOrKey}/categories` | ✅ Implemented |
-| `bl project version list <key>` | `GET /api/v2/projects/{projectIdOrKey}/versions` | ✅ Implemented |
+| `bl project activities <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/activities` | ✅ Implemented |
+| `bl project disk-usage <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/diskUsage` | ✅ Implemented |
+| `bl project user list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/users` | ✅ Implemented |
+| `bl project status list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/statuses` | ✅ Implemented |
+| `bl project issue-type list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/issueTypes` | ✅ Implemented |
+| `bl project category list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/categories` | ✅ Implemented |
+| `bl project version list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/versions` | ✅ Implemented |
 
 ### Issues
 

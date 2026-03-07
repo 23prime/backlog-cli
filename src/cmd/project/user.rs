@@ -24,8 +24,10 @@ pub fn list_with(key: &str, json: bool, api: &dyn BacklogApi) -> Result<()> {
 }
 
 fn format_user_row(u: &ProjectUser) -> String {
-    let id = u.user_id.as_deref().unwrap_or("-");
-    format!("[{}] {}", id, u.name)
+    match u.user_id.as_deref() {
+        Some(user_id) if !user_id.is_empty() => format!("[{}] {}", user_id, u.name),
+        _ => format!("[{}] {}", u.id, u.name),
+    }
 }
 
 #[cfg(test)]
@@ -128,7 +130,7 @@ mod tests {
         let mut u = sample_user();
         u.user_id = None;
         let text = format_user_row(&u);
-        assert!(text.contains("[-]"));
+        assert!(text.contains("[1]"));
         assert!(text.contains("John Doe"));
     }
 

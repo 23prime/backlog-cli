@@ -471,4 +471,26 @@ mod tests {
         assert_eq!(versions[0].name, "Version 0.1");
         assert!(!versions[0].archived);
     }
+
+    #[test]
+    fn get_project_versions_handles_null_description() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/projects/TEST/versions");
+            then.status(200).json_body(json!([{
+                "id": 3,
+                "projectId": 1,
+                "name": "Version 0.1",
+                "description": null,
+                "startDate": null,
+                "releaseDueDate": null,
+                "archived": false,
+                "displayOrder": 0
+            }]));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let versions = client.get_project_versions("TEST").unwrap();
+        assert!(versions[0].description.is_none());
+    }
 }
