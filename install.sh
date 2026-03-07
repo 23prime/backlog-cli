@@ -4,7 +4,33 @@ set -eu
 
 REPO="23prime/backlog-cli"
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
-ASSET_NAME="bl-x86_64-unknown-linux-gnu.tar.gz"
+
+# Detect OS and architecture
+OS=$(uname -s)
+ARCH=$(uname -m)
+
+case "$OS" in
+  Linux)
+    case "$ARCH" in
+      x86_64)  TARGET="x86_64-unknown-linux-gnu" ;;
+      aarch64) TARGET="aarch64-unknown-linux-gnu" ;;
+      *) printf "[ERROR] Unsupported Linux architecture: %s\n" "$ARCH" >&2; exit 1 ;;
+    esac
+    ;;
+  Darwin)
+    case "$ARCH" in
+      x86_64)  TARGET="x86_64-apple-darwin" ;;
+      arm64)   TARGET="aarch64-apple-darwin" ;;
+      *) printf "[ERROR] Unsupported macOS architecture: %s\n" "$ARCH" >&2; exit 1 ;;
+    esac
+    ;;
+  *)
+    printf "[ERROR] Unsupported OS: %s\n" "$OS" >&2
+    exit 1
+    ;;
+esac
+
+ASSET_NAME="bl-${TARGET}.tar.gz"
 
 # Check required commands
 for cmd in curl tar; do
