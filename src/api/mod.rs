@@ -10,7 +10,10 @@ pub mod user;
 
 use activity::Activity;
 use disk_usage::DiskUsage;
-use project::Project;
+use project::{
+    Project, ProjectCategory, ProjectDiskUsage, ProjectIssueType, ProjectStatus, ProjectUser,
+    ProjectVersion,
+};
 use space::Space;
 use space_notification::SpaceNotification;
 use user::User;
@@ -23,6 +26,13 @@ pub trait BacklogApi {
     fn get_space_notification(&self) -> Result<SpaceNotification>;
     fn get_projects(&self) -> Result<Vec<Project>>;
     fn get_project(&self, key: &str) -> Result<Project>;
+    fn get_project_activities(&self, key: &str) -> Result<Vec<Activity>>;
+    fn get_project_disk_usage(&self, key: &str) -> Result<ProjectDiskUsage>;
+    fn get_project_users(&self, key: &str) -> Result<Vec<ProjectUser>>;
+    fn get_project_statuses(&self, key: &str) -> Result<Vec<ProjectStatus>>;
+    fn get_project_issue_types(&self, key: &str) -> Result<Vec<ProjectIssueType>>;
+    fn get_project_categories(&self, key: &str) -> Result<Vec<ProjectCategory>>;
+    fn get_project_versions(&self, key: &str) -> Result<Vec<ProjectVersion>>;
 }
 
 impl BacklogApi for BacklogClient {
@@ -52,6 +62,34 @@ impl BacklogApi for BacklogClient {
 
     fn get_project(&self, key: &str) -> Result<Project> {
         self.get_project(key)
+    }
+
+    fn get_project_activities(&self, key: &str) -> Result<Vec<Activity>> {
+        self.get_project_activities(key)
+    }
+
+    fn get_project_disk_usage(&self, key: &str) -> Result<ProjectDiskUsage> {
+        self.get_project_disk_usage(key)
+    }
+
+    fn get_project_users(&self, key: &str) -> Result<Vec<ProjectUser>> {
+        self.get_project_users(key)
+    }
+
+    fn get_project_statuses(&self, key: &str) -> Result<Vec<ProjectStatus>> {
+        self.get_project_statuses(key)
+    }
+
+    fn get_project_issue_types(&self, key: &str) -> Result<Vec<ProjectIssueType>> {
+        self.get_project_issue_types(key)
+    }
+
+    fn get_project_categories(&self, key: &str) -> Result<Vec<ProjectCategory>> {
+        self.get_project_categories(key)
+    }
+
+    fn get_project_versions(&self, key: &str) -> Result<Vec<ProjectVersion>> {
+        self.get_project_versions(key)
     }
 }
 

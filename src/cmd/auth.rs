@@ -190,6 +190,48 @@ mod tests {
         fn get_project(&self, _key: &str) -> anyhow::Result<crate::api::project::Project> {
             unimplemented!()
         }
+        fn get_project_activities(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
+            unimplemented!()
+        }
+        fn get_project_disk_usage(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<crate::api::project::ProjectDiskUsage> {
+            unimplemented!()
+        }
+        fn get_project_users(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::project::ProjectUser>> {
+            unimplemented!()
+        }
+        fn get_project_statuses(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::project::ProjectStatus>> {
+            unimplemented!()
+        }
+        fn get_project_issue_types(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::project::ProjectIssueType>> {
+            unimplemented!()
+        }
+        fn get_project_categories(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::project::ProjectCategory>> {
+            unimplemented!()
+        }
+        fn get_project_versions(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::project::ProjectVersion>> {
+            unimplemented!()
+        }
     }
 
     fn sample_user() -> User {

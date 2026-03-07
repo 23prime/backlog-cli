@@ -1,41 +1,39 @@
 use anstream::println;
 use anyhow::{Context, Result};
 
-use crate::api::{BacklogApi, BacklogClient, project::Project};
+use crate::api::{BacklogApi, BacklogClient, project::ProjectIssueType};
 
-pub fn show(key: &str, json: bool) -> Result<()> {
+pub fn list(key: &str, json: bool) -> Result<()> {
     let client = BacklogClient::from_config()?;
-    show_with(key, json, &client)
+    list_with(key, json, &client)
 }
 
-pub fn show_with(key: &str, json: bool, api: &dyn BacklogApi) -> Result<()> {
-    let project = api.get_project(key)?;
+pub fn list_with(key: &str, json: bool, api: &dyn BacklogApi) -> Result<()> {
+    let issue_types = api.get_project_issue_types(key)?;
     if json {
         println!(
             "{}",
-            serde_json::to_string_pretty(&project).context("Failed to serialize JSON")?
+            serde_json::to_string_pretty(&issue_types).context("Failed to serialize JSON")?
         );
     } else {
-        println!("{}", format_project_detail(&project));
+        for t in &issue_types {
+            println!("{}", format_issue_type_row(t));
+        }
     }
     Ok(())
 }
 
-fn format_project_detail(p: &Project) -> String {
-    format!(
-        "ID:         {}\nKey:        {}\nName:       {}\nFormatting: {}\nArchived:   {}",
-        p.id, p.project_key, p.name, p.text_formatting_rule, p.archived,
-    )
+fn format_issue_type_row(t: &ProjectIssueType) -> String {
+    format!("[{}] {}", t.id, t.name)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use anyhow::anyhow;
-    use std::collections::BTreeMap;
 
     struct MockApi {
-        project: Option<Project>,
+        issue_types: Option<Vec<ProjectIssueType>>,
     }
 
     impl crate::api::BacklogApi for MockApi {
@@ -56,11 +54,11 @@ mod tests {
         ) -> anyhow::Result<crate::api::space_notification::SpaceNotification> {
             unimplemented!()
         }
-        fn get_projects(&self) -> anyhow::Result<Vec<Project>> {
+        fn get_projects(&self) -> anyhow::Result<Vec<crate::api::project::Project>> {
             unimplemented!()
         }
-        fn get_project(&self, _key: &str) -> anyhow::Result<Project> {
-            self.project.clone().ok_or_else(|| anyhow!("no project"))
+        fn get_project(&self, _key: &str) -> anyhow::Result<crate::api::project::Project> {
+            unimplemented!()
         }
         fn get_project_activities(
             &self,
@@ -86,11 +84,10 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::project::ProjectStatus>> {
             unimplemented!()
         }
-        fn get_project_issue_types(
-            &self,
-            _key: &str,
-        ) -> anyhow::Result<Vec<crate::api::project::ProjectIssueType>> {
-            unimplemented!()
+        fn get_project_issue_types(&self, _key: &str) -> anyhow::Result<Vec<ProjectIssueType>> {
+            self.issue_types
+                .clone()
+                .ok_or_else(|| anyhow!("no issue types"))
         }
         fn get_project_categories(
             &self,
@@ -106,49 +103,45 @@ mod tests {
         }
     }
 
-    fn sample_project() -> Project {
-        Project {
+    fn sample_issue_type() -> ProjectIssueType {
+        ProjectIssueType {
             id: 1,
-            project_key: "TEST".to_string(),
-            name: "Test Project".to_string(),
-            chart_enabled: false,
-            subtasking_enabled: false,
-            project_leader_can_edit_project_leader: false,
-            text_formatting_rule: "markdown".to_string(),
-            archived: false,
-            extra: BTreeMap::new(),
+            project_id: 10,
+            name: "Bug".to_string(),
+            color: "#e30000".to_string(),
+            display_order: 0,
+            template_summary: None,
+            template_description: None,
         }
     }
 
     #[test]
-    fn show_with_text_output_succeeds() {
+    fn format_issue_type_row_contains_fields() {
+        let text = format_issue_type_row(&sample_issue_type());
+        assert!(text.contains("[1]"));
+        assert!(text.contains("Bug"));
+    }
+
+    #[test]
+    fn list_with_text_output_succeeds() {
         let api = MockApi {
-            project: Some(sample_project()),
+            issue_types: Some(vec![sample_issue_type()]),
         };
-        assert!(show_with("TEST", false, &api).is_ok());
+        assert!(list_with("TEST", false, &api).is_ok());
     }
 
     #[test]
-    fn show_with_json_output_succeeds() {
+    fn list_with_json_output_succeeds() {
         let api = MockApi {
-            project: Some(sample_project()),
+            issue_types: Some(vec![sample_issue_type()]),
         };
-        assert!(show_with("TEST", true, &api).is_ok());
+        assert!(list_with("TEST", true, &api).is_ok());
     }
 
     #[test]
-    fn show_with_propagates_api_error() {
-        let api = MockApi { project: None };
-        let err = show_with("MISSING", false, &api).unwrap_err();
-        assert!(err.to_string().contains("no project"));
-    }
-
-    #[test]
-    fn format_project_detail_contains_fields() {
-        let text = format_project_detail(&sample_project());
-        assert!(text.contains("TEST"));
-        assert!(text.contains("Test Project"));
-        assert!(text.contains("markdown"));
-        assert!(text.contains("false"));
+    fn list_with_propagates_api_error() {
+        let api = MockApi { issue_types: None };
+        let err = list_with("TEST", false, &api).unwrap_err();
+        assert!(err.to_string().contains("no issue types"));
     }
 }

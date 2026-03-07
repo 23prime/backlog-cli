@@ -3,13 +3,13 @@ use anyhow::{Context, Result};
 
 use crate::api::{BacklogApi, BacklogClient, activity::Activity};
 
-pub fn activities(json: bool) -> Result<()> {
+pub fn activities(key: &str, json: bool) -> Result<()> {
     let client = BacklogClient::from_config()?;
-    activities_with(json, &client)
+    activities_with(key, json, &client)
 }
 
-pub fn activities_with(json: bool, api: &dyn BacklogApi) -> Result<()> {
-    let activities = api.get_space_activities()?;
+pub fn activities_with(key: &str, json: bool, api: &dyn BacklogApi) -> Result<()> {
+    let activities = api.get_project_activities(key)?;
     if json {
         println!(
             "{}",
@@ -46,68 +46,68 @@ mod tests {
     }
 
     impl crate::api::BacklogApi for MockApi {
-        fn get_space(&self) -> Result<crate::api::space::Space> {
+        fn get_space(&self) -> anyhow::Result<crate::api::space::Space> {
             unimplemented!()
         }
-        fn get_myself(&self) -> Result<crate::api::user::User> {
+        fn get_myself(&self) -> anyhow::Result<crate::api::user::User> {
             unimplemented!()
         }
-        fn get_space_activities(&self) -> Result<Vec<Activity>> {
-            self.activities
-                .clone()
-                .ok_or_else(|| anyhow!("no activities"))
+        fn get_space_activities(&self) -> anyhow::Result<Vec<Activity>> {
+            unimplemented!()
         }
-        fn get_space_disk_usage(&self) -> Result<crate::api::disk_usage::DiskUsage> {
+        fn get_space_disk_usage(&self) -> anyhow::Result<crate::api::disk_usage::DiskUsage> {
             unimplemented!()
         }
         fn get_space_notification(
             &self,
-        ) -> Result<crate::api::space_notification::SpaceNotification> {
+        ) -> anyhow::Result<crate::api::space_notification::SpaceNotification> {
             unimplemented!()
         }
-        fn get_projects(&self) -> Result<Vec<crate::api::project::Project>> {
+        fn get_projects(&self) -> anyhow::Result<Vec<crate::api::project::Project>> {
             unimplemented!()
         }
-        fn get_project(&self, _key: &str) -> Result<crate::api::project::Project> {
+        fn get_project(&self, _key: &str) -> anyhow::Result<crate::api::project::Project> {
             unimplemented!()
         }
-        fn get_project_activities(
-            &self,
-            _key: &str,
-        ) -> Result<Vec<crate::api::activity::Activity>> {
-            unimplemented!()
+        fn get_project_activities(&self, _key: &str) -> anyhow::Result<Vec<Activity>> {
+            self.activities
+                .clone()
+                .ok_or_else(|| anyhow!("no activities"))
         }
         fn get_project_disk_usage(
             &self,
             _key: &str,
-        ) -> Result<crate::api::project::ProjectDiskUsage> {
+        ) -> anyhow::Result<crate::api::project::ProjectDiskUsage> {
             unimplemented!()
         }
-        fn get_project_users(&self, _key: &str) -> Result<Vec<crate::api::project::ProjectUser>> {
+        fn get_project_users(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::project::ProjectUser>> {
             unimplemented!()
         }
         fn get_project_statuses(
             &self,
             _key: &str,
-        ) -> Result<Vec<crate::api::project::ProjectStatus>> {
+        ) -> anyhow::Result<Vec<crate::api::project::ProjectStatus>> {
             unimplemented!()
         }
         fn get_project_issue_types(
             &self,
             _key: &str,
-        ) -> Result<Vec<crate::api::project::ProjectIssueType>> {
+        ) -> anyhow::Result<Vec<crate::api::project::ProjectIssueType>> {
             unimplemented!()
         }
         fn get_project_categories(
             &self,
             _key: &str,
-        ) -> Result<Vec<crate::api::project::ProjectCategory>> {
+        ) -> anyhow::Result<Vec<crate::api::project::ProjectCategory>> {
             unimplemented!()
         }
         fn get_project_versions(
             &self,
             _key: &str,
-        ) -> Result<Vec<crate::api::project::ProjectVersion>> {
+        ) -> anyhow::Result<Vec<crate::api::project::ProjectVersion>> {
             unimplemented!()
         }
     }
@@ -144,7 +144,7 @@ mod tests {
         let api = MockApi {
             activities: Some(vec![sample_activity()]),
         };
-        assert!(activities_with(false, &api).is_ok());
+        assert!(activities_with("TEST", false, &api).is_ok());
     }
 
     #[test]
@@ -152,13 +152,13 @@ mod tests {
         let api = MockApi {
             activities: Some(vec![sample_activity()]),
         };
-        assert!(activities_with(true, &api).is_ok());
+        assert!(activities_with("TEST", true, &api).is_ok());
     }
 
     #[test]
     fn activities_with_propagates_api_error() {
         let api = MockApi { activities: None };
-        let err = activities_with(false, &api).unwrap_err();
+        let err = activities_with("TEST", false, &api).unwrap_err();
         assert!(err.to_string().contains("no activities"));
     }
 }

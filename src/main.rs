@@ -76,6 +76,107 @@ enum ProjectCommands {
         #[arg(long)]
         json: bool,
     },
+    /// Show recent activities for a project
+    Activities {
+        /// Project ID or key
+        id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Show disk usage for a project
+    DiskUsage {
+        /// Project ID or key
+        id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Manage project users
+    User {
+        #[command(subcommand)]
+        action: ProjectUserCommands,
+    },
+    /// Manage project statuses
+    Status {
+        #[command(subcommand)]
+        action: ProjectStatusCommands,
+    },
+    /// Manage project issue types
+    IssueType {
+        #[command(subcommand)]
+        action: ProjectIssueTypeCommands,
+    },
+    /// Manage project categories
+    Category {
+        #[command(subcommand)]
+        action: ProjectCategoryCommands,
+    },
+    /// Manage project versions
+    Version {
+        #[command(subcommand)]
+        action: ProjectVersionCommands,
+    },
+}
+
+#[derive(Subcommand)]
+enum ProjectUserCommands {
+    /// List users in a project
+    List {
+        /// Project ID or key
+        id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum ProjectStatusCommands {
+    /// List statuses in a project
+    List {
+        /// Project ID or key
+        id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum ProjectIssueTypeCommands {
+    /// List issue types in a project
+    List {
+        /// Project ID or key
+        id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum ProjectCategoryCommands {
+    /// List categories in a project
+    List {
+        /// Project ID or key
+        id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum ProjectVersionCommands {
+    /// List versions in a project
+    List {
+        /// Project ID or key
+        id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -110,6 +211,37 @@ fn main() -> Result<()> {
         Commands::Project { action } => match action {
             ProjectCommands::List { json } => cmd::project::list(json),
             ProjectCommands::Show { id_or_key, json } => cmd::project::show(&id_or_key, json),
+            ProjectCommands::Activities { id_or_key, json } => {
+                cmd::project::activities(&id_or_key, json)
+            }
+            ProjectCommands::DiskUsage { id_or_key, json } => {
+                cmd::project::disk_usage(&id_or_key, json)
+            }
+            ProjectCommands::User { action } => match action {
+                ProjectUserCommands::List { id_or_key, json } => {
+                    cmd::project::user::list(&id_or_key, json)
+                }
+            },
+            ProjectCommands::Status { action } => match action {
+                ProjectStatusCommands::List { id_or_key, json } => {
+                    cmd::project::status::list(&id_or_key, json)
+                }
+            },
+            ProjectCommands::IssueType { action } => match action {
+                ProjectIssueTypeCommands::List { id_or_key, json } => {
+                    cmd::project::issue_type::list(&id_or_key, json)
+                }
+            },
+            ProjectCommands::Category { action } => match action {
+                ProjectCategoryCommands::List { id_or_key, json } => {
+                    cmd::project::category::list(&id_or_key, json)
+                }
+            },
+            ProjectCommands::Version { action } => match action {
+                ProjectVersionCommands::List { id_or_key, json } => {
+                    cmd::project::version::list(&id_or_key, json)
+                }
+            },
         },
         Commands::Space { action, json } => match action {
             None => cmd::space::show(json),
