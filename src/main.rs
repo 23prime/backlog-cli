@@ -28,6 +28,11 @@ enum Commands {
         #[arg(long)]
         json: bool,
     },
+    /// Manage projects
+    Project {
+        #[command(subcommand)]
+        action: ProjectCommands,
+    },
 }
 
 #[derive(Subcommand)]
@@ -46,6 +51,16 @@ enum SpaceCommands {
     },
     /// Show space notification
     Notification {
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum ProjectCommands {
+    /// List projects
+    List {
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -76,6 +91,9 @@ fn main() -> Result<()> {
             AuthCommands::Status { json } => cmd::auth::status(json),
             AuthCommands::Logout => cmd::auth::logout(),
             AuthCommands::Keyring => cmd::auth::check_keyring(),
+        },
+        Commands::Project { action } => match action {
+            ProjectCommands::List { json } => cmd::project::list(json),
         },
         Commands::Space { action, json } => match action {
             None => cmd::space::show(json),

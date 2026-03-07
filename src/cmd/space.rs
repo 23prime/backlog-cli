@@ -168,6 +168,10 @@ mod tests {
                 .clone()
                 .ok_or_else(|| anyhow!("no notification"))
         }
+
+        fn get_projects(&self) -> Result<Vec<crate::api::project::Project>> {
+            unimplemented!()
+        }
     }
 
     fn sample_space() -> Space {

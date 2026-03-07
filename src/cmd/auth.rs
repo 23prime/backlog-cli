@@ -176,6 +176,10 @@ mod tests {
         ) -> anyhow::Result<crate::api::space_notification::SpaceNotification> {
             unimplemented!()
         }
+
+        fn get_projects(&self) -> anyhow::Result<Vec<crate::api::project::Project>> {
+            unimplemented!()
+        }
     }
 
     fn sample_user() -> User {
