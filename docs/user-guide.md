@@ -17,14 +17,15 @@
 
 ## Installation
 
-### Using the install script (Linux, macOS)
-
-Supported platforms:
+### Supported platforms
 
 | OS | Architecture |
 | --- | --- |
 | Linux | x86\_64, aarch64 |
 | macOS | x86\_64 (Intel), arm64 (Apple Silicon) |
+| Windows | x86\_64 |
+
+### Using the install script (Linux, macOS)
 
 Requires `curl` and `tar`. The script auto-detects your OS and architecture, selects the matching binary,
 and verifies its SHA-256 checksum before installing.
@@ -38,6 +39,21 @@ To install to a different location, set the `INSTALL_DIR` environment variable:
 
 ```bash
 INSTALL_DIR=/usr/local/bin curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.sh | sh
+```
+
+### Using the install script (Windows)
+
+Requires PowerShell 5.1 or later (built-in on Windows 10/11).
+
+```powershell
+irm https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.ps1 | iex
+```
+
+The binary is installed to `%USERPROFILE%\.local\bin\bl.exe` by default.
+To install to a different location:
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.ps1))) -InstallDir 'C:\Tools'
 ```
 
 ### Building from source

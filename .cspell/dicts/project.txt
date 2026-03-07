@@ -15,3 +15,5 @@ println
 preemptively
 coreutils
 elif
+msvc
+USERPROFILE
