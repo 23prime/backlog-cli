@@ -57,17 +57,17 @@ pub fn list_with(json: bool, api: &dyn BacklogApi) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    fn format_project_text(p: &Project) -> String {
-        let archived = if p.archived { " [archived]" } else { "" };
-        format!("[{}] {}{}", p.project_key, p.name, archived)
-    }
     use crate::api::{
         activity::Activity, disk_usage::DiskUsage, project::Project, space::Space,
         space_notification::SpaceNotification, user::User,
     };
     use anyhow::anyhow;
     use std::collections::BTreeMap;
+
+    fn format_project_text(p: &Project) -> String {
+        let archived = if p.archived { " [archived]" } else { "" };
+        format!("[{}] {}{}", p.project_key, p.name, archived)
+    }
 
     struct MockApi {
         project: Option<Project>,
