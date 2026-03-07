@@ -175,6 +175,7 @@ mod tests {
         let text = format_activity_text(&sample_activity());
         assert!(text.contains("[1]"));
         assert!(text.contains("type=1"));
+        assert!(text.contains("project=-"));
         assert!(text.contains("John Doe"));
         assert!(text.contains("2024-01-01T00:00:00Z"));
     }

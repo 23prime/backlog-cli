@@ -69,7 +69,7 @@ git push -u origin feature/<name>
 gh pr create --title "feat: ..." --body "$(cat <<'EOF'
 ## Checklist
 - [x] Target branch is `main`
-- [x] Status checks are passing
+- [ ] Status checks are passing
 
 ## Summary
 ...

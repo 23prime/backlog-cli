@@ -12,4 +12,4 @@ rustls
 serde
 httpmock
 println
-emptively
+preemptively

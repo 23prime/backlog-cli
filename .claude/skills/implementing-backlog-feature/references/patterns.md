@@ -116,7 +116,7 @@ Forgetting a method causes a compile error.
 
 ## Nullable field strategy
 
-Don't pre-emptively make all fields `Option`. Instead:
+Don't preemptively make all fields `Option`. Instead:
 
 1. Run `mise run rs-run <cmd>` against the real API
 2. Read the raw JSON in the error output
