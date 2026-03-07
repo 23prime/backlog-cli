@@ -133,7 +133,7 @@ mod tests {
             content: serde_json::Value::Null,
             created_user: ActivityUser {
                 id: 100,
-                user_id: "john".to_string(),
+                user_id: Some("john".to_string()),
                 name: "John Doe".to_string(),
             },
             created: "2024-01-01T00:00:00Z".to_string(),

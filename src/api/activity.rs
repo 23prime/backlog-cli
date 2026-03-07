@@ -27,7 +27,7 @@ pub struct ActivityProject {
 #[serde(rename_all = "camelCase")]
 pub struct ActivityUser {
     pub id: u64,
-    pub user_id: String,
+    pub user_id: Option<String>,
     pub name: String,
 }
 
@@ -82,7 +82,7 @@ mod tests {
         assert_eq!(activities.len(), 1);
         assert_eq!(activities[0].id, 1);
         assert_eq!(activities[0].activity_type, 1);
-        assert_eq!(activities[0].created_user.user_id, "john");
+        assert_eq!(activities[0].created_user.user_id.as_deref(), Some("john"));
     }
 
     #[test]
@@ -97,6 +97,20 @@ mod tests {
         let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
         let err = client.get_space_activities().unwrap_err();
         assert!(err.to_string().contains("Authentication failure"));
+    }
+
+    #[test]
+    fn deserialize_activity_with_null_user_id() {
+        let v = json!({
+            "id": 3,
+            "type": 2,
+            "content": {},
+            "createdUser": {"id": 0, "userId": null, "name": "Bot"},
+            "created": "2024-01-01T00:00:00Z"
+        });
+        let activity: Activity = serde_json::from_value(v).unwrap();
+        assert!(activity.created_user.user_id.is_none());
+        assert_eq!(activity.created_user.name, "Bot");
     }
 
     #[test]
