@@ -14,17 +14,20 @@ done
 
 BL_BIN="${INSTALL_DIR}/bl"
 
-OS=$(uname -s)
-case "$OS" in
-  Linux)   CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/bl" ;;
-  Darwin)  CONFIG_DIR="$HOME/Library/Application Support/bl" ;;
-  *) printf "[ERROR] Unsupported OS: %s\n" "$OS" >&2; exit 1 ;;
-esac
-
 if [ "$PURGE" = "1" ]; then
+  OS=$(uname -s)
+  case "$OS" in
+    Linux)   CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/bl" ;;
+    Darwin)  CONFIG_DIR="$HOME/Library/Application Support/bl" ;;
+    *) printf "[ERROR] Unsupported OS: %s\n" "$OS" >&2; exit 1 ;;
+  esac
+
   if [ -x "$BL_BIN" ]; then
     printf "Removing credentials...\n"
     "$BL_BIN" auth logout 2>/dev/null || true
+  else
+    printf "[WARNING] bl binary not found at %s; credentials were not removed automatically.\n" "$BL_BIN" >&2
+    printf "Run 'bl auth logout' from the original install location to clear credentials.\n" >&2
   fi
 
   if [ -d "$CONFIG_DIR" ]; then
