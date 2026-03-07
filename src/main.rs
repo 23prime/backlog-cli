@@ -67,7 +67,9 @@ fn main() -> Result<()> {
         },
         Commands::Space { action, json } => match action {
             None => cmd::space::show(json),
-            Some(SpaceCommands::Activities { json: sub_json }) => cmd::space::activities(sub_json),
+            Some(SpaceCommands::Activities { json: sub_json }) => {
+                cmd::space::activities(json || sub_json)
+            }
         },
     }
 }
