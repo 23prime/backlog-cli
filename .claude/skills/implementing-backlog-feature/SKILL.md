@@ -25,8 +25,8 @@ git switch -c feature/<name>   # e.g. feature/space-disk-usage
 
 Before writing any structs, check the official references for the exact response schema:
 
-- **API docs**: https://developer.nulab.com/docs/backlog/
-- **Official SDK**: https://github.com/nulab/backlog-js/ (use as ground truth for field names and types)
+- **API docs**: <https://developer.nulab.com/docs/backlog/>
+- **Official SDK**: <https://github.com/nulab/backlog-js/> (use as ground truth for field names and types)
 
 Then follow AGENTS.md: `src/api/<resource>.rs` → `src/api/mod.rs` (trait) → `src/cmd/<command>.rs` → `src/main.rs` → `docs/user-guide.md`.
 
