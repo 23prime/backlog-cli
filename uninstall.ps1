@@ -14,7 +14,10 @@ $ConfigDir = Join-Path $env:APPDATA 'bl'
 if ($Purge) {
     if (Test-Path $BlExe) {
         Write-Host 'Removing credentials...'
-        & $BlExe auth logout 2>$null
+        try { & $BlExe auth logout 2>$null } catch { }
+    } else {
+        Write-Host "Warning: bl.exe not found at $BlExe; credentials were not removed automatically."
+        Write-Host "Run 'bl auth logout' from the original install location to clear credentials."
     }
 
     if (Test-Path $ConfigDir) {
