@@ -3,6 +3,7 @@ use anyhow::{Context, Result};
 use owo_colors::OwoColorize;
 
 use crate::api::{BacklogApi, BacklogClient, issue::Issue};
+use crate::cmd::issue::ParentChild;
 
 #[allow(clippy::too_many_arguments)]
 pub fn list(
@@ -12,7 +13,7 @@ pub fn list(
     issue_type_ids: &[u64],
     category_ids: &[u64],
     milestone_ids: &[u64],
-    parent_child: Option<u8>,
+    parent_child: Option<ParentChild>,
     keyword: Option<&str>,
     count: u32,
     offset: u64,
@@ -43,7 +44,7 @@ pub fn list_with(
     issue_type_ids: &[u64],
     category_ids: &[u64],
     milestone_ids: &[u64],
-    parent_child: Option<u8>,
+    parent_child: Option<ParentChild>,
     keyword: Option<&str>,
     count: u32,
     offset: u64,
@@ -76,6 +77,7 @@ pub fn list_with(
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 fn build_params(
     project_ids: &[u64],
     status_ids: &[u64],
@@ -83,7 +85,7 @@ fn build_params(
     issue_type_ids: &[u64],
     category_ids: &[u64],
     milestone_ids: &[u64],
-    parent_child: Option<u8>,
+    parent_child: Option<ParentChild>,
     keyword: Option<&str>,
     count: u32,
     offset: u64,
@@ -108,7 +110,7 @@ fn build_params(
         params.push(("milestoneId[]".to_string(), id.to_string()));
     }
     if let Some(pc) = parent_child {
-        params.push(("parentChild".to_string(), pc.to_string()));
+        params.push(("parentChild".to_string(), pc.to_api_value().to_string()));
     }
     if let Some(kw) = keyword {
         params.push(("keyword".to_string(), kw.to_string()));
@@ -379,7 +381,7 @@ mod tests {
             &[5],
             &[6],
             &[7],
-            Some(1),
+            Some(ParentChild::NotChild),
             Some("login"),
             50,
             10,

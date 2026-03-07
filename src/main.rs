@@ -6,6 +6,8 @@ mod secret;
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
+use cmd::issue::ParentChild;
+
 #[derive(Parser)]
 #[command(name = "bl", version, about = "Backlog CLI")]
 struct Cli {
@@ -206,9 +208,9 @@ enum IssueCommands {
         /// Filter by milestone ID (repeatable)
         #[arg(long = "milestone-id", value_name = "ID")]
         milestone_ids: Vec<u64>,
-        /// Filter by parent-child relation (0=all, 1=no children, 2=has children, 3=children only, 4=no parent)
-        #[arg(long, value_name = "0-4")]
-        parent_child: Option<u8>,
+        /// Filter by parent-child relation
+        #[arg(long)]
+        parent_child: Option<ParentChild>,
         /// Search keyword
         #[arg(long)]
         keyword: Option<String>,
@@ -242,9 +244,9 @@ enum IssueCommands {
         /// Filter by milestone ID (repeatable)
         #[arg(long = "milestone-id", value_name = "ID")]
         milestone_ids: Vec<u64>,
-        /// Filter by parent-child relation (0=all, 1=no children, 2=has children, 3=children only, 4=no parent)
-        #[arg(long, value_name = "0-4")]
-        parent_child: Option<u8>,
+        /// Filter by parent-child relation
+        #[arg(long)]
+        parent_child: Option<ParentChild>,
         /// Search keyword
         #[arg(long)]
         keyword: Option<String>,

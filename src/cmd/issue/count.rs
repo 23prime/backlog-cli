@@ -2,6 +2,7 @@ use anstream::println;
 use anyhow::{Context, Result};
 
 use crate::api::{BacklogApi, BacklogClient};
+use crate::cmd::issue::ParentChild;
 
 #[allow(clippy::too_many_arguments)]
 pub fn count(
@@ -11,7 +12,7 @@ pub fn count(
     issue_type_ids: &[u64],
     category_ids: &[u64],
     milestone_ids: &[u64],
-    parent_child: Option<u8>,
+    parent_child: Option<ParentChild>,
     keyword: Option<&str>,
     json: bool,
 ) -> Result<()> {
@@ -38,7 +39,7 @@ pub fn count_with(
     issue_type_ids: &[u64],
     category_ids: &[u64],
     milestone_ids: &[u64],
-    parent_child: Option<u8>,
+    parent_child: Option<ParentChild>,
     keyword: Option<&str>,
     json: bool,
     api: &dyn BacklogApi,
@@ -65,6 +66,7 @@ pub fn count_with(
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 fn build_params(
     project_ids: &[u64],
     status_ids: &[u64],
@@ -72,7 +74,7 @@ fn build_params(
     issue_type_ids: &[u64],
     category_ids: &[u64],
     milestone_ids: &[u64],
-    parent_child: Option<u8>,
+    parent_child: Option<ParentChild>,
     keyword: Option<&str>,
 ) -> Vec<(String, String)> {
     let mut params: Vec<(String, String)> = Vec::new();
@@ -95,7 +97,7 @@ fn build_params(
         params.push(("milestoneId[]".to_string(), id.to_string()));
     }
     if let Some(pc) = parent_child {
-        params.push(("parentChild".to_string(), pc.to_string()));
+        params.push(("parentChild".to_string(), pc.to_api_value().to_string()));
     }
     if let Some(kw) = keyword {
         params.push(("keyword".to_string(), kw.to_string()));
