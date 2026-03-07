@@ -85,6 +85,12 @@ jobs:
             cargo build --release --locked --target ${{ matrix.target }}
           fi
 
+      - name: Smoke test Windows binary
+        if: matrix.archive == 'zip'
+        shell: pwsh
+        run: |
+          ./target/${{ matrix.target }}/release/bl.exe --help | Out-Null
+
       - name: Package binary (tar)
         if: matrix.archive == 'tar'
         run: tar czf bl-${{ matrix.target }}.tar.gz -C target/${{ matrix.target }}/release bl
@@ -92,7 +98,14 @@ jobs:
       - name: Package binary (zip)
         if: matrix.archive == 'zip'
         shell: pwsh
-        run: Compress-Archive -Path target/${{ matrix.target }}/release/bl.exe -DestinationPath bl-${{ matrix.target }}.zip
+        run: |
+          $releaseDir = "target/${{ matrix.target }}/release"
+          Push-Location $releaseDir
+          try {
+            Compress-Archive -Path "bl.exe" -DestinationPath "${env:GITHUB_WORKSPACE}/bl-${{ matrix.target }}.zip"
+          } finally {
+            Pop-Location
+          }
 
       - name: Generate checksum (tar)
         if: matrix.archive == 'tar'
