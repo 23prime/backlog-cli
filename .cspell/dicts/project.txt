@@ -10,3 +10,4 @@ mycompany
 rpassword
 rustls
 serde
+httpmock
