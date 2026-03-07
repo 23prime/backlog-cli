@@ -1,39 +1,35 @@
 use anstream::println;
 use anyhow::{Context, Result};
 
-use crate::api::{BacklogApi, BacklogClient, project::ProjectCategory};
+use crate::api::{BacklogApi, BacklogClient};
 
-pub fn list(key: &str, json: bool) -> Result<()> {
+pub fn delete(key: &str, json: bool) -> Result<()> {
     let client = BacklogClient::from_config()?;
-    list_with(key, json, &client)
+    delete_with(key, json, &client)
 }
 
-pub fn list_with(key: &str, json: bool, api: &dyn BacklogApi) -> Result<()> {
-    let categories = api.get_project_categories(key)?;
+pub fn delete_with(key: &str, json: bool, api: &dyn BacklogApi) -> Result<()> {
+    let issue = api.delete_issue(key)?;
     if json {
         println!(
             "{}",
-            serde_json::to_string_pretty(&categories).context("Failed to serialize JSON")?
+            serde_json::to_string_pretty(&issue).context("Failed to serialize JSON")?
         );
     } else {
-        for c in &categories {
-            println!("{}", format_category_row(c));
-        }
+        println!("Deleted: {}", issue.issue_key);
     }
     Ok(())
-}
-
-fn format_category_row(c: &ProjectCategory) -> String {
-    format!("[{}] {}", c.id, c.name)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::api::issue::{Issue, IssueAttachment, IssueComment, IssueCount};
+    use crate::cmd::issue::list::sample_issue;
     use anyhow::anyhow;
 
     struct MockApi {
-        categories: Option<Vec<ProjectCategory>>,
+        issue: Option<Issue>,
     }
 
     impl crate::api::BacklogApi for MockApi {
@@ -90,10 +86,11 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::project::ProjectIssueType>> {
             unimplemented!()
         }
-        fn get_project_categories(&self, _key: &str) -> anyhow::Result<Vec<ProjectCategory>> {
-            self.categories
-                .clone()
-                .ok_or_else(|| anyhow!("no categories"))
+        fn get_project_categories(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::project::ProjectCategory>> {
+            unimplemented!()
         }
         fn get_project_versions(
             &self,
@@ -101,48 +98,32 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::project::ProjectVersion>> {
             unimplemented!()
         }
-        fn get_issues(
-            &self,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<Vec<crate::api::issue::Issue>> {
+        fn get_issues(&self, _params: &[(String, String)]) -> anyhow::Result<Vec<Issue>> {
             unimplemented!()
         }
-        fn count_issues(
-            &self,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::issue::IssueCount> {
+        fn count_issues(&self, _params: &[(String, String)]) -> anyhow::Result<IssueCount> {
             unimplemented!()
         }
-        fn get_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
+        fn get_issue(&self, _key: &str) -> anyhow::Result<Issue> {
             unimplemented!()
         }
-        fn create_issue(
-            &self,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::issue::Issue> {
+        fn create_issue(&self, _params: &[(String, String)]) -> anyhow::Result<Issue> {
             unimplemented!()
         }
-        fn update_issue(
-            &self,
-            _key: &str,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::issue::Issue> {
+        fn update_issue(&self, _key: &str, _params: &[(String, String)]) -> anyhow::Result<Issue> {
             unimplemented!()
         }
-        fn delete_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
-            unimplemented!()
+        fn delete_issue(&self, _key: &str) -> anyhow::Result<Issue> {
+            self.issue.clone().ok_or_else(|| anyhow!("delete failed"))
         }
-        fn get_issue_comments(
-            &self,
-            _key: &str,
-        ) -> anyhow::Result<Vec<crate::api::issue::IssueComment>> {
+        fn get_issue_comments(&self, _key: &str) -> anyhow::Result<Vec<IssueComment>> {
             unimplemented!()
         }
         fn add_issue_comment(
             &self,
             _key: &str,
             _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+        ) -> anyhow::Result<IssueComment> {
             unimplemented!()
         }
         fn update_issue_comment(
@@ -150,59 +131,41 @@ mod tests {
             _key: &str,
             _comment_id: u64,
             _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+        ) -> anyhow::Result<IssueComment> {
             unimplemented!()
         }
         fn delete_issue_comment(
             &self,
             _key: &str,
             _comment_id: u64,
-        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+        ) -> anyhow::Result<IssueComment> {
             unimplemented!()
         }
-        fn get_issue_attachments(
-            &self,
-            _key: &str,
-        ) -> anyhow::Result<Vec<crate::api::issue::IssueAttachment>> {
+        fn get_issue_attachments(&self, _key: &str) -> anyhow::Result<Vec<IssueAttachment>> {
             unimplemented!()
         }
     }
 
-    fn sample_category() -> ProjectCategory {
-        ProjectCategory {
-            id: 11,
-            name: "Development".to_string(),
-            display_order: 0,
-        }
-    }
-
     #[test]
-    fn format_category_row_contains_fields() {
-        let text = format_category_row(&sample_category());
-        assert!(text.contains("[11]"));
-        assert!(text.contains("Development"));
-    }
-
-    #[test]
-    fn list_with_text_output_succeeds() {
+    fn delete_with_text_output_succeeds() {
         let api = MockApi {
-            categories: Some(vec![sample_category()]),
+            issue: Some(sample_issue()),
         };
-        assert!(list_with("TEST", false, &api).is_ok());
+        assert!(delete_with("TEST-1", false, &api).is_ok());
     }
 
     #[test]
-    fn list_with_json_output_succeeds() {
+    fn delete_with_json_output_succeeds() {
         let api = MockApi {
-            categories: Some(vec![sample_category()]),
+            issue: Some(sample_issue()),
         };
-        assert!(list_with("TEST", true, &api).is_ok());
+        assert!(delete_with("TEST-1", true, &api).is_ok());
     }
 
     #[test]
-    fn list_with_propagates_api_error() {
-        let api = MockApi { categories: None };
-        let err = list_with("TEST", false, &api).unwrap_err();
-        assert!(err.to_string().contains("no categories"));
+    fn delete_with_propagates_api_error() {
+        let api = MockApi { issue: None };
+        let err = delete_with("TEST-1", false, &api).unwrap_err();
+        assert!(err.to_string().contains("delete failed"));
     }
 }

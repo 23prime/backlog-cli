@@ -1,7 +1,8 @@
 use anstream::println;
 use anyhow::{Context, Result};
+use owo_colors::OwoColorize;
 
-use crate::api::{BacklogApi, BacklogClient, project::ProjectCategory};
+use crate::api::{BacklogApi, BacklogClient, issue::IssueComment};
 
 pub fn list(key: &str, json: bool) -> Result<()> {
     let client = BacklogClient::from_config()?;
@@ -9,31 +10,70 @@ pub fn list(key: &str, json: bool) -> Result<()> {
 }
 
 pub fn list_with(key: &str, json: bool, api: &dyn BacklogApi) -> Result<()> {
-    let categories = api.get_project_categories(key)?;
+    let comments = api.get_issue_comments(key)?;
     if json {
         println!(
             "{}",
-            serde_json::to_string_pretty(&categories).context("Failed to serialize JSON")?
+            serde_json::to_string_pretty(&comments).context("Failed to serialize JSON")?
         );
     } else {
-        for c in &categories {
-            println!("{}", format_category_row(c));
+        for c in &comments {
+            println!("{}", format_comment_row(c));
         }
     }
     Ok(())
 }
 
-fn format_category_row(c: &ProjectCategory) -> String {
-    format!("[{}] {}", c.id, c.name)
+pub fn format_comment_row(c: &IssueComment) -> String {
+    let content = c.content.as_deref().unwrap_or("(no content)");
+    format!(
+        "[{}] {} ({}): {}",
+        c.id.to_string().cyan().bold(),
+        c.created_user.name,
+        c.created,
+        content
+    )
+}
+
+#[cfg(test)]
+use crate::api::issue::IssueUser;
+#[cfg(test)]
+use std::collections::BTreeMap;
+
+#[cfg(test)]
+fn sample_user() -> IssueUser {
+    IssueUser {
+        id: 1,
+        user_id: Some("john".to_string()),
+        name: "John Doe".to_string(),
+        role_type: 1,
+        lang: None,
+        mail_address: None,
+        extra: BTreeMap::new(),
+    }
+}
+
+#[cfg(test)]
+pub(crate) fn sample_comment() -> crate::api::issue::IssueComment {
+    use crate::api::issue::IssueComment;
+    IssueComment {
+        id: 1,
+        content: Some("A comment".to_string()),
+        created_user: sample_user(),
+        created: "2024-01-01T00:00:00Z".to_string(),
+        updated: "2024-01-01T00:00:00Z".to_string(),
+        extra: BTreeMap::new(),
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::api::issue::{Issue, IssueAttachment, IssueComment, IssueCount};
     use anyhow::anyhow;
 
     struct MockApi {
-        categories: Option<Vec<ProjectCategory>>,
+        comments: Option<Vec<IssueComment>>,
     }
 
     impl crate::api::BacklogApi for MockApi {
@@ -90,10 +130,11 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::project::ProjectIssueType>> {
             unimplemented!()
         }
-        fn get_project_categories(&self, _key: &str) -> anyhow::Result<Vec<ProjectCategory>> {
-            self.categories
-                .clone()
-                .ok_or_else(|| anyhow!("no categories"))
+        fn get_project_categories(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::project::ProjectCategory>> {
+            unimplemented!()
         }
         fn get_project_versions(
             &self,
@@ -101,48 +142,32 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::project::ProjectVersion>> {
             unimplemented!()
         }
-        fn get_issues(
-            &self,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<Vec<crate::api::issue::Issue>> {
+        fn get_issues(&self, _params: &[(String, String)]) -> anyhow::Result<Vec<Issue>> {
             unimplemented!()
         }
-        fn count_issues(
-            &self,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::issue::IssueCount> {
+        fn count_issues(&self, _params: &[(String, String)]) -> anyhow::Result<IssueCount> {
             unimplemented!()
         }
-        fn get_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
+        fn get_issue(&self, _key: &str) -> anyhow::Result<Issue> {
             unimplemented!()
         }
-        fn create_issue(
-            &self,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::issue::Issue> {
+        fn create_issue(&self, _params: &[(String, String)]) -> anyhow::Result<Issue> {
             unimplemented!()
         }
-        fn update_issue(
-            &self,
-            _key: &str,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::issue::Issue> {
+        fn update_issue(&self, _key: &str, _params: &[(String, String)]) -> anyhow::Result<Issue> {
             unimplemented!()
         }
-        fn delete_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
+        fn delete_issue(&self, _key: &str) -> anyhow::Result<Issue> {
             unimplemented!()
         }
-        fn get_issue_comments(
-            &self,
-            _key: &str,
-        ) -> anyhow::Result<Vec<crate::api::issue::IssueComment>> {
-            unimplemented!()
+        fn get_issue_comments(&self, _key: &str) -> anyhow::Result<Vec<IssueComment>> {
+            self.comments.clone().ok_or_else(|| anyhow!("no comments"))
         }
         fn add_issue_comment(
             &self,
             _key: &str,
             _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+        ) -> anyhow::Result<IssueComment> {
             unimplemented!()
         }
         fn update_issue_comment(
@@ -150,59 +175,57 @@ mod tests {
             _key: &str,
             _comment_id: u64,
             _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+        ) -> anyhow::Result<IssueComment> {
             unimplemented!()
         }
         fn delete_issue_comment(
             &self,
             _key: &str,
             _comment_id: u64,
-        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+        ) -> anyhow::Result<IssueComment> {
             unimplemented!()
         }
-        fn get_issue_attachments(
-            &self,
-            _key: &str,
-        ) -> anyhow::Result<Vec<crate::api::issue::IssueAttachment>> {
+        fn get_issue_attachments(&self, _key: &str) -> anyhow::Result<Vec<IssueAttachment>> {
             unimplemented!()
         }
-    }
-
-    fn sample_category() -> ProjectCategory {
-        ProjectCategory {
-            id: 11,
-            name: "Development".to_string(),
-            display_order: 0,
-        }
-    }
-
-    #[test]
-    fn format_category_row_contains_fields() {
-        let text = format_category_row(&sample_category());
-        assert!(text.contains("[11]"));
-        assert!(text.contains("Development"));
     }
 
     #[test]
     fn list_with_text_output_succeeds() {
         let api = MockApi {
-            categories: Some(vec![sample_category()]),
+            comments: Some(vec![sample_comment()]),
         };
-        assert!(list_with("TEST", false, &api).is_ok());
+        assert!(list_with("TEST-1", false, &api).is_ok());
     }
 
     #[test]
     fn list_with_json_output_succeeds() {
         let api = MockApi {
-            categories: Some(vec![sample_category()]),
+            comments: Some(vec![sample_comment()]),
         };
-        assert!(list_with("TEST", true, &api).is_ok());
+        assert!(list_with("TEST-1", true, &api).is_ok());
     }
 
     #[test]
     fn list_with_propagates_api_error() {
-        let api = MockApi { categories: None };
-        let err = list_with("TEST", false, &api).unwrap_err();
-        assert!(err.to_string().contains("no categories"));
+        let api = MockApi { comments: None };
+        let err = list_with("TEST-1", false, &api).unwrap_err();
+        assert!(err.to_string().contains("no comments"));
+    }
+
+    #[test]
+    fn format_comment_row_with_content() {
+        let row = format_comment_row(&sample_comment());
+        assert!(row.contains('1'));
+        assert!(row.contains("John Doe"));
+        assert!(row.contains("A comment"));
+    }
+
+    #[test]
+    fn format_comment_row_null_content() {
+        let mut c = sample_comment();
+        c.content = None;
+        let row = format_comment_row(&c);
+        assert!(row.contains("(no content)"));
     }
 }

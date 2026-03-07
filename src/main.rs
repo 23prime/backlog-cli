@@ -36,6 +36,11 @@ enum Commands {
         #[command(subcommand)]
         action: ProjectCommands,
     },
+    /// Manage issues
+    Issue {
+        #[command(subcommand)]
+        action: IssueCommands,
+    },
 }
 
 #[derive(Subcommand)]
@@ -180,6 +185,192 @@ enum ProjectVersionCommands {
 }
 
 #[derive(Subcommand)]
+enum IssueCommands {
+    /// List issues
+    List {
+        /// Filter by project ID (repeatable)
+        #[arg(long = "project-id", value_name = "ID")]
+        project_ids: Vec<u64>,
+        /// Filter by status ID (repeatable)
+        #[arg(long = "status-id", value_name = "ID")]
+        status_ids: Vec<u64>,
+        /// Filter by assignee ID (repeatable)
+        #[arg(long = "assignee-id", value_name = "ID")]
+        assignee_ids: Vec<u64>,
+        /// Search keyword
+        #[arg(long)]
+        keyword: Option<String>,
+        /// Number of issues to retrieve (max 100)
+        #[arg(long, default_value = "20")]
+        count: u32,
+        /// Offset for pagination
+        #[arg(long, default_value = "0")]
+        offset: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Count issues
+    Count {
+        /// Filter by project ID (repeatable)
+        #[arg(long = "project-id", value_name = "ID")]
+        project_ids: Vec<u64>,
+        /// Filter by status ID (repeatable)
+        #[arg(long = "status-id", value_name = "ID")]
+        status_ids: Vec<u64>,
+        /// Filter by assignee ID (repeatable)
+        #[arg(long = "assignee-id", value_name = "ID")]
+        assignee_ids: Vec<u64>,
+        /// Search keyword
+        #[arg(long)]
+        keyword: Option<String>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Show an issue
+    Show {
+        /// Issue ID or key (e.g. TEST-1 or 123)
+        id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Create an issue
+    Create {
+        /// Project ID
+        #[arg(long)]
+        project_id: u64,
+        /// Issue summary
+        #[arg(long)]
+        summary: String,
+        /// Issue type ID
+        #[arg(long)]
+        issue_type_id: u64,
+        /// Priority ID (1=High, 2=Normal, 3=Low)
+        #[arg(long)]
+        priority_id: u64,
+        /// Description
+        #[arg(long)]
+        description: Option<String>,
+        /// Assignee user ID
+        #[arg(long)]
+        assignee_id: Option<u64>,
+        /// Due date (YYYY-MM-DD)
+        #[arg(long)]
+        due_date: Option<String>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Update an issue
+    Update {
+        /// Issue ID or key
+        id_or_key: String,
+        /// New summary
+        #[arg(long)]
+        summary: Option<String>,
+        /// New description
+        #[arg(long)]
+        description: Option<String>,
+        /// New status ID
+        #[arg(long)]
+        status_id: Option<u64>,
+        /// New priority ID
+        #[arg(long)]
+        priority_id: Option<u64>,
+        /// New assignee user ID
+        #[arg(long)]
+        assignee_id: Option<u64>,
+        /// New due date (YYYY-MM-DD)
+        #[arg(long)]
+        due_date: Option<String>,
+        /// Comment to add with update
+        #[arg(long)]
+        comment: Option<String>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Delete an issue
+    Delete {
+        /// Issue ID or key
+        id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Manage issue comments
+    Comment {
+        #[command(subcommand)]
+        action: IssueCommentCommands,
+    },
+    /// Manage issue attachments
+    Attachment {
+        #[command(subcommand)]
+        action: IssueAttachmentCommands,
+    },
+}
+
+#[derive(Subcommand)]
+enum IssueCommentCommands {
+    /// List comments on an issue
+    List {
+        /// Issue ID or key
+        id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Add a comment to an issue
+    Add {
+        /// Issue ID or key
+        id_or_key: String,
+        /// Comment content
+        #[arg(long)]
+        content: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Update a comment
+    Update {
+        /// Issue ID or key
+        id_or_key: String,
+        /// Comment ID
+        comment_id: u64,
+        /// New content
+        #[arg(long)]
+        content: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Delete a comment
+    Delete {
+        /// Issue ID or key
+        id_or_key: String,
+        /// Comment ID
+        comment_id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum IssueAttachmentCommands {
+    /// List attachments on an issue
+    List {
+        /// Issue ID or key
+        id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
 enum AuthCommands {
     /// Login with your API key
     Login,
@@ -240,6 +431,106 @@ fn main() -> Result<()> {
             ProjectCommands::Version { action } => match action {
                 ProjectVersionCommands::List { id_or_key, json } => {
                     cmd::project::version::list(&id_or_key, json)
+                }
+            },
+        },
+        Commands::Issue { action } => match action {
+            IssueCommands::List {
+                project_ids,
+                status_ids,
+                assignee_ids,
+                keyword,
+                count,
+                offset,
+                json,
+            } => cmd::issue::list(
+                &project_ids,
+                &status_ids,
+                &assignee_ids,
+                keyword.as_deref(),
+                count,
+                offset,
+                json,
+            ),
+            IssueCommands::Count {
+                project_ids,
+                status_ids,
+                assignee_ids,
+                keyword,
+                json,
+            } => cmd::issue::count(
+                &project_ids,
+                &status_ids,
+                &assignee_ids,
+                keyword.as_deref(),
+                json,
+            ),
+            IssueCommands::Show { id_or_key, json } => cmd::issue::show(&id_or_key, json),
+            IssueCommands::Create {
+                project_id,
+                summary,
+                issue_type_id,
+                priority_id,
+                description,
+                assignee_id,
+                due_date,
+                json,
+            } => cmd::issue::create(
+                project_id,
+                &summary,
+                issue_type_id,
+                priority_id,
+                description.as_deref(),
+                assignee_id,
+                due_date.as_deref(),
+                json,
+            ),
+            IssueCommands::Update {
+                id_or_key,
+                summary,
+                description,
+                status_id,
+                priority_id,
+                assignee_id,
+                due_date,
+                comment,
+                json,
+            } => cmd::issue::update(
+                &id_or_key,
+                summary.as_deref(),
+                description.as_deref(),
+                status_id,
+                priority_id,
+                assignee_id,
+                due_date.as_deref(),
+                comment.as_deref(),
+                json,
+            ),
+            IssueCommands::Delete { id_or_key, json } => cmd::issue::delete(&id_or_key, json),
+            IssueCommands::Comment { action } => match action {
+                IssueCommentCommands::List { id_or_key, json } => {
+                    cmd::issue::comment::list(&id_or_key, json)
+                }
+                IssueCommentCommands::Add {
+                    id_or_key,
+                    content,
+                    json,
+                } => cmd::issue::comment::add(&id_or_key, &content, json),
+                IssueCommentCommands::Update {
+                    id_or_key,
+                    comment_id,
+                    content,
+                    json,
+                } => cmd::issue::comment::update(&id_or_key, comment_id, &content, json),
+                IssueCommentCommands::Delete {
+                    id_or_key,
+                    comment_id,
+                    json,
+                } => cmd::issue::comment::delete(&id_or_key, comment_id, json),
+            },
+            IssueCommands::Attachment { action } => match action {
+                IssueAttachmentCommands::List { id_or_key, json } => {
+                    cmd::issue::attachment::list(&id_or_key, json)
                 }
             },
         },

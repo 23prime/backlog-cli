@@ -390,6 +390,155 @@ Example output:
 [4] Version 0.2 [archived]
 ```
 
+### `bl issue list`
+
+List issues with optional filters.
+
+```bash
+bl issue list
+bl issue list --project-id 1 --status-id 1
+bl issue list --keyword "login" --count 50
+bl issue list --json
+```
+
+Example output:
+
+```text
+[TEST-1] Fix login issue (Open, Normal, -)
+[TEST-2] Add dark mode (In Progress, Normal, John Doe)
+```
+
+### `bl issue count`
+
+Count issues with optional filters.
+
+```bash
+bl issue count
+bl issue count --project-id 1 --status-id 1 --json
+```
+
+Example output:
+
+```text
+42
+```
+
+### `bl issue show`
+
+Show details of a specific issue.
+
+```bash
+bl issue show <id-or-key>
+bl issue show TEST-1 --json
+```
+
+Example output:
+
+```text
+TEST-1 Fix login issue
+  Status:     Open
+  Priority:   Normal
+  Type:       Bug
+  Assignee:   -
+  Created:    2024-01-01T00:00:00Z
+  Updated:    2024-06-01T00:00:00Z
+```
+
+### `bl issue create`
+
+Create a new issue. Requires `--project-id`, `--summary`, `--issue-type-id`, and `--priority-id`.
+
+```bash
+bl issue create --project-id 1 --summary "Fix login" --issue-type-id 1 --priority-id 2
+bl issue create --project-id 1 --summary "Bug" --issue-type-id 1 --priority-id 2 \
+  --description "Details..." --assignee-id 123 --due-date 2024-12-31 --json
+```
+
+Priority IDs: `1` = High, `2` = Normal, `3` = Low.
+
+### `bl issue update`
+
+Update an existing issue. All fields are optional.
+
+```bash
+bl issue update TEST-1 --summary "Updated summary"
+bl issue update TEST-1 --status-id 2 --comment "Fixed in v1.2" --json
+```
+
+### `bl issue delete`
+
+Delete an issue.
+
+```bash
+bl issue delete TEST-1
+bl issue delete TEST-1 --json
+```
+
+Example output:
+
+```text
+Deleted: TEST-1
+```
+
+### `bl issue comment list`
+
+List comments on an issue.
+
+```bash
+bl issue comment list TEST-1
+bl issue comment list TEST-1 --json
+```
+
+Example output:
+
+```text
+[1] John Doe (2024-01-01T00:00:00Z): Fixed the issue.
+[2] Jane Smith (2024-01-02T00:00:00Z): Confirmed.
+```
+
+### `bl issue comment add`
+
+Add a comment to an issue.
+
+```bash
+bl issue comment add TEST-1 --content "This is a comment"
+bl issue comment add TEST-1 --content "Done" --json
+```
+
+### `bl issue comment update`
+
+Update an existing comment.
+
+```bash
+bl issue comment update TEST-1 42 --content "Updated comment"
+bl issue comment update TEST-1 42 --content "Fixed" --json
+```
+
+### `bl issue comment delete`
+
+Delete a comment.
+
+```bash
+bl issue comment delete TEST-1 42
+bl issue comment delete TEST-1 42 --json
+```
+
+### `bl issue attachment list`
+
+List attachments on an issue.
+
+```bash
+bl issue attachment list TEST-1
+bl issue attachment list TEST-1 --json
+```
+
+Example output:
+
+```text
+[1] screenshot.png (204800 bytes)
+[2] log.txt (1024 bytes)
+```
+
 ## Command coverage
 
 The table below maps Backlog API v2 endpoints to `bl` commands.
@@ -422,17 +571,17 @@ Commands that target a specific project accept a `--project <key>` flag.
 
 | Command | API endpoint | Status |
 | --- | --- | --- |
-| `bl issue list` | `GET /api/v2/issues` | Planned |
-| `bl issue count` | `GET /api/v2/issues/count` | Planned |
-| `bl issue show <id>` | `GET /api/v2/issues/{issueIdOrKey}` | Planned |
-| `bl issue create` | `POST /api/v2/issues` | Planned |
-| `bl issue update <id>` | `PATCH /api/v2/issues/{issueIdOrKey}` | Planned |
-| `bl issue delete <id>` | `DELETE /api/v2/issues/{issueIdOrKey}` | Planned |
-| `bl issue comment list <id>` | `GET /api/v2/issues/{issueIdOrKey}/comments` | Planned |
-| `bl issue comment add <id>` | `POST /api/v2/issues/{issueIdOrKey}/comments` | Planned |
-| `bl issue comment update <id> <comment-id>` | `PUT /api/v2/issues/{issueIdOrKey}/comments/{commentId}` | Planned |
-| `bl issue comment delete <id> <comment-id>` | `DELETE /api/v2/issues/{issueIdOrKey}/comments/{commentId}` | Planned |
-| `bl issue attachment list <id>` | `GET /api/v2/issues/{issueIdOrKey}/attachments` | Planned |
+| `bl issue list` | `GET /api/v2/issues` | ✅ Implemented |
+| `bl issue count` | `GET /api/v2/issues/count` | ✅ Implemented |
+| `bl issue show <id>` | `GET /api/v2/issues/{issueIdOrKey}` | ✅ Implemented |
+| `bl issue create` | `POST /api/v2/issues` | ✅ Implemented |
+| `bl issue update <id>` | `PATCH /api/v2/issues/{issueIdOrKey}` | ✅ Implemented |
+| `bl issue delete <id>` | `DELETE /api/v2/issues/{issueIdOrKey}` | ✅ Implemented |
+| `bl issue comment list <id>` | `GET /api/v2/issues/{issueIdOrKey}/comments` | ✅ Implemented |
+| `bl issue comment add <id>` | `POST /api/v2/issues/{issueIdOrKey}/comments` | ✅ Implemented |
+| `bl issue comment update <id> <comment-id>` | `PATCH /api/v2/issues/{issueIdOrKey}/comments/{commentId}` | ✅ Implemented |
+| `bl issue comment delete <id> <comment-id>` | `DELETE /api/v2/issues/{issueIdOrKey}/comments/{commentId}` | ✅ Implemented |
+| `bl issue attachment list <id>` | `GET /api/v2/issues/{issueIdOrKey}/attachments` | ✅ Implemented |
 
 ### Wiki
 

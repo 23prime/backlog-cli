@@ -3,6 +3,7 @@ use reqwest::blocking::Client;
 
 pub mod activity;
 pub mod disk_usage;
+pub mod issue;
 pub mod project;
 pub mod space;
 pub mod space_notification;
@@ -10,6 +11,7 @@ pub mod user;
 
 use activity::Activity;
 use disk_usage::DiskUsage;
+use issue::{Issue, IssueAttachment, IssueComment, IssueCount};
 use project::{
     Project, ProjectCategory, ProjectDiskUsage, ProjectIssueType, ProjectStatus, ProjectUser,
     ProjectVersion,
@@ -33,6 +35,22 @@ pub trait BacklogApi {
     fn get_project_issue_types(&self, key: &str) -> Result<Vec<ProjectIssueType>>;
     fn get_project_categories(&self, key: &str) -> Result<Vec<ProjectCategory>>;
     fn get_project_versions(&self, key: &str) -> Result<Vec<ProjectVersion>>;
+    fn get_issues(&self, params: &[(String, String)]) -> Result<Vec<Issue>>;
+    fn count_issues(&self, params: &[(String, String)]) -> Result<IssueCount>;
+    fn get_issue(&self, key: &str) -> Result<Issue>;
+    fn create_issue(&self, params: &[(String, String)]) -> Result<Issue>;
+    fn update_issue(&self, key: &str, params: &[(String, String)]) -> Result<Issue>;
+    fn delete_issue(&self, key: &str) -> Result<Issue>;
+    fn get_issue_comments(&self, key: &str) -> Result<Vec<IssueComment>>;
+    fn add_issue_comment(&self, key: &str, params: &[(String, String)]) -> Result<IssueComment>;
+    fn update_issue_comment(
+        &self,
+        key: &str,
+        comment_id: u64,
+        params: &[(String, String)],
+    ) -> Result<IssueComment>;
+    fn delete_issue_comment(&self, key: &str, comment_id: u64) -> Result<IssueComment>;
+    fn get_issue_attachments(&self, key: &str) -> Result<Vec<IssueAttachment>>;
 }
 
 impl BacklogApi for BacklogClient {
@@ -91,6 +109,55 @@ impl BacklogApi for BacklogClient {
     fn get_project_versions(&self, key: &str) -> Result<Vec<ProjectVersion>> {
         self.get_project_versions(key)
     }
+
+    fn get_issues(&self, params: &[(String, String)]) -> Result<Vec<Issue>> {
+        self.get_issues(params)
+    }
+
+    fn count_issues(&self, params: &[(String, String)]) -> Result<IssueCount> {
+        self.count_issues(params)
+    }
+
+    fn get_issue(&self, key: &str) -> Result<Issue> {
+        self.get_issue(key)
+    }
+
+    fn create_issue(&self, params: &[(String, String)]) -> Result<Issue> {
+        self.create_issue(params)
+    }
+
+    fn update_issue(&self, key: &str, params: &[(String, String)]) -> Result<Issue> {
+        self.update_issue(key, params)
+    }
+
+    fn delete_issue(&self, key: &str) -> Result<Issue> {
+        self.delete_issue(key)
+    }
+
+    fn get_issue_comments(&self, key: &str) -> Result<Vec<IssueComment>> {
+        self.get_issue_comments(key)
+    }
+
+    fn add_issue_comment(&self, key: &str, params: &[(String, String)]) -> Result<IssueComment> {
+        self.add_issue_comment(key, params)
+    }
+
+    fn update_issue_comment(
+        &self,
+        key: &str,
+        comment_id: u64,
+        params: &[(String, String)],
+    ) -> Result<IssueComment> {
+        self.update_issue_comment(key, comment_id, params)
+    }
+
+    fn delete_issue_comment(&self, key: &str, comment_id: u64) -> Result<IssueComment> {
+        self.delete_issue_comment(key, comment_id)
+    }
+
+    fn get_issue_attachments(&self, key: &str) -> Result<Vec<IssueAttachment>> {
+        self.get_issue_attachments(key)
+    }
 }
 
 pub struct BacklogClient {
@@ -127,6 +194,94 @@ impl BacklogClient {
             .query(&[("apiKey", &self.api_key)])
             .send()
             .with_context(|| format!("Failed to GET {}", url))?;
+
+        let status = response.status();
+        let body: serde_json::Value = response.json().context("Failed to parse JSON response")?;
+
+        if !status.is_success() {
+            anyhow::bail!("API error ({}): {}", status, extract_error_message(&body));
+        }
+
+        Ok(body)
+    }
+
+    pub fn get_with_query(
+        &self,
+        path: &str,
+        params: &[(String, String)],
+    ) -> Result<serde_json::Value> {
+        let url = format!("{}{}", self.base_url, path);
+        let mut query: Vec<(&str, &str)> = vec![("apiKey", &self.api_key)];
+        let extra: Vec<(&str, &str)> = params
+            .iter()
+            .map(|(k, v)| (k.as_str(), v.as_str()))
+            .collect();
+        query.extend(extra.iter().copied());
+        let response = self
+            .client
+            .get(&url)
+            .query(&query)
+            .send()
+            .with_context(|| format!("Failed to GET {}", url))?;
+
+        let status = response.status();
+        let body: serde_json::Value = response.json().context("Failed to parse JSON response")?;
+
+        if !status.is_success() {
+            anyhow::bail!("API error ({}): {}", status, extract_error_message(&body));
+        }
+
+        Ok(body)
+    }
+
+    pub fn post_form(&self, path: &str, params: &[(String, String)]) -> Result<serde_json::Value> {
+        let url = format!("{}{}", self.base_url, path);
+        let response = self
+            .client
+            .post(&url)
+            .query(&[("apiKey", &self.api_key)])
+            .form(params)
+            .send()
+            .with_context(|| format!("Failed to POST {}", url))?;
+
+        let status = response.status();
+        let body: serde_json::Value = response.json().context("Failed to parse JSON response")?;
+
+        if !status.is_success() {
+            anyhow::bail!("API error ({}): {}", status, extract_error_message(&body));
+        }
+
+        Ok(body)
+    }
+
+    pub fn patch_form(&self, path: &str, params: &[(String, String)]) -> Result<serde_json::Value> {
+        let url = format!("{}{}", self.base_url, path);
+        let response = self
+            .client
+            .patch(&url)
+            .query(&[("apiKey", &self.api_key)])
+            .form(params)
+            .send()
+            .with_context(|| format!("Failed to PATCH {}", url))?;
+
+        let status = response.status();
+        let body: serde_json::Value = response.json().context("Failed to parse JSON response")?;
+
+        if !status.is_success() {
+            anyhow::bail!("API error ({}): {}", status, extract_error_message(&body));
+        }
+
+        Ok(body)
+    }
+
+    pub fn delete_req(&self, path: &str) -> Result<serde_json::Value> {
+        let url = format!("{}{}", self.base_url, path);
+        let response = self
+            .client
+            .delete(&url)
+            .query(&[("apiKey", &self.api_key)])
+            .send()
+            .with_context(|| format!("Failed to DELETE {}", url))?;
 
         let status = response.status();
         let body: serde_json::Value = response.json().context("Failed to parse JSON response")?;
