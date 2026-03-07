@@ -172,6 +172,10 @@ mod tests {
         fn get_projects(&self) -> Result<Vec<crate::api::project::Project>> {
             unimplemented!()
         }
+
+        fn get_project(&self, _key: &str) -> Result<crate::api::project::Project> {
+            unimplemented!()
+        }
     }
 
     fn sample_space() -> Space {

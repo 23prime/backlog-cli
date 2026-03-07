@@ -180,6 +180,10 @@ mod tests {
         fn get_projects(&self) -> anyhow::Result<Vec<crate::api::project::Project>> {
             unimplemented!()
         }
+
+        fn get_project(&self, _key: &str) -> anyhow::Result<crate::api::project::Project> {
+            unimplemented!()
+        }
     }
 
     fn sample_user() -> User {

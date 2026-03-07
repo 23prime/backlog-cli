@@ -30,6 +30,17 @@ impl BacklogClient {
             )
         })
     }
+
+    pub fn get_project(&self, key: &str) -> Result<Project> {
+        let value = self.get(&format!("/projects/{}", key))?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize project response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
 }
 
 #[cfg(test)]
@@ -66,6 +77,35 @@ mod tests {
         assert_eq!(projects[0].project_key, "TEST");
         assert_eq!(projects[0].name, "Test Project");
         assert!(!projects[0].archived);
+    }
+
+    #[test]
+    fn get_project_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/projects/TEST");
+            then.status(200).json_body(project_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let project = client.get_project("TEST").unwrap();
+        assert_eq!(project.id, 1);
+        assert_eq!(project.project_key, "TEST");
+        assert_eq!(project.name, "Test Project");
+    }
+
+    #[test]
+    fn get_project_returns_error_on_not_found() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/projects/UNKNOWN");
+            then.status(404)
+                .json_body(json!({"errors": [{"message": "No project"}]}));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let err = client.get_project("UNKNOWN").unwrap_err();
+        assert!(err.to_string().contains("No project"));
     }
 
     #[test]

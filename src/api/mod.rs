@@ -22,6 +22,7 @@ pub trait BacklogApi {
     fn get_space_disk_usage(&self) -> Result<DiskUsage>;
     fn get_space_notification(&self) -> Result<SpaceNotification>;
     fn get_projects(&self) -> Result<Vec<Project>>;
+    fn get_project(&self, key: &str) -> Result<Project>;
 }
 
 impl BacklogApi for BacklogClient {
@@ -47,6 +48,10 @@ impl BacklogApi for BacklogClient {
 
     fn get_projects(&self) -> Result<Vec<Project>> {
         self.get_projects()
+    }
+
+    fn get_project(&self, key: &str) -> Result<Project> {
+        self.get_project(key)
     }
 }
 

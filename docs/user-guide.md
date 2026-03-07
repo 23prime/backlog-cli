@@ -218,6 +218,25 @@ Example output:
 [PROD] Production [archived]
 ```
 
+### `bl project show`
+
+Show details of a specific project.
+
+```bash
+bl project show <id-or-key>
+bl project show <id-or-key> --json
+```
+
+Example output:
+
+```text
+ID:         1
+Key:        TEST
+Name:       Test Project
+Formatting: markdown
+Archived:   false
+```
+
 ## Command coverage
 
 The table below maps Backlog API v2 endpoints to `bl` commands.
@@ -237,7 +256,7 @@ Commands that target a specific project accept a `--project <key>` flag.
 | Command | API endpoint | Status |
 | --- | --- | --- |
 | `bl project list` | `GET /api/v2/projects` | ✅ Implemented |
-| `bl project show <key>` | `GET /api/v2/projects/{projectIdOrKey}` | Planned |
+| `bl project show <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}` | ✅ Implemented |
 | `bl project activities <key>` | `GET /api/v2/projects/{projectIdOrKey}/activities` | Planned |
 | `bl project disk-usage <key>` | `GET /api/v2/projects/{projectIdOrKey}/diskUsage` | Planned |
 | `bl project user list <key>` | `GET /api/v2/projects/{projectIdOrKey}/users` | Planned |
