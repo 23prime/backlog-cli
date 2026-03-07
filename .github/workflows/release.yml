@@ -38,10 +38,15 @@ jobs:
       - name: Package binary
         run: tar czf bl-x86_64-unknown-linux-gnu.tar.gz -C target/x86_64-unknown-linux-gnu/release bl
 
+      - name: Generate checksum
+        run: sha256sum bl-x86_64-unknown-linux-gnu.tar.gz > bl-x86_64-unknown-linux-gnu.tar.gz.sha256
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: bl-x86_64-unknown-linux-gnu.tar.gz
+          files: |
+            bl-x86_64-unknown-linux-gnu.tar.gz
+            bl-x86_64-unknown-linux-gnu.tar.gz.sha256
           generate_release_notes: true
 
       - name: Update latest tag

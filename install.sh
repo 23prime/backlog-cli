@@ -7,7 +7,7 @@ INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
 ASSET_NAME="bl-x86_64-unknown-linux-gnu.tar.gz"
 
 # Check required commands
-for cmd in curl tar; do
+for cmd in curl tar sha256sum; do
   if ! command -v "$cmd" >/dev/null 2>&1; then
     printf "[ERROR] Required command '%s' not found. Please install it.\n" "$cmd" >&2
     exit 1
@@ -29,14 +29,23 @@ fi
 
 printf "Latest version: %s\n" "$tag"
 
-# Download and extract
+# Download and verify
 url="https://github.com/${REPO}/releases/download/${tag}/${ASSET_NAME}"
+checksum_url="${url}.sha256"
 printf "Downloading %s...\n" "$url"
 
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
 curl -fsSL "$url" -o "${tmpdir}/${ASSET_NAME}"
+curl -fsSL "$checksum_url" -o "${tmpdir}/${ASSET_NAME}.sha256"
+
+printf "Verifying checksum...\n"
+(cd "$tmpdir" && sha256sum -c "${ASSET_NAME}.sha256") || {
+  printf "[ERROR] Checksum verification failed\n" >&2
+  exit 1
+}
+
 tar xzf "${tmpdir}/${ASSET_NAME}" -C "$tmpdir"
 
 # Install

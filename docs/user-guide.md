@@ -19,9 +19,14 @@
 
 ### Using the install script (Linux, macOS)
 
+Requires `curl`, `tar`, and `sha256sum` (standard on Linux; on macOS install via `brew install coreutils`).
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.sh | sh
 ```
+
+The script downloads the binary tarball and its SHA-256 checksum, verifies the checksum before extracting,
+then installs the binary.
 
 The binary is installed to `~/.local/bin/bl` by default.
 To install to a different location, set the `INSTALL_DIR` environment variable:
