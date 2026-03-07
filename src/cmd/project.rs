@@ -1,4 +1,6 @@
+use anstream::println;
 use anyhow::{Context, Result};
+use owo_colors::OwoColorize;
 
 use crate::api::{BacklogApi, BacklogClient, project::Project};
 
@@ -41,20 +43,25 @@ pub fn list_with(json: bool, api: &dyn BacklogApi) -> Result<()> {
         );
     } else {
         for p in &projects {
-            println!("{}", format_project_text(p));
+            let archived = if p.archived {
+                format!(" {}", "[archived]".yellow())
+            } else {
+                String::new()
+            };
+            println!("[{}] {}{}", p.project_key.cyan().bold(), p.name, archived);
         }
     }
     Ok(())
 }
 
-fn format_project_text(p: &Project) -> String {
-    let archived = if p.archived { " [archived]" } else { "" };
-    format!("[{}] {}{}", p.project_key, p.name, archived)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn format_project_text(p: &Project) -> String {
+        let archived = if p.archived { " [archived]" } else { "" };
+        format!("[{}] {}{}", p.project_key, p.name, archived)
+    }
     use crate::api::{
         activity::Activity, disk_usage::DiskUsage, project::Project, space::Space,
         space_notification::SpaceNotification, user::User,

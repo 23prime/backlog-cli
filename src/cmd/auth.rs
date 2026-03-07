@@ -1,4 +1,6 @@
+use anstream::println;
 use anyhow::{Context, Result};
+use owo_colors::OwoColorize;
 
 use crate::api::{BacklogApi, BacklogClient, user::User};
 use crate::config::{self, AuthConfig};
@@ -14,7 +16,11 @@ pub fn login() -> Result<()> {
     cfg.auth = Some(AuthConfig { space_key });
     config::save(&cfg)?;
 
-    println!("Logged in successfully. (API key stored in {})", backend);
+    println!(
+        "{} (API key stored in {})",
+        "Logged in successfully.".green(),
+        backend
+    );
     Ok(())
 }
 
@@ -26,7 +32,7 @@ pub fn logout() -> Result<()> {
     let mut cfg = config::load()?;
     cfg.auth = None;
     config::save(&cfg)?;
-    println!("Logged out.");
+    println!("{}", "Logged out.".yellow());
     Ok(())
 }
 
@@ -47,7 +53,7 @@ pub fn status(json: bool) -> Result<()> {
             if json {
                 println!("{}", serde_json::json!({"error": e.to_string()}));
             } else {
-                println!("  ! {}", e);
+                println!("  {} {}", "!".red(), e);
             }
             return Ok(());
         }
@@ -79,8 +85,8 @@ pub fn status_with(
     println!("  - Stored in: {}", backend);
 
     match api.get_myself() {
-        Ok(user) => println!("  - Logged in as {} ({})", user.name, user.user_id),
-        Err(e) => println!("  ! Token invalid: {}", e),
+        Ok(user) => println!("  - Logged in as {} ({})", user.name.green(), user.user_id),
+        Err(e) => println!("  {} Token invalid: {}", "!".red(), e),
     }
 
     Ok(())
@@ -93,29 +99,29 @@ pub fn check_keyring() -> Result<()> {
     let entry = match keyring::Entry::new("bl", TEST_KEY) {
         Ok(e) => e,
         Err(e) => {
-            println!("create entry ... FAIL ({e})");
+            println!("create entry ... {} ({e})", "FAIL".red());
             return Ok(());
         }
     };
-    println!("create entry ... ok");
+    println!("create entry ... {}", "ok".green());
 
     match entry.set_password(TEST_VAL) {
-        Ok(()) => println!("write        ... ok"),
+        Ok(()) => println!("write        ... {}", "ok".green()),
         Err(e) => {
-            println!("write        ... FAIL ({e})");
+            println!("write        ... {} ({e})", "FAIL".red());
             return Ok(());
         }
     }
 
     match entry.get_password() {
-        Ok(v) if v == TEST_VAL => println!("read         ... ok"),
-        Ok(v) => println!("read         ... FAIL (got {v:?})"),
-        Err(e) => println!("read         ... FAIL ({e})"),
+        Ok(v) if v == TEST_VAL => println!("read         ... {}", "ok".green()),
+        Ok(v) => println!("read         ... {} (got {v:?})", "FAIL".red()),
+        Err(e) => println!("read         ... {} ({e})", "FAIL".red()),
     }
 
     match entry.delete_credential() {
-        Ok(()) => println!("delete       ... ok"),
-        Err(e) => println!("delete       ... FAIL ({e})"),
+        Ok(()) => println!("delete       ... {}", "ok".green()),
+        Err(e) => println!("delete       ... {} ({e})", "FAIL".red()),
     }
 
     Ok(())

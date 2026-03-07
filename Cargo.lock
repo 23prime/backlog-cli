@@ -337,11 +337,13 @@ checksum = "843867be96c8daad0d758b57df9392b6d8d271134fce549de6ce169ff98a92af"
 name = "bl"
 version = "0.1.4"
 dependencies = [
+ "anstream",
  "anyhow",
  "clap",
  "dirs",
  "httpmock",
  "keyring",
+ "owo-colors",
  "reqwest",
  "rpassword",
  "serde",
@@ -1419,6 +1421,12 @@ dependencies = [
  "futures-core",
  "pin-project-lite",
 ]
+
+[[package]]
+name = "owo-colors"
+version = "4.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d211803b9b6b570f68772237e415a029d5a50c65d382910b879fb19d3271f94d"
 
 [[package]]
 name = "parking"
