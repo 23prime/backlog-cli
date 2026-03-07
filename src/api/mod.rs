@@ -4,6 +4,24 @@ use reqwest::blocking::Client;
 pub mod space;
 pub mod user;
 
+use space::Space;
+use user::User;
+
+pub trait BacklogApi {
+    fn get_space(&self) -> Result<Space>;
+    fn get_myself(&self) -> Result<User>;
+}
+
+impl BacklogApi for BacklogClient {
+    fn get_space(&self) -> Result<Space> {
+        self.get_space()
+    }
+
+    fn get_myself(&self) -> Result<User> {
+        self.get_myself()
+    }
+}
+
 pub struct BacklogClient {
     client: Client,
     base_url: String,
@@ -58,10 +76,69 @@ fn extract_error_message(body: &serde_json::Value) -> &str {
         .unwrap_or("Unknown error")
 }
 
+impl BacklogClient {
+    pub(crate) fn new_with(base_url: &str, api_key: &str) -> Result<Self> {
+        let client = Client::builder()
+            .build()
+            .context("Failed to build HTTP client")?;
+        Ok(Self {
+            client,
+            base_url: base_url.to_string(),
+            api_key: api_key.to_string(),
+        })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use httpmock::prelude::*;
     use serde_json::json;
+
+    const TEST_KEY: &str = "test-api-key";
+
+    #[test]
+    fn get_returns_body_on_success() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET)
+                .path("/space")
+                .query_param("apiKey", TEST_KEY);
+            then.status(200)
+                .json_body(json!({"spaceKey": "mycompany", "name": "My Company"}));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let body = client.get("/space").unwrap();
+        assert_eq!(body["spaceKey"], "mycompany");
+    }
+
+    #[test]
+    fn get_returns_error_with_api_message_on_failure() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/space");
+            then.status(401)
+                .json_body(json!({"errors": [{"message": "Authentication failure"}]}));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let err = client.get("/space").unwrap_err();
+        assert!(err.to_string().contains("Authentication failure"));
+    }
+
+    #[test]
+    fn get_returns_error_with_fallback_message_on_unknown_error() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/space");
+            then.status(500).json_body(json!({}));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let err = client.get("/space").unwrap_err();
+        assert!(err.to_string().contains("Unknown error"));
+    }
 
     #[test]
     fn extract_error_message_from_errors_array() {

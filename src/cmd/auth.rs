@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 
-use crate::api::{BacklogClient, user::User};
+use crate::api::{BacklogApi, BacklogClient, user::User};
 use crate::config::{self, AuthConfig};
 use crate::secret::{self, Backend};
 
@@ -53,21 +53,32 @@ pub fn status(json: bool) -> Result<()> {
         }
     };
 
+    let client = BacklogClient::new_with(
+        &format!("https://{}.backlog.com/api/v2", auth.space_key),
+        &api_key,
+    )?;
+    status_with(json, &auth.space_key, &api_key, backend, &client)
+}
+
+pub fn status_with(
+    json: bool,
+    space_key: &str,
+    api_key: &str,
+    backend: Backend,
+    api: &dyn BacklogApi,
+) -> Result<()> {
     if json {
-        let user = BacklogClient::from_config()
-            .and_then(|c| c.get_myself())
-            .ok();
-        println!("{}", build_status_json(&auth.space_key, backend, user)?);
+        let user = api.get_myself().ok();
+        println!("{}", build_status_json(space_key, backend, user)?);
         return Ok(());
     }
 
     let masked = format!("{}...", &api_key[..4.min(api_key.len())]);
-    println!("Space: {}.backlog.com", auth.space_key);
+    println!("Space: {}.backlog.com", space_key);
     println!("  - API key: {}", masked);
     println!("  - Stored in: {}", backend);
 
-    // Verify credentials against the API
-    match BacklogClient::from_config().and_then(|c| c.get_myself()) {
+    match api.get_myself() {
         Ok(user) => println!("  - Logged in as {} ({})", user.name, user.user_id),
         Err(e) => println!("  ! Token invalid: {}", e),
     }
@@ -134,6 +145,24 @@ fn prompt(label: &str) -> Result<String> {
 mod tests {
     use super::*;
     use crate::api::user::User;
+    use crate::api::{BacklogApi, space::Space};
+    use anyhow::anyhow;
+
+    struct MockApi {
+        user: Option<User>,
+    }
+
+    impl BacklogApi for MockApi {
+        fn get_space(&self) -> anyhow::Result<Space> {
+            unimplemented!()
+        }
+
+        fn get_myself(&self) -> anyhow::Result<User> {
+            self.user
+                .clone()
+                .ok_or_else(|| anyhow!("invalid credentials"))
+        }
+    }
 
     fn sample_user() -> User {
         User {
@@ -162,5 +191,37 @@ mod tests {
         assert_eq!(value["space_key"], "mycompany");
         assert_eq!(value["stored_in"], "Credentials file");
         assert!(value["user"].is_null());
+    }
+
+    #[test]
+    fn status_with_text_shows_user_info() {
+        let api = MockApi {
+            user: Some(sample_user()),
+        };
+        let result = status_with(false, "mycompany", "abcd1234", Backend::Keyring, &api);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn status_with_text_shows_token_invalid_on_error() {
+        let api = MockApi { user: None };
+        let result = status_with(false, "mycompany", "abcd1234", Backend::Keyring, &api);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn status_with_json_includes_user_fields() {
+        let api = MockApi {
+            user: Some(sample_user()),
+        };
+        let result = status_with(true, "mycompany", "abcd1234", Backend::File, &api);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn status_with_json_null_user_on_api_error() {
+        let api = MockApi { user: None };
+        let result = status_with(true, "mycompany", "abcd1234", Backend::File, &api);
+        assert!(result.is_ok());
     }
 }

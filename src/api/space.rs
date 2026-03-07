@@ -1,14 +1,14 @@
 use anyhow::Result;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use super::BacklogClient;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Space {
     pub space_key: String,
     pub name: String,
-    pub _owner_id: u64,
+    pub owner_id: u64,
     pub lang: String,
     pub timezone: String,
     pub text_formatting_rule: String,
@@ -28,7 +28,52 @@ impl BacklogClient {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use httpmock::prelude::*;
     use serde_json::json;
+
+    fn space_json() -> serde_json::Value {
+        json!({
+            "spaceKey": "mycompany",
+            "name": "My Company",
+            "ownerId": 1,
+            "lang": "ja",
+            "timezone": "Asia/Tokyo",
+            "textFormattingRule": "markdown",
+            "created": "2020-01-01T00:00:00Z",
+            "updated": "2024-06-01T00:00:00Z"
+        })
+    }
+
+    #[test]
+    fn get_space_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/space");
+            then.status(200).json_body(space_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let space = client.get_space().unwrap();
+        assert_eq!(space.space_key, "mycompany");
+        assert_eq!(space.name, "My Company");
+        assert_eq!(space.lang, "ja");
+        assert_eq!(space.timezone, "Asia/Tokyo");
+        assert_eq!(space.text_formatting_rule, "markdown");
+    }
+
+    #[test]
+    fn get_space_returns_error_on_api_failure() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/space");
+            then.status(401)
+                .json_body(json!({"errors": [{"message": "Authentication failure"}]}));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let err = client.get_space().unwrap_err();
+        assert!(err.to_string().contains("Authentication failure"));
+    }
 
     #[test]
     fn deserialize_space() {
