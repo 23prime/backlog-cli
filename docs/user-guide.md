@@ -4,6 +4,7 @@
 
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
+- [Uninstallation](#uninstallation)
 - [Authentication](#authentication)
 - [Commands](#commands)
 - [Command coverage](#command-coverage)
@@ -63,6 +64,37 @@ git clone https://github.com/23prime/backlog-cli.git
 cd backlog-cli
 cargo install --path .
 ```
+
+## Uninstallation
+
+### Uninstall script (Linux, macOS)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/uninstall.sh | sh
+```
+
+To also remove stored credentials and configuration files, pass `--purge`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/uninstall.sh | sh -s -- --purge
+```
+
+### Uninstall script (Windows)
+
+```powershell
+irm https://raw.githubusercontent.com/23prime/backlog-cli/latest/uninstall.ps1 | iex
+```
+
+To also remove stored credentials and configuration files, pass `-Purge`:
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/23prime/backlog-cli/latest/uninstall.ps1))) -Purge
+```
+
+> **Note:** `--purge` / `-Purge` runs `bl auth logout` before removing the binary,
+> which clears the API key from the system keyring and deletes the configuration directory.
+> Without this flag, only the binary is removed and credentials are left intact
+> (useful if you plan to reinstall later).
 
 ## Authentication
 
