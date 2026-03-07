@@ -180,6 +180,7 @@ Details:    3 project(s) — use --json for breakdown
 ## Command coverage
 
 The table below maps Backlog API v2 endpoints to `bl` commands.
+Commands that target a specific project accept a `--project <key>` flag.
 
 ### Space
 
@@ -188,18 +189,7 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | `bl space` | `GET /api/v2/space` | ✅ Implemented |
 | `bl space activities` | `GET /api/v2/space/activities` | ✅ Implemented |
 | `bl space disk-usage` | `GET /api/v2/space/diskUsage` | ✅ Implemented |
-
-### Issues
-
-| Command | API endpoint | Status |
-| --- | --- | --- |
-| `bl issue list` | `GET /api/v2/issues` | Planned |
-| `bl issue show <id>` | `GET /api/v2/issues/{issueIdOrKey}` | Planned |
-| `bl issue create` | `POST /api/v2/issues` | Planned |
-| `bl issue update <id>` | `PATCH /api/v2/issues/{issueIdOrKey}` | Planned |
-| `bl issue delete <id>` | `DELETE /api/v2/issues/{issueIdOrKey}` | Planned |
-| `bl issue comment list <id>` | `GET /api/v2/issues/{issueIdOrKey}/comments` | Planned |
-| `bl issue comment add <id>` | `POST /api/v2/issues/{issueIdOrKey}/comments` | Planned |
+| `bl space notification` | `GET /api/v2/space/notification` | Planned |
 
 ### Projects
 
@@ -207,6 +197,29 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | --- | --- | --- |
 | `bl project list` | `GET /api/v2/projects` | Planned |
 | `bl project show <key>` | `GET /api/v2/projects/{projectIdOrKey}` | Planned |
+| `bl project activities <key>` | `GET /api/v2/projects/{projectIdOrKey}/activities` | Planned |
+| `bl project disk-usage <key>` | `GET /api/v2/projects/{projectIdOrKey}/diskUsage` | Planned |
+| `bl project user list <key>` | `GET /api/v2/projects/{projectIdOrKey}/users` | Planned |
+| `bl project status list <key>` | `GET /api/v2/projects/{projectIdOrKey}/statuses` | Planned |
+| `bl project issue-type list <key>` | `GET /api/v2/projects/{projectIdOrKey}/issueTypes` | Planned |
+| `bl project category list <key>` | `GET /api/v2/projects/{projectIdOrKey}/categories` | Planned |
+| `bl project version list <key>` | `GET /api/v2/projects/{projectIdOrKey}/versions` | Planned |
+
+### Issues
+
+| Command | API endpoint | Status |
+| --- | --- | --- |
+| `bl issue list` | `GET /api/v2/issues` | Planned |
+| `bl issue count` | `GET /api/v2/issues/count` | Planned |
+| `bl issue show <id>` | `GET /api/v2/issues/{issueIdOrKey}` | Planned |
+| `bl issue create` | `POST /api/v2/issues` | Planned |
+| `bl issue update <id>` | `PATCH /api/v2/issues/{issueIdOrKey}` | Planned |
+| `bl issue delete <id>` | `DELETE /api/v2/issues/{issueIdOrKey}` | Planned |
+| `bl issue comment list <id>` | `GET /api/v2/issues/{issueIdOrKey}/comments` | Planned |
+| `bl issue comment add <id>` | `POST /api/v2/issues/{issueIdOrKey}/comments` | Planned |
+| `bl issue comment update <id> <comment-id>` | `PUT /api/v2/issues/{issueIdOrKey}/comments/{commentId}` | Planned |
+| `bl issue comment delete <id> <comment-id>` | `DELETE /api/v2/issues/{issueIdOrKey}/comments/{commentId}` | Planned |
+| `bl issue attachment list <id>` | `GET /api/v2/issues/{issueIdOrKey}/attachments` | Planned |
 
 ### Wiki
 
@@ -214,6 +227,30 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | --- | --- | --- |
 | `bl wiki list` | `GET /api/v2/wikis` | Planned |
 | `bl wiki show <id>` | `GET /api/v2/wikis/{wikiId}` | Planned |
+| `bl wiki create` | `POST /api/v2/wikis` | Planned |
+| `bl wiki update <id>` | `PUT /api/v2/wikis/{wikiId}` | Planned |
+| `bl wiki delete <id>` | `DELETE /api/v2/wikis/{wikiId}` | Planned |
+| `bl wiki history <id>` | `GET /api/v2/wikis/{wikiId}/history` | Planned |
+| `bl wiki attachment list <id>` | `GET /api/v2/wikis/{wikiId}/attachments` | Planned |
+
+### Pull Requests
+
+| Command | API endpoint | Status |
+| --- | --- | --- |
+| `bl pr list` | `GET /api/v2/projects/{projectIdOrKey}/pullRequests` | Planned |
+| `bl pr show <number>` | `GET /api/v2/projects/{projectIdOrKey}/pullRequests/{number}` | Planned |
+| `bl pr create` | `POST /api/v2/projects/{projectIdOrKey}/pullRequests` | Planned |
+| `bl pr update <number>` | `PUT /api/v2/projects/{projectIdOrKey}/pullRequests/{number}` | Planned |
+| `bl pr comment list <number>` | `GET /api/v2/projects/{projectIdOrKey}/pullRequests/{number}/comments` | Planned |
+| `bl pr comment add <number>` | `POST /api/v2/projects/{projectIdOrKey}/pullRequests/{number}/comments` | Planned |
+| `bl pr comment update <number> <comment-id>` | `PUT /api/v2/projects/{projectIdOrKey}/pullRequests/{number}/comments/{commentId}` | Planned |
+
+### Git Repositories
+
+| Command | API endpoint | Status |
+| --- | --- | --- |
+| `bl git repo list` | `GET /api/v2/projects/{projectIdOrKey}/repositories` | Planned |
+| `bl git repo show <repo>` | `GET /api/v2/projects/{projectIdOrKey}/repositories/{repoId}` | Planned |
 
 ### Users
 
@@ -222,6 +259,31 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | `bl auth status` | `GET /api/v2/users/myself` | ✅ Implemented (internal) |
 | `bl user list` | `GET /api/v2/users` | Planned |
 | `bl user show <id>` | `GET /api/v2/users/{userId}` | Planned |
+| `bl user activities <id>` | `GET /api/v2/users/{userId}/activities` | Planned |
+| `bl user recently-viewed <id>` | `GET /api/v2/users/{userId}/recentlyViewedIssues` | Planned |
+
+### Notifications
+
+| Command | API endpoint | Status |
+| --- | --- | --- |
+| `bl notification list` | `GET /api/v2/notifications` | Planned |
+| `bl notification read <id>` | `PUT /api/v2/notifications/{notificationId}` | Planned |
+| `bl notification read-all` | `DELETE /api/v2/notifications/unread` | Planned |
+
+### Watching
+
+| Command | API endpoint | Status |
+| --- | --- | --- |
+| `bl watch list` | `GET /api/v2/watching` | Planned |
+| `bl watch add` | `POST /api/v2/watching` | Planned |
+| `bl watch delete <id>` | `DELETE /api/v2/watching/{watchingId}` | Planned |
+
+### Teams
+
+| Command | API endpoint | Status |
+| --- | --- | --- |
+| `bl team list` | `GET /api/v2/teams` | Planned |
+| `bl team show <id>` | `GET /api/v2/teams/{teamId}` | Planned |
 
 ## Configuration
 
