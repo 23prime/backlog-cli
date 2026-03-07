@@ -140,13 +140,13 @@ bl space disk-usage --json
 Example output:
 
 ```text
-Total:   5242880 bytes
-File:    1024 bytes
-Wiki:    512 bytes
-Git:     256 bytes
-Git LFS: 128 bytes
-SVN:     64 bytes
-Issue:   2048 bytes
+Capacity:   5242880 bytes
+Issue:      2048 bytes
+Wiki:       512 bytes
+File:       1024 bytes
+Subversion: 64 bytes
+Git:        256 bytes
+Git LFS:    128 bytes
 ```
 
 ## Command coverage

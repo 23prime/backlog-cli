@@ -4,15 +4,30 @@ use serde::{Deserialize, Serialize};
 use super::BacklogClient;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct DiskUsage {
-    pub space_size: u64,
-    pub file_size: u64,
-    pub wiki_size: u64,
-    pub git_size: u64,
-    pub git_lfs_size: u64,
-    pub svn_size: u64,
-    pub issue_size: u64,
+    pub capacity: u64,
+    pub issue: u64,
+    pub wiki: u64,
+    pub file: u64,
+    pub subversion: u64,
+    pub git: u64,
+    #[serde(rename = "gitLFS")]
+    pub git_lfs: u64,
+    pub details: Vec<DiskUsageDetail>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DiskUsageDetail {
+    pub project_id: u64,
+    pub issue: u64,
+    pub wiki: u64,
+    pub document: u64,
+    pub file: u64,
+    pub subversion: u64,
+    pub git: u64,
+    #[serde(rename = "gitLFS")]
+    pub git_lfs: u64,
 }
 
 impl BacklogClient {
@@ -36,13 +51,23 @@ mod tests {
 
     fn disk_usage_json() -> serde_json::Value {
         json!({
-            "spaceSize": 5242880,
-            "fileSize": 1024,
-            "wikiSize": 512,
-            "gitSize": 256,
-            "gitLfsSize": 128,
-            "svnSize": 64,
-            "issueSize": 2048
+            "capacity": 5242880,
+            "issue": 2048,
+            "wiki": 512,
+            "file": 1024,
+            "subversion": 64,
+            "git": 256,
+            "gitLFS": 128,
+            "details": [{
+                "projectId": 1,
+                "issue": 1024,
+                "wiki": 256,
+                "document": 0,
+                "file": 512,
+                "subversion": 32,
+                "git": 128,
+                "gitLFS": 64
+            }]
         })
     }
 
@@ -56,9 +81,11 @@ mod tests {
 
         let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
         let usage = client.get_space_disk_usage().unwrap();
-        assert_eq!(usage.space_size, 5242880);
-        assert_eq!(usage.file_size, 1024);
-        assert_eq!(usage.git_lfs_size, 128);
+        assert_eq!(usage.capacity, 5242880);
+        assert_eq!(usage.file, 1024);
+        assert_eq!(usage.git_lfs, 128);
+        assert_eq!(usage.details.len(), 1);
+        assert_eq!(usage.details[0].project_id, 1);
     }
 
     #[test]

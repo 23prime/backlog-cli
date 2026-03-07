@@ -74,14 +74,14 @@ pub fn disk_usage_with(json: bool, api: &dyn BacklogApi) -> Result<()> {
 
 fn format_disk_usage_text(usage: &DiskUsage) -> String {
     format!(
-        "Total:   {} bytes\nFile:    {} bytes\nWiki:    {} bytes\nGit:     {} bytes\nGit LFS: {} bytes\nSVN:     {} bytes\nIssue:   {} bytes",
-        usage.space_size,
-        usage.file_size,
-        usage.wiki_size,
-        usage.git_size,
-        usage.git_lfs_size,
-        usage.svn_size,
-        usage.issue_size,
+        "Capacity:   {} bytes\nIssue:      {} bytes\nWiki:       {} bytes\nFile:       {} bytes\nSubversion: {} bytes\nGit:        {} bytes\nGit LFS:    {} bytes",
+        usage.capacity,
+        usage.issue,
+        usage.wiki,
+        usage.file,
+        usage.subversion,
+        usage.git,
+        usage.git_lfs,
     )
 }
 
@@ -256,13 +256,14 @@ mod tests {
 
     fn sample_disk_usage() -> DiskUsage {
         DiskUsage {
-            space_size: 5242880,
-            file_size: 1024,
-            wiki_size: 512,
-            git_size: 256,
-            git_lfs_size: 128,
-            svn_size: 64,
-            issue_size: 2048,
+            capacity: 5242880,
+            issue: 2048,
+            wiki: 512,
+            file: 1024,
+            subversion: 64,
+            git: 256,
+            git_lfs: 128,
+            details: vec![],
         }
     }
 
@@ -301,7 +302,7 @@ mod tests {
     fn format_disk_usage_text_contains_fields() {
         let text = format_disk_usage_text(&sample_disk_usage());
         assert!(text.contains("5242880"));
-        assert!(text.contains("1024"));
+        assert!(text.contains("2048"));
         assert!(text.contains("128"));
     }
 }
