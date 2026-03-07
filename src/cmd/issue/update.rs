@@ -4,71 +4,49 @@ use anyhow::{Context, Result};
 use crate::api::{BacklogApi, BacklogClient};
 use crate::cmd::issue::show::print_issue;
 
-#[allow(clippy::too_many_arguments)]
-pub fn update(
-    key: &str,
-    summary: Option<&str>,
-    description: Option<&str>,
-    status_id: Option<u64>,
-    priority_id: Option<u64>,
-    assignee_id: Option<u64>,
-    due_date: Option<&str>,
-    comment: Option<&str>,
-    json: bool,
-) -> Result<()> {
-    let client = BacklogClient::from_config()?;
-    update_with(
-        key,
-        summary,
-        description,
-        status_id,
-        priority_id,
-        assignee_id,
-        due_date,
-        comment,
-        json,
-        &client,
-    )
+pub struct IssueUpdateArgs {
+    pub key: String,
+    pub summary: Option<String>,
+    pub description: Option<String>,
+    pub status_id: Option<u64>,
+    pub priority_id: Option<u64>,
+    pub assignee_id: Option<u64>,
+    pub due_date: Option<String>,
+    pub comment: Option<String>,
+    pub json: bool,
 }
 
-#[allow(clippy::too_many_arguments)]
-pub fn update_with(
-    key: &str,
-    summary: Option<&str>,
-    description: Option<&str>,
-    status_id: Option<u64>,
-    priority_id: Option<u64>,
-    assignee_id: Option<u64>,
-    due_date: Option<&str>,
-    comment: Option<&str>,
-    json: bool,
-    api: &dyn BacklogApi,
-) -> Result<()> {
+pub fn update(args: &IssueUpdateArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    update_with(args, &client)
+}
+
+pub fn update_with(args: &IssueUpdateArgs, api: &dyn BacklogApi) -> Result<()> {
     let mut params: Vec<(String, String)> = Vec::new();
-    if let Some(s) = summary {
-        params.push(("summary".to_string(), s.to_string()));
+    if let Some(s) = &args.summary {
+        params.push(("summary".to_string(), s.clone()));
     }
-    if let Some(d) = description {
-        params.push(("description".to_string(), d.to_string()));
+    if let Some(d) = &args.description {
+        params.push(("description".to_string(), d.clone()));
     }
-    if let Some(id) = status_id {
+    if let Some(id) = args.status_id {
         params.push(("statusId".to_string(), id.to_string()));
     }
-    if let Some(id) = priority_id {
+    if let Some(id) = args.priority_id {
         params.push(("priorityId".to_string(), id.to_string()));
     }
-    if let Some(id) = assignee_id {
+    if let Some(id) = args.assignee_id {
         params.push(("assigneeId".to_string(), id.to_string()));
     }
-    if let Some(date) = due_date {
-        params.push(("dueDate".to_string(), date.to_string()));
+    if let Some(date) = &args.due_date {
+        params.push(("dueDate".to_string(), date.clone()));
     }
-    if let Some(c) = comment {
-        params.push(("comment".to_string(), c.to_string()));
+    if let Some(c) = &args.comment {
+        params.push(("comment".to_string(), c.clone()));
     }
 
-    let issue = api.update_issue(key, &params)?;
-    if json {
+    let issue = api.update_issue(&args.key, &params)?;
+    if args.json {
         println!(
             "{}",
             serde_json::to_string_pretty(&issue).context("Failed to serialize JSON")?
@@ -204,17 +182,26 @@ mod tests {
         }
     }
 
+    fn args(json: bool) -> IssueUpdateArgs {
+        IssueUpdateArgs {
+            key: "TEST-1".to_string(),
+            summary: None,
+            description: None,
+            status_id: None,
+            priority_id: None,
+            assignee_id: None,
+            due_date: None,
+            comment: None,
+            json,
+        }
+    }
+
     #[test]
     fn update_with_text_output_succeeds() {
         let api = MockApi {
             issue: Some(sample_issue()),
         };
-        assert!(
-            update_with(
-                "TEST-1", None, None, None, None, None, None, None, false, &api
-            )
-            .is_ok()
-        );
+        assert!(update_with(&args(false), &api).is_ok());
     }
 
     #[test]
@@ -222,21 +209,13 @@ mod tests {
         let api = MockApi {
             issue: Some(sample_issue()),
         };
-        assert!(
-            update_with(
-                "TEST-1", None, None, None, None, None, None, None, true, &api
-            )
-            .is_ok()
-        );
+        assert!(update_with(&args(true), &api).is_ok());
     }
 
     #[test]
     fn update_with_propagates_api_error() {
         let api = MockApi { issue: None };
-        let err = update_with(
-            "TEST-1", None, None, None, None, None, None, None, false, &api,
-        )
-        .unwrap_err();
+        let err = update_with(&args(false), &api).unwrap_err();
         assert!(err.to_string().contains("update failed"));
     }
 }

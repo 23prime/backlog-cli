@@ -4,21 +4,22 @@ use anyhow::{Context, Result};
 use crate::api::{BacklogApi, BacklogClient};
 use crate::cmd::issue::comment::list::format_comment_row;
 
-pub fn update(key: &str, comment_id: u64, content: &str, json: bool) -> Result<()> {
-    let client = BacklogClient::from_config()?;
-    update_with(key, comment_id, content, json, &client)
+pub struct IssueCommentUpdateArgs {
+    pub key: String,
+    pub comment_id: u64,
+    pub content: String,
+    pub json: bool,
 }
 
-pub fn update_with(
-    key: &str,
-    comment_id: u64,
-    content: &str,
-    json: bool,
-    api: &dyn BacklogApi,
-) -> Result<()> {
-    let params = vec![("content".to_string(), content.to_string())];
-    let comment = api.update_issue_comment(key, comment_id, &params)?;
-    if json {
+pub fn update(args: &IssueCommentUpdateArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    update_with(args, &client)
+}
+
+pub fn update_with(args: &IssueCommentUpdateArgs, api: &dyn BacklogApi) -> Result<()> {
+    let params = vec![("content".to_string(), args.content.clone())];
+    let comment = api.update_issue_comment(&args.key, args.comment_id, &params)?;
+    if args.json {
         println!(
             "{}",
             serde_json::to_string_pretty(&comment).context("Failed to serialize JSON")?
@@ -154,12 +155,21 @@ mod tests {
         }
     }
 
+    fn args(json: bool) -> IssueCommentUpdateArgs {
+        IssueCommentUpdateArgs {
+            key: "TEST-1".to_string(),
+            comment_id: 1,
+            content: "updated".to_string(),
+            json,
+        }
+    }
+
     #[test]
     fn update_with_text_output_succeeds() {
         let api = MockApi {
             comment: Some(sample_comment()),
         };
-        assert!(update_with("TEST-1", 1, "updated", false, &api).is_ok());
+        assert!(update_with(&args(false), &api).is_ok());
     }
 
     #[test]
@@ -167,13 +177,13 @@ mod tests {
         let api = MockApi {
             comment: Some(sample_comment()),
         };
-        assert!(update_with("TEST-1", 1, "updated", true, &api).is_ok());
+        assert!(update_with(&args(true), &api).is_ok());
     }
 
     #[test]
     fn update_with_propagates_api_error() {
         let api = MockApi { comment: None };
-        let err = update_with("TEST-1", 1, "updated", false, &api).unwrap_err();
+        let err = update_with(&args(false), &api).unwrap_err();
         assert!(err.to_string().contains("update failed"));
     }
 }

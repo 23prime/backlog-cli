@@ -4,14 +4,19 @@ use owo_colors::OwoColorize;
 
 use crate::api::{BacklogApi, BacklogClient};
 
-pub fn list(key: &str, json: bool) -> Result<()> {
-    let client = BacklogClient::from_config()?;
-    list_with(key, json, &client)
+pub struct IssueAttachmentListArgs {
+    pub key: String,
+    pub json: bool,
 }
 
-pub fn list_with(key: &str, json: bool, api: &dyn BacklogApi) -> Result<()> {
-    let attachments = api.get_issue_attachments(key)?;
-    if json {
+pub fn list(args: &IssueAttachmentListArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    list_with(args, &client)
+}
+
+pub fn list_with(args: &IssueAttachmentListArgs, api: &dyn BacklogApi) -> Result<()> {
+    let attachments = api.get_issue_attachments(&args.key)?;
+    if args.json {
         println!(
             "{}",
             serde_json::to_string_pretty(&attachments).context("Failed to serialize JSON")?
@@ -178,12 +183,19 @@ mod tests {
         }
     }
 
+    fn args(json: bool) -> IssueAttachmentListArgs {
+        IssueAttachmentListArgs {
+            key: "TEST-1".to_string(),
+            json,
+        }
+    }
+
     #[test]
     fn list_with_text_output_succeeds() {
         let api = MockApi {
             attachments: Some(vec![sample_attachment()]),
         };
-        assert!(list_with("TEST-1", false, &api).is_ok());
+        assert!(list_with(&args(false), &api).is_ok());
     }
 
     #[test]
@@ -191,13 +203,13 @@ mod tests {
         let api = MockApi {
             attachments: Some(vec![sample_attachment()]),
         };
-        assert!(list_with("TEST-1", true, &api).is_ok());
+        assert!(list_with(&args(true), &api).is_ok());
     }
 
     #[test]
     fn list_with_propagates_api_error() {
         let api = MockApi { attachments: None };
-        let err = list_with("TEST-1", false, &api).unwrap_err();
+        let err = list_with(&args(false), &api).unwrap_err();
         assert!(err.to_string().contains("no attachments"));
     }
 }

@@ -4,14 +4,19 @@ use owo_colors::OwoColorize;
 
 use crate::api::{BacklogApi, BacklogClient, issue::Issue};
 
-pub fn show(key: &str, json: bool) -> Result<()> {
-    let client = BacklogClient::from_config()?;
-    show_with(key, json, &client)
+pub struct IssueShowArgs {
+    pub key: String,
+    pub json: bool,
 }
 
-pub fn show_with(key: &str, json: bool, api: &dyn BacklogApi) -> Result<()> {
-    let issue = api.get_issue(key)?;
-    if json {
+pub fn show(args: &IssueShowArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    show_with(args, &client)
+}
+
+pub fn show_with(args: &IssueShowArgs, api: &dyn BacklogApi) -> Result<()> {
+    let issue = api.get_issue(&args.key)?;
+    if args.json {
         println!(
             "{}",
             serde_json::to_string_pretty(&issue).context("Failed to serialize JSON")?
@@ -170,12 +175,19 @@ mod tests {
         }
     }
 
+    fn args(json: bool) -> IssueShowArgs {
+        IssueShowArgs {
+            key: "TEST-1".to_string(),
+            json,
+        }
+    }
+
     #[test]
     fn show_with_text_output_succeeds() {
         let api = MockApi {
             issue: Some(sample_issue()),
         };
-        assert!(show_with("TEST-1", false, &api).is_ok());
+        assert!(show_with(&args(false), &api).is_ok());
     }
 
     #[test]
@@ -183,13 +195,20 @@ mod tests {
         let api = MockApi {
             issue: Some(sample_issue()),
         };
-        assert!(show_with("TEST-1", true, &api).is_ok());
+        assert!(show_with(&args(true), &api).is_ok());
     }
 
     #[test]
     fn show_with_propagates_api_error() {
         let api = MockApi { issue: None };
-        let err = show_with("TEST-999", false, &api).unwrap_err();
+        let err = show_with(
+            &IssueShowArgs {
+                key: "TEST-999".to_string(),
+                json: false,
+            },
+            &api,
+        )
+        .unwrap_err();
         assert!(err.to_string().contains("no issue"));
     }
 }

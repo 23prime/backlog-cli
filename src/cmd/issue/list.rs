@@ -5,66 +5,29 @@ use owo_colors::OwoColorize;
 use crate::api::{BacklogApi, BacklogClient, issue::Issue};
 use crate::cmd::issue::ParentChild;
 
-#[allow(clippy::too_many_arguments)]
-pub fn list(
-    project_ids: &[u64],
-    status_ids: &[u64],
-    assignee_ids: &[u64],
-    issue_type_ids: &[u64],
-    category_ids: &[u64],
-    milestone_ids: &[u64],
-    parent_child: Option<ParentChild>,
-    keyword: Option<&str>,
-    count: u32,
-    offset: u64,
-    json: bool,
-) -> Result<()> {
-    let client = BacklogClient::from_config()?;
-    list_with(
-        project_ids,
-        status_ids,
-        assignee_ids,
-        issue_type_ids,
-        category_ids,
-        milestone_ids,
-        parent_child,
-        keyword,
-        count,
-        offset,
-        json,
-        &client,
-    )
+pub struct IssueListArgs {
+    pub project_ids: Vec<u64>,
+    pub status_ids: Vec<u64>,
+    pub assignee_ids: Vec<u64>,
+    pub issue_type_ids: Vec<u64>,
+    pub category_ids: Vec<u64>,
+    pub milestone_ids: Vec<u64>,
+    pub parent_child: Option<ParentChild>,
+    pub keyword: Option<String>,
+    pub count: u32,
+    pub offset: u64,
+    pub json: bool,
 }
 
-#[allow(clippy::too_many_arguments)]
-pub fn list_with(
-    project_ids: &[u64],
-    status_ids: &[u64],
-    assignee_ids: &[u64],
-    issue_type_ids: &[u64],
-    category_ids: &[u64],
-    milestone_ids: &[u64],
-    parent_child: Option<ParentChild>,
-    keyword: Option<&str>,
-    count: u32,
-    offset: u64,
-    json: bool,
-    api: &dyn BacklogApi,
-) -> Result<()> {
-    let params = build_params(
-        project_ids,
-        status_ids,
-        assignee_ids,
-        issue_type_ids,
-        category_ids,
-        milestone_ids,
-        parent_child,
-        keyword,
-        count,
-        offset,
-    );
+pub fn list(args: &IssueListArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    list_with(args, &client)
+}
+
+pub fn list_with(args: &IssueListArgs, api: &dyn BacklogApi) -> Result<()> {
+    let params = build_params(args);
     let issues = api.get_issues(&params)?;
-    if json {
+    if args.json {
         println!(
             "{}",
             serde_json::to_string_pretty(&issues).context("Failed to serialize JSON")?
@@ -77,46 +40,34 @@ pub fn list_with(
     Ok(())
 }
 
-#[allow(clippy::too_many_arguments)]
-fn build_params(
-    project_ids: &[u64],
-    status_ids: &[u64],
-    assignee_ids: &[u64],
-    issue_type_ids: &[u64],
-    category_ids: &[u64],
-    milestone_ids: &[u64],
-    parent_child: Option<ParentChild>,
-    keyword: Option<&str>,
-    count: u32,
-    offset: u64,
-) -> Vec<(String, String)> {
+fn build_params(args: &IssueListArgs) -> Vec<(String, String)> {
     let mut params: Vec<(String, String)> = Vec::new();
-    for id in project_ids {
+    for id in &args.project_ids {
         params.push(("projectId[]".to_string(), id.to_string()));
     }
-    for id in status_ids {
+    for id in &args.status_ids {
         params.push(("statusId[]".to_string(), id.to_string()));
     }
-    for id in assignee_ids {
+    for id in &args.assignee_ids {
         params.push(("assigneeId[]".to_string(), id.to_string()));
     }
-    for id in issue_type_ids {
+    for id in &args.issue_type_ids {
         params.push(("issueTypeId[]".to_string(), id.to_string()));
     }
-    for id in category_ids {
+    for id in &args.category_ids {
         params.push(("categoryId[]".to_string(), id.to_string()));
     }
-    for id in milestone_ids {
+    for id in &args.milestone_ids {
         params.push(("milestoneId[]".to_string(), id.to_string()));
     }
-    if let Some(pc) = parent_child {
+    if let Some(pc) = &args.parent_child {
         params.push(("parentChild".to_string(), pc.to_api_value().to_string()));
     }
-    if let Some(kw) = keyword {
-        params.push(("keyword".to_string(), kw.to_string()));
+    if let Some(kw) = &args.keyword {
+        params.push(("keyword".to_string(), kw.clone()));
     }
-    params.push(("count".to_string(), count.to_string()));
-    params.push(("offset".to_string(), offset.to_string()));
+    params.push(("count".to_string(), args.count.to_string()));
+    params.push(("offset".to_string(), args.offset.to_string()));
     params
 }
 
@@ -322,12 +273,28 @@ mod tests {
         }
     }
 
+    fn args(json: bool) -> IssueListArgs {
+        IssueListArgs {
+            project_ids: vec![],
+            status_ids: vec![],
+            assignee_ids: vec![],
+            issue_type_ids: vec![],
+            category_ids: vec![],
+            milestone_ids: vec![],
+            parent_child: None,
+            keyword: None,
+            count: 20,
+            offset: 0,
+            json,
+        }
+    }
+
     #[test]
     fn list_with_text_output_succeeds() {
         let api = MockApi {
             issues: Some(vec![sample_issue()]),
         };
-        assert!(list_with(&[], &[], &[], &[], &[], &[], None, None, 20, 0, false, &api).is_ok());
+        assert!(list_with(&args(false), &api).is_ok());
     }
 
     #[test]
@@ -335,14 +302,13 @@ mod tests {
         let api = MockApi {
             issues: Some(vec![sample_issue()]),
         };
-        assert!(list_with(&[], &[], &[], &[], &[], &[], None, None, 20, 0, true, &api).is_ok());
+        assert!(list_with(&args(true), &api).is_ok());
     }
 
     #[test]
     fn list_with_propagates_api_error() {
         let api = MockApi { issues: None };
-        let err =
-            list_with(&[], &[], &[], &[], &[], &[], None, None, 20, 0, false, &api).unwrap_err();
+        let err = list_with(&args(false), &api).unwrap_err();
         assert!(err.to_string().contains("no issues"));
     }
 
@@ -374,18 +340,20 @@ mod tests {
 
     #[test]
     fn build_params_includes_all_fields() {
-        let params = build_params(
-            &[1, 2],
-            &[3],
-            &[4],
-            &[5],
-            &[6],
-            &[7],
-            Some(ParentChild::NotChild),
-            Some("login"),
-            50,
-            10,
-        );
+        let args = IssueListArgs {
+            project_ids: vec![1, 2],
+            status_ids: vec![3],
+            assignee_ids: vec![4],
+            issue_type_ids: vec![5],
+            category_ids: vec![6],
+            milestone_ids: vec![7],
+            parent_child: Some(ParentChild::NotChild),
+            keyword: Some("login".to_string()),
+            count: 50,
+            offset: 10,
+            json: false,
+        };
+        let params = build_params(&args);
         assert!(params.iter().any(|(k, v)| k == "projectId[]" && v == "1"));
         assert!(params.iter().any(|(k, v)| k == "projectId[]" && v == "2"));
         assert!(params.iter().any(|(k, v)| k == "statusId[]" && v == "3"));

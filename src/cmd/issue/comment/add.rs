@@ -4,15 +4,21 @@ use anyhow::{Context, Result};
 use crate::api::{BacklogApi, BacklogClient};
 use crate::cmd::issue::comment::list::format_comment_row;
 
-pub fn add(key: &str, content: &str, json: bool) -> Result<()> {
-    let client = BacklogClient::from_config()?;
-    add_with(key, content, json, &client)
+pub struct IssueCommentAddArgs {
+    pub key: String,
+    pub content: String,
+    pub json: bool,
 }
 
-pub fn add_with(key: &str, content: &str, json: bool, api: &dyn BacklogApi) -> Result<()> {
-    let params = vec![("content".to_string(), content.to_string())];
-    let comment = api.add_issue_comment(key, &params)?;
-    if json {
+pub fn add(args: &IssueCommentAddArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    add_with(args, &client)
+}
+
+pub fn add_with(args: &IssueCommentAddArgs, api: &dyn BacklogApi) -> Result<()> {
+    let params = vec![("content".to_string(), args.content.clone())];
+    let comment = api.add_issue_comment(&args.key, &params)?;
+    if args.json {
         println!(
             "{}",
             serde_json::to_string_pretty(&comment).context("Failed to serialize JSON")?
@@ -148,12 +154,20 @@ mod tests {
         }
     }
 
+    fn args(json: bool) -> IssueCommentAddArgs {
+        IssueCommentAddArgs {
+            key: "TEST-1".to_string(),
+            content: "hello".to_string(),
+            json,
+        }
+    }
+
     #[test]
     fn add_with_text_output_succeeds() {
         let api = MockApi {
             comment: Some(sample_comment()),
         };
-        assert!(add_with("TEST-1", "hello", false, &api).is_ok());
+        assert!(add_with(&args(false), &api).is_ok());
     }
 
     #[test]
@@ -161,13 +175,13 @@ mod tests {
         let api = MockApi {
             comment: Some(sample_comment()),
         };
-        assert!(add_with("TEST-1", "hello", true, &api).is_ok());
+        assert!(add_with(&args(true), &api).is_ok());
     }
 
     #[test]
     fn add_with_propagates_api_error() {
         let api = MockApi { comment: None };
-        let err = add_with("TEST-1", "hello", false, &api).unwrap_err();
+        let err = add_with(&args(false), &api).unwrap_err();
         assert!(err.to_string().contains("add failed"));
     }
 }

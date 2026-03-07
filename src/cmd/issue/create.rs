@@ -4,61 +4,41 @@ use anyhow::{Context, Result};
 use crate::api::{BacklogApi, BacklogClient};
 use crate::cmd::issue::show::print_issue;
 
-#[allow(clippy::too_many_arguments)]
-pub fn create(
-    project_id: u64,
-    summary: &str,
-    issue_type_id: u64,
-    priority_id: u64,
-    description: Option<&str>,
-    assignee_id: Option<u64>,
-    due_date: Option<&str>,
-    json: bool,
-) -> Result<()> {
-    let client = BacklogClient::from_config()?;
-    create_with(
-        project_id,
-        summary,
-        issue_type_id,
-        priority_id,
-        description,
-        assignee_id,
-        due_date,
-        json,
-        &client,
-    )
+pub struct IssueCreateArgs {
+    pub project_id: u64,
+    pub summary: String,
+    pub issue_type_id: u64,
+    pub priority_id: u64,
+    pub description: Option<String>,
+    pub assignee_id: Option<u64>,
+    pub due_date: Option<String>,
+    pub json: bool,
 }
 
-#[allow(clippy::too_many_arguments)]
-pub fn create_with(
-    project_id: u64,
-    summary: &str,
-    issue_type_id: u64,
-    priority_id: u64,
-    description: Option<&str>,
-    assignee_id: Option<u64>,
-    due_date: Option<&str>,
-    json: bool,
-    api: &dyn BacklogApi,
-) -> Result<()> {
+pub fn create(args: &IssueCreateArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    create_with(args, &client)
+}
+
+pub fn create_with(args: &IssueCreateArgs, api: &dyn BacklogApi) -> Result<()> {
     let mut params: Vec<(String, String)> = vec![
-        ("projectId".to_string(), project_id.to_string()),
-        ("summary".to_string(), summary.to_string()),
-        ("issueTypeId".to_string(), issue_type_id.to_string()),
-        ("priorityId".to_string(), priority_id.to_string()),
+        ("projectId".to_string(), args.project_id.to_string()),
+        ("summary".to_string(), args.summary.clone()),
+        ("issueTypeId".to_string(), args.issue_type_id.to_string()),
+        ("priorityId".to_string(), args.priority_id.to_string()),
     ];
-    if let Some(d) = description {
-        params.push(("description".to_string(), d.to_string()));
+    if let Some(d) = &args.description {
+        params.push(("description".to_string(), d.clone()));
     }
-    if let Some(id) = assignee_id {
+    if let Some(id) = args.assignee_id {
         params.push(("assigneeId".to_string(), id.to_string()));
     }
-    if let Some(date) = due_date {
-        params.push(("dueDate".to_string(), date.to_string()));
+    if let Some(date) = &args.due_date {
+        params.push(("dueDate".to_string(), date.clone()));
     }
 
     let issue = api.create_issue(&params)?;
-    if json {
+    if args.json {
         println!(
             "{}",
             serde_json::to_string_pretty(&issue).context("Failed to serialize JSON")?
@@ -194,12 +174,25 @@ mod tests {
         }
     }
 
+    fn args(json: bool) -> IssueCreateArgs {
+        IssueCreateArgs {
+            project_id: 1,
+            summary: "Bug".to_string(),
+            issue_type_id: 1,
+            priority_id: 2,
+            description: None,
+            assignee_id: None,
+            due_date: None,
+            json,
+        }
+    }
+
     #[test]
     fn create_with_text_output_succeeds() {
         let api = MockApi {
             issue: Some(sample_issue()),
         };
-        assert!(create_with(1, "Bug", 1, 2, None, None, None, false, &api).is_ok());
+        assert!(create_with(&args(false), &api).is_ok());
     }
 
     #[test]
@@ -207,13 +200,13 @@ mod tests {
         let api = MockApi {
             issue: Some(sample_issue()),
         };
-        assert!(create_with(1, "Bug", 1, 2, None, None, None, true, &api).is_ok());
+        assert!(create_with(&args(true), &api).is_ok());
     }
 
     #[test]
     fn create_with_propagates_api_error() {
         let api = MockApi { issue: None };
-        let err = create_with(1, "Bug", 1, 2, None, None, None, false, &api).unwrap_err();
+        let err = create_with(&args(false), &api).unwrap_err();
         assert!(err.to_string().contains("create failed"));
     }
 }

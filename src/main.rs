@@ -6,7 +6,14 @@ mod secret;
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
-use cmd::issue::ParentChild;
+use cmd::issue::attachment::IssueAttachmentListArgs;
+use cmd::issue::comment::{
+    IssueCommentAddArgs, IssueCommentDeleteArgs, IssueCommentListArgs, IssueCommentUpdateArgs,
+};
+use cmd::issue::{
+    IssueCountArgs, IssueCreateArgs, IssueDeleteArgs, IssueListArgs, IssueShowArgs,
+    IssueUpdateArgs, ParentChild,
+};
 
 #[derive(Parser)]
 #[command(name = "bl", version, about = "Backlog CLI")]
@@ -473,19 +480,19 @@ fn main() -> Result<()> {
                 count,
                 offset,
                 json,
-            } => cmd::issue::list(
-                &project_ids,
-                &status_ids,
-                &assignee_ids,
-                &issue_type_ids,
-                &category_ids,
-                &milestone_ids,
+            } => cmd::issue::list(&IssueListArgs {
+                project_ids,
+                status_ids,
+                assignee_ids,
+                issue_type_ids,
+                category_ids,
+                milestone_ids,
                 parent_child,
-                keyword.as_deref(),
+                keyword,
                 count,
                 offset,
                 json,
-            ),
+            }),
             IssueCommands::Count {
                 project_ids,
                 status_ids,
@@ -496,18 +503,21 @@ fn main() -> Result<()> {
                 parent_child,
                 keyword,
                 json,
-            } => cmd::issue::count(
-                &project_ids,
-                &status_ids,
-                &assignee_ids,
-                &issue_type_ids,
-                &category_ids,
-                &milestone_ids,
+            } => cmd::issue::count(&IssueCountArgs {
+                project_ids,
+                status_ids,
+                assignee_ids,
+                issue_type_ids,
+                category_ids,
+                milestone_ids,
                 parent_child,
-                keyword.as_deref(),
+                keyword,
                 json,
-            ),
-            IssueCommands::Show { id_or_key, json } => cmd::issue::show(&id_or_key, json),
+            }),
+            IssueCommands::Show { id_or_key, json } => cmd::issue::show(&IssueShowArgs {
+                key: id_or_key,
+                json,
+            }),
             IssueCommands::Create {
                 project_id,
                 summary,
@@ -517,16 +527,16 @@ fn main() -> Result<()> {
                 assignee_id,
                 due_date,
                 json,
-            } => cmd::issue::create(
+            } => cmd::issue::create(&IssueCreateArgs {
                 project_id,
-                &summary,
+                summary,
                 issue_type_id,
                 priority_id,
-                description.as_deref(),
+                description,
                 assignee_id,
-                due_date.as_deref(),
+                due_date,
                 json,
-            ),
+            }),
             IssueCommands::Update {
                 id_or_key,
                 summary,
@@ -537,42 +547,64 @@ fn main() -> Result<()> {
                 due_date,
                 comment,
                 json,
-            } => cmd::issue::update(
-                &id_or_key,
-                summary.as_deref(),
-                description.as_deref(),
+            } => cmd::issue::update(&IssueUpdateArgs {
+                key: id_or_key,
+                summary,
+                description,
                 status_id,
                 priority_id,
                 assignee_id,
-                due_date.as_deref(),
-                comment.as_deref(),
+                due_date,
+                comment,
                 json,
-            ),
-            IssueCommands::Delete { id_or_key, json } => cmd::issue::delete(&id_or_key, json),
+            }),
+            IssueCommands::Delete { id_or_key, json } => cmd::issue::delete(&IssueDeleteArgs {
+                key: id_or_key,
+                json,
+            }),
             IssueCommands::Comment { action } => match action {
                 IssueCommentCommands::List { id_or_key, json } => {
-                    cmd::issue::comment::list(&id_or_key, json)
+                    cmd::issue::comment::list(&IssueCommentListArgs {
+                        key: id_or_key,
+                        json,
+                    })
                 }
                 IssueCommentCommands::Add {
                     id_or_key,
                     content,
                     json,
-                } => cmd::issue::comment::add(&id_or_key, &content, json),
+                } => cmd::issue::comment::add(&IssueCommentAddArgs {
+                    key: id_or_key,
+                    content,
+                    json,
+                }),
                 IssueCommentCommands::Update {
                     id_or_key,
                     comment_id,
                     content,
                     json,
-                } => cmd::issue::comment::update(&id_or_key, comment_id, &content, json),
+                } => cmd::issue::comment::update(&IssueCommentUpdateArgs {
+                    key: id_or_key,
+                    comment_id,
+                    content,
+                    json,
+                }),
                 IssueCommentCommands::Delete {
                     id_or_key,
                     comment_id,
                     json,
-                } => cmd::issue::comment::delete(&id_or_key, comment_id, json),
+                } => cmd::issue::comment::delete(&IssueCommentDeleteArgs {
+                    key: id_or_key,
+                    comment_id,
+                    json,
+                }),
             },
             IssueCommands::Attachment { action } => match action {
                 IssueAttachmentCommands::List { id_or_key, json } => {
-                    cmd::issue::attachment::list(&id_or_key, json)
+                    cmd::issue::attachment::list(&IssueAttachmentListArgs {
+                        key: id_or_key,
+                        json,
+                    })
                 }
             },
         },

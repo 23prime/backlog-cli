@@ -1,3 +1,3 @@
 pub mod list;
 
-pub use list::list;
+pub use list::{IssueAttachmentListArgs, list};

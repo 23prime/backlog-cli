@@ -3,14 +3,19 @@ use anyhow::{Context, Result};
 
 use crate::api::{BacklogApi, BacklogClient};
 
-pub fn delete(key: &str, json: bool) -> Result<()> {
-    let client = BacklogClient::from_config()?;
-    delete_with(key, json, &client)
+pub struct IssueDeleteArgs {
+    pub key: String,
+    pub json: bool,
 }
 
-pub fn delete_with(key: &str, json: bool, api: &dyn BacklogApi) -> Result<()> {
-    let issue = api.delete_issue(key)?;
-    if json {
+pub fn delete(args: &IssueDeleteArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    delete_with(args, &client)
+}
+
+pub fn delete_with(args: &IssueDeleteArgs, api: &dyn BacklogApi) -> Result<()> {
+    let issue = api.delete_issue(&args.key)?;
+    if args.json {
         println!(
             "{}",
             serde_json::to_string_pretty(&issue).context("Failed to serialize JSON")?
@@ -146,12 +151,19 @@ mod tests {
         }
     }
 
+    fn args(json: bool) -> IssueDeleteArgs {
+        IssueDeleteArgs {
+            key: "TEST-1".to_string(),
+            json,
+        }
+    }
+
     #[test]
     fn delete_with_text_output_succeeds() {
         let api = MockApi {
             issue: Some(sample_issue()),
         };
-        assert!(delete_with("TEST-1", false, &api).is_ok());
+        assert!(delete_with(&args(false), &api).is_ok());
     }
 
     #[test]
@@ -159,13 +171,13 @@ mod tests {
         let api = MockApi {
             issue: Some(sample_issue()),
         };
-        assert!(delete_with("TEST-1", true, &api).is_ok());
+        assert!(delete_with(&args(true), &api).is_ok());
     }
 
     #[test]
     fn delete_with_propagates_api_error() {
         let api = MockApi { issue: None };
-        let err = delete_with("TEST-1", false, &api).unwrap_err();
+        let err = delete_with(&args(false), &api).unwrap_err();
         assert!(err.to_string().contains("delete failed"));
     }
 }

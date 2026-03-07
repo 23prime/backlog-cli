@@ -7,12 +7,12 @@ pub mod list;
 mod show;
 mod update;
 
-pub use count::count;
-pub use create::create;
-pub use delete::delete;
-pub use list::list;
-pub use show::show;
-pub use update::update;
+pub use count::{IssueCountArgs, count};
+pub use create::{IssueCreateArgs, create};
+pub use delete::{IssueDeleteArgs, delete};
+pub use list::{IssueListArgs, list};
+pub use show::{IssueShowArgs, show};
+pub use update::{IssueUpdateArgs, update};
 
 /// Parent-child relationship filter for issue list/count.
 #[derive(Debug, Clone, clap::ValueEnum)]

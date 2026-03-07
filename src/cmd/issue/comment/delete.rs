@@ -3,20 +3,26 @@ use anyhow::{Context, Result};
 
 use crate::api::{BacklogApi, BacklogClient};
 
-pub fn delete(key: &str, comment_id: u64, json: bool) -> Result<()> {
-    let client = BacklogClient::from_config()?;
-    delete_with(key, comment_id, json, &client)
+pub struct IssueCommentDeleteArgs {
+    pub key: String,
+    pub comment_id: u64,
+    pub json: bool,
 }
 
-pub fn delete_with(key: &str, comment_id: u64, json: bool, api: &dyn BacklogApi) -> Result<()> {
-    let comment = api.delete_issue_comment(key, comment_id)?;
-    if json {
+pub fn delete(args: &IssueCommentDeleteArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    delete_with(args, &client)
+}
+
+pub fn delete_with(args: &IssueCommentDeleteArgs, api: &dyn BacklogApi) -> Result<()> {
+    let comment = api.delete_issue_comment(&args.key, args.comment_id)?;
+    if args.json {
         println!(
             "{}",
             serde_json::to_string_pretty(&comment).context("Failed to serialize JSON")?
         );
     } else {
-        println!("Deleted comment {} from {}", comment.id, key);
+        println!("Deleted comment {} from {}", comment.id, args.key);
     }
     Ok(())
 }
@@ -146,12 +152,20 @@ mod tests {
         }
     }
 
+    fn args(json: bool) -> IssueCommentDeleteArgs {
+        IssueCommentDeleteArgs {
+            key: "TEST-1".to_string(),
+            comment_id: 1,
+            json,
+        }
+    }
+
     #[test]
     fn delete_with_text_output_succeeds() {
         let api = MockApi {
             comment: Some(sample_comment()),
         };
-        assert!(delete_with("TEST-1", 1, false, &api).is_ok());
+        assert!(delete_with(&args(false), &api).is_ok());
     }
 
     #[test]
@@ -159,13 +173,13 @@ mod tests {
         let api = MockApi {
             comment: Some(sample_comment()),
         };
-        assert!(delete_with("TEST-1", 1, true, &api).is_ok());
+        assert!(delete_with(&args(true), &api).is_ok());
     }
 
     #[test]
     fn delete_with_propagates_api_error() {
         let api = MockApi { comment: None };
-        let err = delete_with("TEST-1", 1, false, &api).unwrap_err();
+        let err = delete_with(&args(false), &api).unwrap_err();
         assert!(err.to_string().contains("delete failed"));
     }
 }
