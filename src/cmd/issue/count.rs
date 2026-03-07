@@ -3,10 +3,15 @@ use anyhow::{Context, Result};
 
 use crate::api::{BacklogApi, BacklogClient};
 
+#[allow(clippy::too_many_arguments)]
 pub fn count(
     project_ids: &[u64],
     status_ids: &[u64],
     assignee_ids: &[u64],
+    issue_type_ids: &[u64],
+    category_ids: &[u64],
+    milestone_ids: &[u64],
+    parent_child: Option<u8>,
     keyword: Option<&str>,
     json: bool,
 ) -> Result<()> {
@@ -15,21 +20,39 @@ pub fn count(
         project_ids,
         status_ids,
         assignee_ids,
+        issue_type_ids,
+        category_ids,
+        milestone_ids,
+        parent_child,
         keyword,
         json,
         &client,
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn count_with(
     project_ids: &[u64],
     status_ids: &[u64],
     assignee_ids: &[u64],
+    issue_type_ids: &[u64],
+    category_ids: &[u64],
+    milestone_ids: &[u64],
+    parent_child: Option<u8>,
     keyword: Option<&str>,
     json: bool,
     api: &dyn BacklogApi,
 ) -> Result<()> {
-    let params = build_params(project_ids, status_ids, assignee_ids, keyword);
+    let params = build_params(
+        project_ids,
+        status_ids,
+        assignee_ids,
+        issue_type_ids,
+        category_ids,
+        milestone_ids,
+        parent_child,
+        keyword,
+    );
     let result = api.count_issues(&params)?;
     if json {
         println!(
@@ -46,6 +69,10 @@ fn build_params(
     project_ids: &[u64],
     status_ids: &[u64],
     assignee_ids: &[u64],
+    issue_type_ids: &[u64],
+    category_ids: &[u64],
+    milestone_ids: &[u64],
+    parent_child: Option<u8>,
     keyword: Option<&str>,
 ) -> Vec<(String, String)> {
     let mut params: Vec<(String, String)> = Vec::new();
@@ -57,6 +84,18 @@ fn build_params(
     }
     for id in assignee_ids {
         params.push(("assigneeId[]".to_string(), id.to_string()));
+    }
+    for id in issue_type_ids {
+        params.push(("issueTypeId[]".to_string(), id.to_string()));
+    }
+    for id in category_ids {
+        params.push(("categoryId[]".to_string(), id.to_string()));
+    }
+    for id in milestone_ids {
+        params.push(("milestoneId[]".to_string(), id.to_string()));
+    }
+    if let Some(pc) = parent_child {
+        params.push(("parentChild".to_string(), pc.to_string()));
     }
     if let Some(kw) = keyword {
         params.push(("keyword".to_string(), kw.to_string()));
@@ -193,19 +232,19 @@ mod tests {
     #[test]
     fn count_with_text_output_succeeds() {
         let api = MockApi { count: Some(42) };
-        assert!(count_with(&[], &[], &[], None, false, &api).is_ok());
+        assert!(count_with(&[], &[], &[], &[], &[], &[], None, None, false, &api).is_ok());
     }
 
     #[test]
     fn count_with_json_output_succeeds() {
         let api = MockApi { count: Some(0) };
-        assert!(count_with(&[], &[], &[], None, true, &api).is_ok());
+        assert!(count_with(&[], &[], &[], &[], &[], &[], None, None, true, &api).is_ok());
     }
 
     #[test]
     fn count_with_propagates_api_error() {
         let api = MockApi { count: None };
-        let err = count_with(&[], &[], &[], None, false, &api).unwrap_err();
+        let err = count_with(&[], &[], &[], &[], &[], &[], None, None, false, &api).unwrap_err();
         assert!(err.to_string().contains("no count"));
     }
 }

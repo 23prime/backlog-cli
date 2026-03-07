@@ -9,6 +9,10 @@ pub fn list(
     project_ids: &[u64],
     status_ids: &[u64],
     assignee_ids: &[u64],
+    issue_type_ids: &[u64],
+    category_ids: &[u64],
+    milestone_ids: &[u64],
+    parent_child: Option<u8>,
     keyword: Option<&str>,
     count: u32,
     offset: u64,
@@ -19,6 +23,10 @@ pub fn list(
         project_ids,
         status_ids,
         assignee_ids,
+        issue_type_ids,
+        category_ids,
+        milestone_ids,
+        parent_child,
         keyword,
         count,
         offset,
@@ -32,6 +40,10 @@ pub fn list_with(
     project_ids: &[u64],
     status_ids: &[u64],
     assignee_ids: &[u64],
+    issue_type_ids: &[u64],
+    category_ids: &[u64],
+    milestone_ids: &[u64],
+    parent_child: Option<u8>,
     keyword: Option<&str>,
     count: u32,
     offset: u64,
@@ -42,6 +54,10 @@ pub fn list_with(
         project_ids,
         status_ids,
         assignee_ids,
+        issue_type_ids,
+        category_ids,
+        milestone_ids,
+        parent_child,
         keyword,
         count,
         offset,
@@ -64,6 +80,10 @@ fn build_params(
     project_ids: &[u64],
     status_ids: &[u64],
     assignee_ids: &[u64],
+    issue_type_ids: &[u64],
+    category_ids: &[u64],
+    milestone_ids: &[u64],
+    parent_child: Option<u8>,
     keyword: Option<&str>,
     count: u32,
     offset: u64,
@@ -77,6 +97,18 @@ fn build_params(
     }
     for id in assignee_ids {
         params.push(("assigneeId[]".to_string(), id.to_string()));
+    }
+    for id in issue_type_ids {
+        params.push(("issueTypeId[]".to_string(), id.to_string()));
+    }
+    for id in category_ids {
+        params.push(("categoryId[]".to_string(), id.to_string()));
+    }
+    for id in milestone_ids {
+        params.push(("milestoneId[]".to_string(), id.to_string()));
+    }
+    if let Some(pc) = parent_child {
+        params.push(("parentChild".to_string(), pc.to_string()));
     }
     if let Some(kw) = keyword {
         params.push(("keyword".to_string(), kw.to_string()));
@@ -293,7 +325,7 @@ mod tests {
         let api = MockApi {
             issues: Some(vec![sample_issue()]),
         };
-        assert!(list_with(&[], &[], &[], None, 20, 0, false, &api).is_ok());
+        assert!(list_with(&[], &[], &[], &[], &[], &[], None, None, 20, 0, false, &api).is_ok());
     }
 
     #[test]
@@ -301,13 +333,14 @@ mod tests {
         let api = MockApi {
             issues: Some(vec![sample_issue()]),
         };
-        assert!(list_with(&[], &[], &[], None, 20, 0, true, &api).is_ok());
+        assert!(list_with(&[], &[], &[], &[], &[], &[], None, None, 20, 0, true, &api).is_ok());
     }
 
     #[test]
     fn list_with_propagates_api_error() {
         let api = MockApi { issues: None };
-        let err = list_with(&[], &[], &[], None, 20, 0, false, &api).unwrap_err();
+        let err =
+            list_with(&[], &[], &[], &[], &[], &[], None, None, 20, 0, false, &api).unwrap_err();
         assert!(err.to_string().contains("no issues"));
     }
 
@@ -339,11 +372,26 @@ mod tests {
 
     #[test]
     fn build_params_includes_all_fields() {
-        let params = build_params(&[1, 2], &[3], &[4], Some("login"), 50, 10);
+        let params = build_params(
+            &[1, 2],
+            &[3],
+            &[4],
+            &[5],
+            &[6],
+            &[7],
+            Some(1),
+            Some("login"),
+            50,
+            10,
+        );
         assert!(params.iter().any(|(k, v)| k == "projectId[]" && v == "1"));
         assert!(params.iter().any(|(k, v)| k == "projectId[]" && v == "2"));
         assert!(params.iter().any(|(k, v)| k == "statusId[]" && v == "3"));
         assert!(params.iter().any(|(k, v)| k == "assigneeId[]" && v == "4"));
+        assert!(params.iter().any(|(k, v)| k == "issueTypeId[]" && v == "5"));
+        assert!(params.iter().any(|(k, v)| k == "categoryId[]" && v == "6"));
+        assert!(params.iter().any(|(k, v)| k == "milestoneId[]" && v == "7"));
+        assert!(params.iter().any(|(k, v)| k == "parentChild" && v == "1"));
         assert!(params.iter().any(|(k, v)| k == "keyword" && v == "login"));
         assert!(params.iter().any(|(k, v)| k == "count" && v == "50"));
         assert!(params.iter().any(|(k, v)| k == "offset" && v == "10"));

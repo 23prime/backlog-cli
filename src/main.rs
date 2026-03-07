@@ -197,6 +197,18 @@ enum IssueCommands {
         /// Filter by assignee ID (repeatable)
         #[arg(long = "assignee-id", value_name = "ID")]
         assignee_ids: Vec<u64>,
+        /// Filter by issue type ID (repeatable)
+        #[arg(long = "issue-type-id", value_name = "ID")]
+        issue_type_ids: Vec<u64>,
+        /// Filter by category ID (repeatable)
+        #[arg(long = "category-id", value_name = "ID")]
+        category_ids: Vec<u64>,
+        /// Filter by milestone ID (repeatable)
+        #[arg(long = "milestone-id", value_name = "ID")]
+        milestone_ids: Vec<u64>,
+        /// Filter by parent-child relation (0=all, 1=no children, 2=has children, 3=children only, 4=no parent)
+        #[arg(long, value_name = "0-4")]
+        parent_child: Option<u8>,
         /// Search keyword
         #[arg(long)]
         keyword: Option<String>,
@@ -221,6 +233,18 @@ enum IssueCommands {
         /// Filter by assignee ID (repeatable)
         #[arg(long = "assignee-id", value_name = "ID")]
         assignee_ids: Vec<u64>,
+        /// Filter by issue type ID (repeatable)
+        #[arg(long = "issue-type-id", value_name = "ID")]
+        issue_type_ids: Vec<u64>,
+        /// Filter by category ID (repeatable)
+        #[arg(long = "category-id", value_name = "ID")]
+        category_ids: Vec<u64>,
+        /// Filter by milestone ID (repeatable)
+        #[arg(long = "milestone-id", value_name = "ID")]
+        milestone_ids: Vec<u64>,
+        /// Filter by parent-child relation (0=all, 1=no children, 2=has children, 3=children only, 4=no parent)
+        #[arg(long, value_name = "0-4")]
+        parent_child: Option<u8>,
         /// Search keyword
         #[arg(long)]
         keyword: Option<String>,
@@ -439,6 +463,10 @@ fn main() -> Result<()> {
                 project_ids,
                 status_ids,
                 assignee_ids,
+                issue_type_ids,
+                category_ids,
+                milestone_ids,
+                parent_child,
                 keyword,
                 count,
                 offset,
@@ -447,6 +475,10 @@ fn main() -> Result<()> {
                 &project_ids,
                 &status_ids,
                 &assignee_ids,
+                &issue_type_ids,
+                &category_ids,
+                &milestone_ids,
+                parent_child,
                 keyword.as_deref(),
                 count,
                 offset,
@@ -456,12 +488,20 @@ fn main() -> Result<()> {
                 project_ids,
                 status_ids,
                 assignee_ids,
+                issue_type_ids,
+                category_ids,
+                milestone_ids,
+                parent_child,
                 keyword,
                 json,
             } => cmd::issue::count(
                 &project_ids,
                 &status_ids,
                 &assignee_ids,
+                &issue_type_ids,
+                &category_ids,
+                &milestone_ids,
+                parent_child,
                 keyword.as_deref(),
                 json,
             ),
