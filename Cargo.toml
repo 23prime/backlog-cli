@@ -18,6 +18,9 @@ toml = "0.8"
 rpassword = "7"
 keyring = { version = "3", default-features = false, features = ["async-secret-service", "crypto-rust"] }
 
+[target.'cfg(windows)'.dependencies]
+keyring = { version = "3", features = ["windows-native"] }
+
 [dev-dependencies]
 httpmock = { version = "0.7", default-features = false }
 tempfile = "3"
