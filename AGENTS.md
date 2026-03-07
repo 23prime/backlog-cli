@@ -37,7 +37,16 @@ src/
     user.rs       - GET /api/v2/users/myself → User struct
   cmd/
     auth.rs       - auth login / status / logout
-    space.rs      - space show
+    space/
+      mod.rs      - pub use re-exports
+      show.rs     - space show
+      activities.rs
+      disk_usage.rs
+      notification.rs
+    project/
+      mod.rs      - pub use re-exports
+      list.rs     - project list
+      show.rs     - project show
 ```
 
 #### Data flow
@@ -56,10 +65,13 @@ main.rs (clap) → cmd/* → BacklogClient::from_config() → BacklogClient::get
 
 #### Adding a new command
 
-1. Add a new file `src/cmd/<command>.rs`.
-2. Define a public function that accepts `&dyn BacklogApi` (not `BacklogClient` directly) to keep it testable.
-3. Add a thin wrapper that calls `BacklogClient::from_config()` and delegates to the above function.
-4. Register the subcommand in `src/main.rs`.
+Commands are organized as directories (`src/cmd/<resource>/`) with one file per subcommand.
+
+1. Create `src/cmd/<resource>/<subcommand>.rs` with:
+   - A public `<subcommand>(args…) -> Result<()>` that calls `BacklogClient::from_config()` and delegates.
+   - A public `<subcommand>_with(args…, api: &dyn BacklogApi) -> Result<()>` for the real logic (testable).
+2. Add `mod <subcommand>;` and `pub use <subcommand>::<subcommand>;` to `src/cmd/<resource>/mod.rs`.
+3. Register the subcommand in `src/main.rs`.
 
 #### Testing strategy
 

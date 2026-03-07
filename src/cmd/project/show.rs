@@ -1,0 +1,112 @@
+use anstream::println;
+use anyhow::{Context, Result};
+
+use crate::api::{BacklogApi, BacklogClient, project::Project};
+
+pub fn show(key: &str, json: bool) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    show_with(key, json, &client)
+}
+
+pub fn show_with(key: &str, json: bool, api: &dyn BacklogApi) -> Result<()> {
+    let project = api.get_project(key)?;
+    if json {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&project).context("Failed to serialize JSON")?
+        );
+    } else {
+        println!("{}", format_project_detail(&project));
+    }
+    Ok(())
+}
+
+fn format_project_detail(p: &Project) -> String {
+    format!(
+        "ID:         {}\nKey:        {}\nName:       {}\nFormatting: {}\nArchived:   {}",
+        p.id, p.project_key, p.name, p.text_formatting_rule, p.archived,
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use anyhow::anyhow;
+    use std::collections::BTreeMap;
+
+    struct MockApi {
+        project: Option<Project>,
+    }
+
+    impl crate::api::BacklogApi for MockApi {
+        fn get_space(&self) -> anyhow::Result<crate::api::space::Space> {
+            unimplemented!()
+        }
+        fn get_myself(&self) -> anyhow::Result<crate::api::user::User> {
+            unimplemented!()
+        }
+        fn get_space_activities(&self) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
+            unimplemented!()
+        }
+        fn get_space_disk_usage(&self) -> anyhow::Result<crate::api::disk_usage::DiskUsage> {
+            unimplemented!()
+        }
+        fn get_space_notification(
+            &self,
+        ) -> anyhow::Result<crate::api::space_notification::SpaceNotification> {
+            unimplemented!()
+        }
+        fn get_projects(&self) -> anyhow::Result<Vec<Project>> {
+            unimplemented!()
+        }
+        fn get_project(&self, _key: &str) -> anyhow::Result<Project> {
+            self.project.clone().ok_or_else(|| anyhow!("no project"))
+        }
+    }
+
+    fn sample_project() -> Project {
+        Project {
+            id: 1,
+            project_key: "TEST".to_string(),
+            name: "Test Project".to_string(),
+            chart_enabled: false,
+            subtasking_enabled: false,
+            project_leader_can_edit_project_leader: false,
+            text_formatting_rule: "markdown".to_string(),
+            archived: false,
+            extra: BTreeMap::new(),
+        }
+    }
+
+    #[test]
+    fn show_with_text_output_succeeds() {
+        let api = MockApi {
+            project: Some(sample_project()),
+        };
+        assert!(show_with("TEST", false, &api).is_ok());
+    }
+
+    #[test]
+    fn show_with_json_output_succeeds() {
+        let api = MockApi {
+            project: Some(sample_project()),
+        };
+        assert!(show_with("TEST", true, &api).is_ok());
+    }
+
+    #[test]
+    fn show_with_propagates_api_error() {
+        let api = MockApi { project: None };
+        let err = show_with("MISSING", false, &api).unwrap_err();
+        assert!(err.to_string().contains("no project"));
+    }
+
+    #[test]
+    fn format_project_detail_contains_fields() {
+        let text = format_project_detail(&sample_project());
+        assert!(text.contains("TEST"));
+        assert!(text.contains("Test Project"));
+        assert!(text.contains("markdown"));
+        assert!(text.contains("false"));
+    }
+}
