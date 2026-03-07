@@ -14,6 +14,16 @@ for cmd in curl tar; do
   fi
 done
 
+# Detect SHA-256 tool
+if command -v sha256sum >/dev/null 2>&1; then
+  SHA256_CMD="sha256sum"
+elif command -v shasum >/dev/null 2>&1; then
+  SHA256_CMD="shasum -a 256"
+else
+  printf "[ERROR] No SHA-256 tool found. Install sha256sum or shasum.\n" >&2
+  exit 1
+fi
+
 # Get latest version from GitHub API
 printf "Fetching latest release...\n"
 response=$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest") || {
@@ -29,14 +39,23 @@ fi
 
 printf "Latest version: %s\n" "$tag"
 
-# Download and extract
+# Download and verify
 url="https://github.com/${REPO}/releases/download/${tag}/${ASSET_NAME}"
+checksum_url="${url}.sha256"
 printf "Downloading %s...\n" "$url"
 
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
 curl -fsSL "$url" -o "${tmpdir}/${ASSET_NAME}"
+curl -fsSL "$checksum_url" -o "${tmpdir}/${ASSET_NAME}.sha256"
+
+printf "Verifying checksum...\n"
+(cd "$tmpdir" && $SHA256_CMD -c "${ASSET_NAME}.sha256") || {
+  printf "[ERROR] Checksum verification failed\n" >&2
+  exit 1
+}
+
 tar xzf "${tmpdir}/${ASSET_NAME}" -C "$tmpdir"
 
 # Install

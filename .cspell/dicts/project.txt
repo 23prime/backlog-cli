@@ -13,3 +13,4 @@ serde
 httpmock
 println
 preemptively
+coreutils
