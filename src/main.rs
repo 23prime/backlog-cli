@@ -22,6 +22,18 @@ enum Commands {
     },
     /// Show space information
     Space {
+        #[command(subcommand)]
+        action: Option<SpaceCommands>,
+        /// Output as JSON (applies to default show action)
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum SpaceCommands {
+    /// Show recent space activities
+    Activities {
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -53,6 +65,11 @@ fn main() -> Result<()> {
             AuthCommands::Logout => cmd::auth::logout(),
             AuthCommands::Keyring => cmd::auth::check_keyring(),
         },
-        Commands::Space { json } => cmd::space::show(json),
+        Commands::Space { action, json } => match action {
+            None => cmd::space::show(json),
+            Some(SpaceCommands::Activities { json: sub_json }) => {
+                cmd::space::activities(json || sub_json)
+            }
+        },
     }
 }

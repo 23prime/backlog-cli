@@ -1,15 +1,18 @@
 use anyhow::{Context, Result};
 use reqwest::blocking::Client;
 
+pub mod activity;
 pub mod space;
 pub mod user;
 
+use activity::Activity;
 use space::Space;
 use user::User;
 
 pub trait BacklogApi {
     fn get_space(&self) -> Result<Space>;
     fn get_myself(&self) -> Result<User>;
+    fn get_space_activities(&self) -> Result<Vec<Activity>>;
 }
 
 impl BacklogApi for BacklogClient {
@@ -19,6 +22,10 @@ impl BacklogApi for BacklogClient {
 
     fn get_myself(&self) -> Result<User> {
         self.get_myself()
+    }
+
+    fn get_space_activities(&self) -> Result<Vec<Activity>> {
+        self.get_space_activities()
     }
 }
 

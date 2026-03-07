@@ -112,6 +112,22 @@ Created:    2020-01-01T00:00:00Z
 Updated:    2024-06-01T00:00:00Z
 ```
 
+### `bl space activities`
+
+Show recent activities in your Backlog space.
+
+```bash
+bl space activities
+bl space activities --json
+```
+
+Example output:
+
+```text
+[123] type=1 project=TEST user=John Doe created=2024-06-01T00:00:00Z
+[124] type=2 project=TEST user=Jane Smith created=2024-06-02T00:00:00Z
+```
+
 ## Command coverage
 
 The table below maps Backlog API v2 endpoints to `bl` commands.
@@ -121,7 +137,7 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | Command | API endpoint | Status |
 | --- | --- | --- |
 | `bl space` | `GET /api/v2/space` | ✅ Implemented |
-| `bl space activities` | `GET /api/v2/space/activities` | Planned |
+| `bl space activities` | `GET /api/v2/space/activities` | ✅ Implemented |
 | `bl space disk-usage` | `GET /api/v2/space/diskUsage` | Planned |
 
 ### Issues
