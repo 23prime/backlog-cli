@@ -38,6 +38,12 @@ enum SpaceCommands {
         #[arg(long)]
         json: bool,
     },
+    /// Show disk usage of the space
+    DiskUsage {
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -69,6 +75,9 @@ fn main() -> Result<()> {
             None => cmd::space::show(json),
             Some(SpaceCommands::Activities { json: sub_json }) => {
                 cmd::space::activities(json || sub_json)
+            }
+            Some(SpaceCommands::DiskUsage { json: sub_json }) => {
+                cmd::space::disk_usage(json || sub_json)
             }
         },
     }

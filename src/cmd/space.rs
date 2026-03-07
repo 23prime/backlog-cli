@@ -1,6 +1,8 @@
 use anyhow::{Context, Result};
 
-use crate::api::{BacklogApi, BacklogClient, activity::Activity, space::Space};
+use crate::api::{
+    BacklogApi, BacklogClient, activity::Activity, disk_usage::DiskUsage, space::Space,
+};
 
 pub fn show(json: bool) -> Result<()> {
     let client = BacklogClient::from_config()?;
@@ -52,6 +54,37 @@ fn format_activity_text(a: &Activity) -> String {
     )
 }
 
+pub fn disk_usage(json: bool) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    disk_usage_with(json, &client)
+}
+
+pub fn disk_usage_with(json: bool, api: &dyn BacklogApi) -> Result<()> {
+    let usage = api.get_space_disk_usage()?;
+    if json {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&usage).context("Failed to serialize JSON")?
+        );
+    } else {
+        println!("{}", format_disk_usage_text(&usage));
+    }
+    Ok(())
+}
+
+fn format_disk_usage_text(usage: &DiskUsage) -> String {
+    format!(
+        "Total:   {} bytes\nFile:    {} bytes\nWiki:    {} bytes\nGit:     {} bytes\nGit LFS: {} bytes\nSVN:     {} bytes\nIssue:   {} bytes",
+        usage.space_size,
+        usage.file_size,
+        usage.wiki_size,
+        usage.git_size,
+        usage.git_lfs_size,
+        usage.svn_size,
+        usage.issue_size,
+    )
+}
+
 fn format_space_text(space: &Space) -> String {
     format!(
         "Space key:  {}\nName:       {}\nLanguage:   {}\nTimezone:   {}\nFormatting: {}\nCreated:    {}\nUpdated:    {}",
@@ -75,6 +108,7 @@ mod tests {
     struct MockApi {
         space: Option<Space>,
         activities: Option<Vec<Activity>>,
+        disk_usage: Option<DiskUsage>,
     }
 
     impl BacklogApi for MockApi {
@@ -90,6 +124,12 @@ mod tests {
             self.activities
                 .clone()
                 .ok_or_else(|| anyhow!("no activities"))
+        }
+
+        fn get_space_disk_usage(&self) -> Result<DiskUsage> {
+            self.disk_usage
+                .clone()
+                .ok_or_else(|| anyhow!("no disk usage"))
         }
     }
 
@@ -147,6 +187,7 @@ mod tests {
         let api = MockApi {
             space: Some(sample_space()),
             activities: None,
+            disk_usage: None,
         };
         assert!(show_with(false, &api).is_ok());
     }
@@ -156,6 +197,7 @@ mod tests {
         let api = MockApi {
             space: Some(sample_space()),
             activities: None,
+            disk_usage: None,
         };
         assert!(show_with(true, &api).is_ok());
     }
@@ -165,6 +207,7 @@ mod tests {
         let api = MockApi {
             space: None,
             activities: None,
+            disk_usage: None,
         };
         let err = show_with(false, &api).unwrap_err();
         assert!(err.to_string().contains("no space"));
@@ -185,6 +228,7 @@ mod tests {
         let api = MockApi {
             space: None,
             activities: Some(vec![sample_activity()]),
+            disk_usage: None,
         };
         assert!(activities_with(false, &api).is_ok());
     }
@@ -194,6 +238,7 @@ mod tests {
         let api = MockApi {
             space: None,
             activities: Some(vec![sample_activity()]),
+            disk_usage: None,
         };
         assert!(activities_with(true, &api).is_ok());
     }
@@ -203,8 +248,60 @@ mod tests {
         let api = MockApi {
             space: None,
             activities: None,
+            disk_usage: None,
         };
         let err = activities_with(false, &api).unwrap_err();
         assert!(err.to_string().contains("no activities"));
+    }
+
+    fn sample_disk_usage() -> DiskUsage {
+        DiskUsage {
+            space_size: 5242880,
+            file_size: 1024,
+            wiki_size: 512,
+            git_size: 256,
+            git_lfs_size: 128,
+            svn_size: 64,
+            issue_size: 2048,
+        }
+    }
+
+    #[test]
+    fn disk_usage_with_text_output_succeeds() {
+        let api = MockApi {
+            space: None,
+            activities: None,
+            disk_usage: Some(sample_disk_usage()),
+        };
+        assert!(disk_usage_with(false, &api).is_ok());
+    }
+
+    #[test]
+    fn disk_usage_with_json_output_succeeds() {
+        let api = MockApi {
+            space: None,
+            activities: None,
+            disk_usage: Some(sample_disk_usage()),
+        };
+        assert!(disk_usage_with(true, &api).is_ok());
+    }
+
+    #[test]
+    fn disk_usage_with_propagates_api_error() {
+        let api = MockApi {
+            space: None,
+            activities: None,
+            disk_usage: None,
+        };
+        let err = disk_usage_with(false, &api).unwrap_err();
+        assert!(err.to_string().contains("no disk usage"));
+    }
+
+    #[test]
+    fn format_disk_usage_text_contains_fields() {
+        let text = format_disk_usage_text(&sample_disk_usage());
+        assert!(text.contains("5242880"));
+        assert!(text.contains("1024"));
+        assert!(text.contains("128"));
     }
 }
