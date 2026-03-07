@@ -1,4 +1,6 @@
+use anstream::println;
 use anyhow::{Context, Result};
+use owo_colors::OwoColorize;
 
 use crate::api::{BacklogApi, BacklogClient, project::Project};
 
@@ -41,13 +43,18 @@ pub fn list_with(json: bool, api: &dyn BacklogApi) -> Result<()> {
         );
     } else {
         for p in &projects {
-            println!("{}", format_project_text(p));
+            let archived = if p.archived {
+                format!(" {}", "[archived]".yellow())
+            } else {
+                String::new()
+            };
+            println!("[{}] {}{}", p.project_key.cyan().bold(), p.name, archived);
         }
     }
     Ok(())
 }
 
-fn format_project_text(p: &Project) -> String {
+fn format_project_row(p: &Project) -> String {
     let archived = if p.archived { " [archived]" } else { "" };
     format!("[{}] {}{}", p.project_key, p.name, archived)
 }
@@ -184,16 +191,16 @@ mod tests {
     }
 
     #[test]
-    fn format_project_text_active() {
-        let text = format_project_text(&sample_project());
+    fn format_project_row_active() {
+        let text = format_project_row(&sample_project());
         assert!(text.contains("[TEST]"));
         assert!(text.contains("Test Project"));
         assert!(!text.contains("[archived]"));
     }
 
     #[test]
-    fn format_project_text_archived() {
-        let text = format_project_text(&sample_archived_project());
+    fn format_project_row_archived() {
+        let text = format_project_row(&sample_archived_project());
         assert!(text.contains("[archived]"));
     }
 }

@@ -9,6 +9,9 @@ use clap::{Parser, Subcommand};
 #[derive(Parser)]
 #[command(name = "bl", version, about = "Backlog CLI")]
 struct Cli {
+    /// Disable colored output
+    #[arg(long, global = true)]
+    no_color: bool,
     #[command(subcommand)]
     command: Commands,
 }
@@ -93,6 +96,10 @@ enum AuthCommands {
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
+    if cli.no_color {
+        // SAFETY: called before any threads are spawned
+        unsafe { std::env::set_var("NO_COLOR", "1") };
+    }
     match cli.command {
         Commands::Auth { action } => match action {
             AuthCommands::Login => cmd::auth::login(),
