@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
@@ -13,6 +15,8 @@ pub struct Activity {
     pub content: serde_json::Value,
     pub created_user: ActivityUser,
     pub created: String,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, serde_json::Value>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -21,6 +25,8 @@ pub struct ActivityProject {
     pub id: u64,
     pub project_key: String,
     pub name: String,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, serde_json::Value>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -29,6 +35,8 @@ pub struct ActivityUser {
     pub id: u64,
     pub user_id: Option<String>,
     pub name: String,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, serde_json::Value>,
 }
 
 impl BacklogClient {

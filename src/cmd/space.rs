@@ -135,8 +135,10 @@ mod tests {
                 id: 100,
                 user_id: Some("john".to_string()),
                 name: "John Doe".to_string(),
+                extra: Default::default(),
             },
             created: "2024-01-01T00:00:00Z".to_string(),
+            extra: Default::default(),
         }
     }
 
