@@ -166,6 +166,10 @@ mod tests {
         fn get_space_activities(&self) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
             unimplemented!()
         }
+
+        fn get_space_disk_usage(&self) -> anyhow::Result<crate::api::disk_usage::DiskUsage> {
+            Err(anyhow!("get_space_disk_usage called on mock"))
+        }
     }
 
     fn sample_user() -> User {

@@ -128,6 +128,29 @@ Example output:
 [124] type=2 project=TEST user=Jane Smith created=2024-06-02T00:00:00Z
 ```
 
+### `bl space disk-usage`
+
+Show disk usage of your Backlog space.
+Requires Space Administrator privileges. Non-admin users will receive `403 Forbidden`.
+
+```bash
+bl space disk-usage
+bl space disk-usage --json
+```
+
+Example output:
+
+```text
+Capacity:   5242880 bytes
+Issue:      2048 bytes
+Wiki:       512 bytes
+File:       1024 bytes
+Subversion: 64 bytes
+Git:        256 bytes
+Git LFS:    128 bytes
+Details:    3 project(s) — use --json for breakdown
+```
+
 ## Command coverage
 
 The table below maps Backlog API v2 endpoints to `bl` commands.
@@ -138,7 +161,7 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | --- | --- | --- |
 | `bl space` | `GET /api/v2/space` | ✅ Implemented |
 | `bl space activities` | `GET /api/v2/space/activities` | ✅ Implemented |
-| `bl space disk-usage` | `GET /api/v2/space/diskUsage` | Planned |
+| `bl space disk-usage` | `GET /api/v2/space/diskUsage` | ✅ Implemented |
 
 ### Issues
 
