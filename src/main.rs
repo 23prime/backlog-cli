@@ -22,6 +22,10 @@ use cmd::project::user::ProjectUserListArgs;
 use cmd::project::version::ProjectVersionListArgs;
 use cmd::project::{ProjectActivitiesArgs, ProjectDiskUsageArgs, ProjectListArgs, ProjectShowArgs};
 use cmd::space::{SpaceActivitiesArgs, SpaceDiskUsageArgs, SpaceNotificationArgs, SpaceShowArgs};
+use cmd::wiki::attachment::WikiAttachmentListArgs;
+use cmd::wiki::{
+    WikiCreateArgs, WikiDeleteArgs, WikiHistoryArgs, WikiListArgs, WikiShowArgs, WikiUpdateArgs,
+};
 
 #[derive(Parser)]
 #[command(name = "bl", version, about = "Backlog CLI")]
@@ -57,6 +61,11 @@ enum Commands {
     Issue {
         #[command(subcommand)]
         action: IssueCommands,
+    },
+    /// Manage wiki pages
+    Wiki {
+        #[command(subcommand)]
+        action: WikiCommands,
     },
 }
 
@@ -412,6 +421,100 @@ enum IssueAttachmentCommands {
 }
 
 #[derive(Subcommand)]
+enum WikiCommands {
+    /// List wiki pages in a project
+    List {
+        /// Project ID or key
+        project_id_or_key: String,
+        /// Search keyword
+        #[arg(long)]
+        keyword: Option<String>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Show a wiki page
+    Show {
+        /// Wiki page ID
+        wiki_id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Create a wiki page
+    Create {
+        /// Project ID
+        #[arg(long)]
+        project_id: u64,
+        /// Page name
+        #[arg(long)]
+        name: String,
+        /// Page content
+        #[arg(long)]
+        content: String,
+        /// Send mail notification
+        #[arg(long)]
+        mail_notify: bool,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Update a wiki page
+    Update {
+        /// Wiki page ID
+        wiki_id: u64,
+        /// New page name
+        #[arg(long)]
+        name: Option<String>,
+        /// New page content
+        #[arg(long)]
+        content: Option<String>,
+        /// Send mail notification
+        #[arg(long)]
+        mail_notify: bool,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Delete a wiki page
+    Delete {
+        /// Wiki page ID
+        wiki_id: u64,
+        /// Send mail notification
+        #[arg(long)]
+        mail_notify: bool,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Show history of a wiki page
+    History {
+        /// Wiki page ID
+        wiki_id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Manage wiki attachments
+    Attachment {
+        #[command(subcommand)]
+        action: WikiAttachmentCommands,
+    },
+}
+
+#[derive(Subcommand)]
+enum WikiAttachmentCommands {
+    /// List attachments of a wiki page
+    List {
+        /// Wiki page ID
+        wiki_id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
 enum AuthCommands {
     /// Login with your API key
     Login,
@@ -607,6 +710,55 @@ fn run() -> Result<()> {
             IssueCommands::Attachment { action } => match action {
                 IssueAttachmentCommands::List { id_or_key, json } => {
                     cmd::issue::attachment::list(&IssueAttachmentListArgs::new(id_or_key, json))
+                }
+            },
+        },
+        Commands::Wiki { action } => match action {
+            WikiCommands::List {
+                project_id_or_key,
+                keyword,
+                json,
+            } => cmd::wiki::list(&WikiListArgs::new(project_id_or_key, keyword, json)),
+            WikiCommands::Show { wiki_id, json } => {
+                cmd::wiki::show(&WikiShowArgs::new(wiki_id, json))
+            }
+            WikiCommands::Create {
+                project_id,
+                name,
+                content,
+                mail_notify,
+                json,
+            } => cmd::wiki::create(&WikiCreateArgs::new(
+                project_id,
+                name,
+                content,
+                mail_notify,
+                json,
+            )),
+            WikiCommands::Update {
+                wiki_id,
+                name,
+                content,
+                mail_notify,
+                json,
+            } => cmd::wiki::update(&WikiUpdateArgs::new(
+                wiki_id,
+                name,
+                content,
+                mail_notify,
+                json,
+            )),
+            WikiCommands::Delete {
+                wiki_id,
+                mail_notify,
+                json,
+            } => cmd::wiki::delete(&WikiDeleteArgs::new(wiki_id, mail_notify, json)),
+            WikiCommands::History { wiki_id, json } => {
+                cmd::wiki::history(&WikiHistoryArgs::new(wiki_id, json))
+            }
+            WikiCommands::Attachment { action } => match action {
+                WikiAttachmentCommands::List { wiki_id, json } => {
+                    cmd::wiki::attachment::list(&WikiAttachmentListArgs::new(wiki_id, json))
                 }
             },
         },

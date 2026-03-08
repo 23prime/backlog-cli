@@ -1,57 +1,58 @@
 use anstream::println;
 use anyhow::{Context, Result};
+use owo_colors::OwoColorize;
 
-use crate::api::{BacklogApi, BacklogClient, project::ProjectDiskUsage};
+use crate::api::{BacklogApi, BacklogClient, wiki::WikiAttachment};
 
-pub struct ProjectDiskUsageArgs {
-    key: String,
+pub struct WikiAttachmentListArgs {
+    wiki_id: u64,
     json: bool,
 }
 
-impl ProjectDiskUsageArgs {
-    pub fn new(key: String, json: bool) -> Self {
-        Self { key, json }
+impl WikiAttachmentListArgs {
+    pub fn new(wiki_id: u64, json: bool) -> Self {
+        Self { wiki_id, json }
     }
 }
 
-pub fn disk_usage(args: &ProjectDiskUsageArgs) -> Result<()> {
+pub fn list(args: &WikiAttachmentListArgs) -> Result<()> {
     let client = BacklogClient::from_config()?;
-    disk_usage_with(args, &client)
+    list_with(args, &client)
 }
 
-pub fn disk_usage_with(args: &ProjectDiskUsageArgs, api: &dyn BacklogApi) -> Result<()> {
-    let usage = api.get_project_disk_usage(&args.key)?;
+pub fn list_with(args: &WikiAttachmentListArgs, api: &dyn BacklogApi) -> Result<()> {
+    let attachments = api.get_wiki_attachments(args.wiki_id)?;
     if args.json {
         println!(
             "{}",
-            serde_json::to_string_pretty(&usage).context("Failed to serialize JSON")?
+            serde_json::to_string_pretty(&attachments).context("Failed to serialize JSON")?
         );
     } else {
-        println!("{}", format_disk_usage_text(&usage));
+        for a in &attachments {
+            println!("{}", format_attachment_row(a));
+        }
     }
     Ok(())
 }
 
-fn format_disk_usage_text(usage: &ProjectDiskUsage) -> String {
+pub fn format_attachment_row(a: &WikiAttachment) -> String {
     format!(
-        "Issue:      {} bytes\nWiki:       {} bytes\nDocument:   {} bytes\nFile:       {} bytes\nSubversion: {} bytes\nGit:        {} bytes\nGit LFS:    {} bytes",
-        usage.issue,
-        usage.wiki,
-        usage.document,
-        usage.file,
-        usage.subversion,
-        usage.git,
-        usage.git_lfs,
+        "[{}] {} ({} bytes)",
+        a.id.to_string().cyan(),
+        a.name,
+        a.size
     )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::api::wiki::{Wiki, WikiAttachment, WikiHistory, WikiListItem};
+    use crate::cmd::wiki::list::tests_helper::sample_wiki_user;
     use anyhow::anyhow;
 
     struct MockApi {
-        disk_usage: Option<ProjectDiskUsage>,
+        attachments: Option<Vec<WikiAttachment>>,
     }
 
     impl crate::api::BacklogApi for MockApi {
@@ -84,10 +85,11 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
             unimplemented!()
         }
-        fn get_project_disk_usage(&self, _key: &str) -> anyhow::Result<ProjectDiskUsage> {
-            self.disk_usage
-                .clone()
-                .ok_or_else(|| anyhow!("no disk usage"))
+        fn get_project_disk_usage(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<crate::api::project::ProjectDiskUsage> {
+            unimplemented!()
         }
         fn get_project_users(
             &self,
@@ -184,97 +186,73 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::issue::IssueAttachment>> {
             unimplemented!()
         }
-        fn get_wikis(
-            &self,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<Vec<crate::api::wiki::WikiListItem>> {
+        fn get_wikis(&self, _params: &[(String, String)]) -> anyhow::Result<Vec<WikiListItem>> {
             unimplemented!()
         }
-        fn get_wiki(&self, _wiki_id: u64) -> anyhow::Result<crate::api::wiki::Wiki> {
+        fn get_wiki(&self, _wiki_id: u64) -> anyhow::Result<Wiki> {
             unimplemented!()
         }
-        fn create_wiki(
-            &self,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::wiki::Wiki> {
+        fn create_wiki(&self, _params: &[(String, String)]) -> anyhow::Result<Wiki> {
             unimplemented!()
         }
-        fn update_wiki(
-            &self,
-            _wiki_id: u64,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::wiki::Wiki> {
+        fn update_wiki(&self, _wiki_id: u64, _params: &[(String, String)]) -> anyhow::Result<Wiki> {
             unimplemented!()
         }
-        fn delete_wiki(
-            &self,
-            _wiki_id: u64,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::wiki::Wiki> {
+        fn delete_wiki(&self, _wiki_id: u64, _params: &[(String, String)]) -> anyhow::Result<Wiki> {
             unimplemented!()
         }
-        fn get_wiki_history(
-            &self,
-            _wiki_id: u64,
-        ) -> anyhow::Result<Vec<crate::api::wiki::WikiHistory>> {
+        fn get_wiki_history(&self, _wiki_id: u64) -> anyhow::Result<Vec<WikiHistory>> {
             unimplemented!()
         }
-        fn get_wiki_attachments(
-            &self,
-            _wiki_id: u64,
-        ) -> anyhow::Result<Vec<crate::api::wiki::WikiAttachment>> {
-            unimplemented!()
+        fn get_wiki_attachments(&self, _wiki_id: u64) -> anyhow::Result<Vec<WikiAttachment>> {
+            self.attachments
+                .clone()
+                .ok_or_else(|| anyhow!("no attachments"))
         }
     }
 
-    fn sample_disk_usage() -> ProjectDiskUsage {
-        ProjectDiskUsage {
-            project_id: 1,
-            issue: 2048,
-            wiki: 512,
-            document: 0,
-            file: 1024,
-            subversion: 64,
-            git: 256,
-            git_lfs: 128,
+    fn sample_attachment() -> WikiAttachment {
+        WikiAttachment {
+            id: 1,
+            name: "image.png".to_string(),
+            size: 2048,
+            created_user: sample_wiki_user(),
+            created: "2024-01-01T00:00:00Z".to_string(),
         }
+    }
+
+    fn args(json: bool) -> WikiAttachmentListArgs {
+        WikiAttachmentListArgs::new(1, json)
     }
 
     #[test]
-    fn disk_usage_with_text_output_succeeds() {
+    fn list_with_text_output_succeeds() {
         let api = MockApi {
-            disk_usage: Some(sample_disk_usage()),
+            attachments: Some(vec![sample_attachment()]),
         };
-        assert!(
-            disk_usage_with(&ProjectDiskUsageArgs::new("TEST".to_string(), false), &api).is_ok()
-        );
+        assert!(list_with(&args(false), &api).is_ok());
     }
 
     #[test]
-    fn disk_usage_with_json_output_succeeds() {
+    fn list_with_json_output_succeeds() {
         let api = MockApi {
-            disk_usage: Some(sample_disk_usage()),
+            attachments: Some(vec![sample_attachment()]),
         };
-        assert!(
-            disk_usage_with(&ProjectDiskUsageArgs::new("TEST".to_string(), true), &api).is_ok()
-        );
+        assert!(list_with(&args(true), &api).is_ok());
     }
 
     #[test]
-    fn disk_usage_with_propagates_api_error() {
-        let api = MockApi { disk_usage: None };
-        let err = disk_usage_with(&ProjectDiskUsageArgs::new("TEST".to_string(), false), &api)
-            .unwrap_err();
-        assert!(err.to_string().contains("no disk usage"));
+    fn list_with_propagates_api_error() {
+        let api = MockApi { attachments: None };
+        let err = list_with(&args(false), &api).unwrap_err();
+        assert!(err.to_string().contains("no attachments"));
     }
 
     #[test]
-    fn format_disk_usage_text_contains_fields() {
-        let text = format_disk_usage_text(&sample_disk_usage());
-        assert!(text.contains("2048"));
-        assert!(text.contains("512"));
-        assert!(text.contains("128"));
-        assert!(text.contains("Issue:"));
-        assert!(text.contains("Git LFS:"));
+    fn format_attachment_row_contains_id_name_size() {
+        let row = format_attachment_row(&sample_attachment());
+        assert!(row.contains("1"));
+        assert!(row.contains("image.png"));
+        assert!(row.contains("2048"));
     }
 }

@@ -2,57 +2,110 @@ use anstream::println;
 use anyhow::{Context, Result};
 use owo_colors::OwoColorize;
 
-use crate::api::{BacklogApi, BacklogClient};
+use crate::api::{BacklogApi, BacklogClient, wiki::WikiListItem};
 
-pub struct ProjectListArgs {
+pub struct WikiListArgs {
+    project_id_or_key: String,
+    keyword: Option<String>,
     json: bool,
 }
 
-impl ProjectListArgs {
-    pub fn new(json: bool) -> Self {
-        Self { json }
+impl WikiListArgs {
+    pub fn new(project_id_or_key: String, keyword: Option<String>, json: bool) -> Self {
+        Self {
+            project_id_or_key,
+            keyword,
+            json,
+        }
     }
 }
 
-pub fn list(args: &ProjectListArgs) -> Result<()> {
+pub fn list(args: &WikiListArgs) -> Result<()> {
     let client = BacklogClient::from_config()?;
     list_with(args, &client)
 }
 
-pub fn list_with(args: &ProjectListArgs, api: &dyn BacklogApi) -> Result<()> {
-    let projects = api.get_projects()?;
+pub fn list_with(args: &WikiListArgs, api: &dyn BacklogApi) -> Result<()> {
+    let mut params: Vec<(String, String)> =
+        vec![("projectIdOrKey".to_string(), args.project_id_or_key.clone())];
+    if let Some(kw) = &args.keyword {
+        params.push(("keyword".to_string(), kw.clone()));
+    }
+    let wikis = api.get_wikis(&params)?;
     if args.json {
         println!(
             "{}",
-            serde_json::to_string_pretty(&projects).context("Failed to serialize JSON")?
+            serde_json::to_string_pretty(&wikis).context("Failed to serialize JSON")?
         );
     } else {
-        for p in &projects {
-            let archived = if p.archived {
-                format!(" {}", "[archived]".yellow())
-            } else {
-                String::new()
-            };
-            println!("[{}] {}{}", p.project_key.cyan().bold(), p.name, archived);
+        for wiki in &wikis {
+            println!("{}", format_wiki_row(wiki));
         }
     }
     Ok(())
 }
 
+pub fn format_wiki_row(wiki: &WikiListItem) -> String {
+    let tags = if wiki.tags.is_empty() {
+        String::new()
+    } else {
+        format!(
+            " [{}]",
+            wiki.tags
+                .iter()
+                .map(|t| t.name.as_str())
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
+    };
+    format!("{}{}", wiki.name.cyan().bold(), tags)
+}
+
+#[cfg(test)]
+pub(crate) mod tests_helper {
+    use std::collections::BTreeMap;
+
+    use crate::api::wiki::{WikiListItem, WikiTag, WikiUser};
+
+    pub fn sample_wiki_user() -> WikiUser {
+        WikiUser {
+            id: 1,
+            user_id: Some("john".to_string()),
+            name: "John Doe".to_string(),
+            role_type: 1,
+            lang: None,
+            mail_address: None,
+            extra: BTreeMap::new(),
+        }
+    }
+
+    pub fn sample_wiki_list_item() -> WikiListItem {
+        WikiListItem {
+            id: 1,
+            project_id: 1,
+            name: "Home".to_string(),
+            tags: vec![WikiTag {
+                id: 1,
+                name: "guide".to_string(),
+            }],
+            created_user: sample_wiki_user(),
+            created: "2024-01-01T00:00:00Z".to_string(),
+            updated_user: sample_wiki_user(),
+            updated: "2024-01-01T00:00:00Z".to_string(),
+            extra: BTreeMap::new(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::project::Project;
+    use crate::api::wiki::{Wiki, WikiAttachment, WikiHistory, WikiListItem};
     use anyhow::anyhow;
-    use std::collections::BTreeMap;
-
-    fn format_project_row(p: &Project) -> String {
-        let archived = if p.archived { " [archived]" } else { "" };
-        format!("[{}] {}{}", p.project_key, p.name, archived)
-    }
+    use tests_helper::{sample_wiki_list_item, sample_wiki_user};
 
     struct MockApi {
-        projects: Option<Vec<Project>>,
+        wikis: Option<Vec<WikiListItem>>,
     }
 
     impl crate::api::BacklogApi for MockApi {
@@ -73,10 +126,10 @@ mod tests {
         ) -> anyhow::Result<crate::api::space_notification::SpaceNotification> {
             unimplemented!()
         }
-        fn get_projects(&self) -> anyhow::Result<Vec<Project>> {
-            self.projects.clone().ok_or_else(|| anyhow!("no projects"))
+        fn get_projects(&self) -> anyhow::Result<Vec<crate::api::project::Project>> {
+            unimplemented!()
         }
-        fn get_project(&self, _key: &str) -> anyhow::Result<Project> {
+        fn get_project(&self, _key: &str) -> anyhow::Result<crate::api::project::Project> {
             unimplemented!()
         }
         fn get_project_activities(
@@ -186,104 +239,86 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::issue::IssueAttachment>> {
             unimplemented!()
         }
-        fn get_wikis(
-            &self,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<Vec<crate::api::wiki::WikiListItem>> {
+        fn get_wikis(&self, _params: &[(String, String)]) -> anyhow::Result<Vec<WikiListItem>> {
+            self.wikis.clone().ok_or_else(|| anyhow!("no wikis"))
+        }
+        fn get_wiki(&self, _wiki_id: u64) -> anyhow::Result<Wiki> {
             unimplemented!()
         }
-        fn get_wiki(&self, _wiki_id: u64) -> anyhow::Result<crate::api::wiki::Wiki> {
+        fn create_wiki(&self, _params: &[(String, String)]) -> anyhow::Result<Wiki> {
             unimplemented!()
         }
-        fn create_wiki(
-            &self,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::wiki::Wiki> {
+        fn update_wiki(&self, _wiki_id: u64, _params: &[(String, String)]) -> anyhow::Result<Wiki> {
             unimplemented!()
         }
-        fn update_wiki(
-            &self,
-            _wiki_id: u64,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::wiki::Wiki> {
+        fn delete_wiki(&self, _wiki_id: u64, _params: &[(String, String)]) -> anyhow::Result<Wiki> {
             unimplemented!()
         }
-        fn delete_wiki(
-            &self,
-            _wiki_id: u64,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::wiki::Wiki> {
+        fn get_wiki_history(&self, _wiki_id: u64) -> anyhow::Result<Vec<WikiHistory>> {
             unimplemented!()
         }
-        fn get_wiki_history(
-            &self,
-            _wiki_id: u64,
-        ) -> anyhow::Result<Vec<crate::api::wiki::WikiHistory>> {
-            unimplemented!()
-        }
-        fn get_wiki_attachments(
-            &self,
-            _wiki_id: u64,
-        ) -> anyhow::Result<Vec<crate::api::wiki::WikiAttachment>> {
+        fn get_wiki_attachments(&self, _wiki_id: u64) -> anyhow::Result<Vec<WikiAttachment>> {
             unimplemented!()
         }
     }
 
-    fn sample_project() -> Project {
-        Project {
-            id: 1,
-            project_key: "TEST".to_string(),
-            name: "Test Project".to_string(),
-            chart_enabled: false,
-            subtasking_enabled: false,
-            project_leader_can_edit_project_leader: false,
-            text_formatting_rule: "markdown".to_string(),
-            archived: false,
-            extra: BTreeMap::new(),
-        }
-    }
-
-    fn sample_archived_project() -> Project {
-        Project {
-            archived: true,
-            ..sample_project()
-        }
+    fn args(json: bool) -> WikiListArgs {
+        WikiListArgs::new("TEST".to_string(), None, json)
     }
 
     #[test]
     fn list_with_text_output_succeeds() {
         let api = MockApi {
-            projects: Some(vec![sample_project()]),
+            wikis: Some(vec![sample_wiki_list_item()]),
         };
-        assert!(list_with(&ProjectListArgs::new(false), &api).is_ok());
+        assert!(list_with(&args(false), &api).is_ok());
     }
 
     #[test]
     fn list_with_json_output_succeeds() {
         let api = MockApi {
-            projects: Some(vec![sample_project()]),
+            wikis: Some(vec![sample_wiki_list_item()]),
         };
-        assert!(list_with(&ProjectListArgs::new(true), &api).is_ok());
+        assert!(list_with(&args(true), &api).is_ok());
     }
 
     #[test]
     fn list_with_propagates_api_error() {
-        let api = MockApi { projects: None };
-        let err = list_with(&ProjectListArgs::new(false), &api).unwrap_err();
-        assert!(err.to_string().contains("no projects"));
+        let api = MockApi { wikis: None };
+        let err = list_with(&args(false), &api).unwrap_err();
+        assert!(err.to_string().contains("no wikis"));
     }
 
     #[test]
-    fn format_project_row_active() {
-        let text = format_project_row(&sample_project());
-        assert!(text.contains("[TEST]"));
-        assert!(text.contains("Test Project"));
-        assert!(!text.contains("[archived]"));
+    fn format_wiki_row_with_tags() {
+        let wiki = sample_wiki_list_item();
+        let row = format_wiki_row(&wiki);
+        assert!(row.contains("Home"));
+        assert!(row.contains("guide"));
     }
 
     #[test]
-    fn format_project_row_archived() {
-        let text = format_project_row(&sample_archived_project());
-        assert!(text.contains("[archived]"));
+    fn format_wiki_row_without_tags() {
+        let mut wiki = sample_wiki_list_item();
+        wiki.tags.clear();
+        let row = format_wiki_row(&wiki);
+        assert!(row.contains("Home"));
+        assert!(!row.contains("guide"));
+    }
+
+    #[test]
+    fn list_with_keyword_builds_params() {
+        let api = MockApi {
+            wikis: Some(vec![]),
+        };
+        let args = WikiListArgs::new("TEST".to_string(), Some("guide".to_string()), false);
+        assert!(list_with(&args, &api).is_ok());
+    }
+
+    #[test]
+    fn sample_wiki_user_has_expected_fields() {
+        let u = sample_wiki_user();
+        assert_eq!(u.name, "John Doe");
+        assert_eq!(u.user_id.as_deref(), Some("john"));
     }
 }

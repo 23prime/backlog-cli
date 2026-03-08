@@ -8,6 +8,7 @@ pub mod project;
 pub mod space;
 pub mod space_notification;
 pub mod user;
+pub mod wiki;
 
 use activity::Activity;
 use disk_usage::DiskUsage;
@@ -19,6 +20,7 @@ use project::{
 use space::Space;
 use space_notification::SpaceNotification;
 use user::User;
+use wiki::{Wiki, WikiAttachment, WikiHistory, WikiListItem};
 
 pub trait BacklogApi {
     fn get_space(&self) -> Result<Space>;
@@ -51,6 +53,13 @@ pub trait BacklogApi {
     ) -> Result<IssueComment>;
     fn delete_issue_comment(&self, key: &str, comment_id: u64) -> Result<IssueComment>;
     fn get_issue_attachments(&self, key: &str) -> Result<Vec<IssueAttachment>>;
+    fn get_wikis(&self, params: &[(String, String)]) -> Result<Vec<WikiListItem>>;
+    fn get_wiki(&self, wiki_id: u64) -> Result<Wiki>;
+    fn create_wiki(&self, params: &[(String, String)]) -> Result<Wiki>;
+    fn update_wiki(&self, wiki_id: u64, params: &[(String, String)]) -> Result<Wiki>;
+    fn delete_wiki(&self, wiki_id: u64, params: &[(String, String)]) -> Result<Wiki>;
+    fn get_wiki_history(&self, wiki_id: u64) -> Result<Vec<WikiHistory>>;
+    fn get_wiki_attachments(&self, wiki_id: u64) -> Result<Vec<WikiAttachment>>;
 }
 
 impl BacklogApi for BacklogClient {
@@ -158,6 +167,34 @@ impl BacklogApi for BacklogClient {
     fn get_issue_attachments(&self, key: &str) -> Result<Vec<IssueAttachment>> {
         self.get_issue_attachments(key)
     }
+
+    fn get_wikis(&self, params: &[(String, String)]) -> Result<Vec<WikiListItem>> {
+        self.get_wikis(params)
+    }
+
+    fn get_wiki(&self, wiki_id: u64) -> Result<Wiki> {
+        self.get_wiki(wiki_id)
+    }
+
+    fn create_wiki(&self, params: &[(String, String)]) -> Result<Wiki> {
+        self.create_wiki(params)
+    }
+
+    fn update_wiki(&self, wiki_id: u64, params: &[(String, String)]) -> Result<Wiki> {
+        self.update_wiki(wiki_id, params)
+    }
+
+    fn delete_wiki(&self, wiki_id: u64, params: &[(String, String)]) -> Result<Wiki> {
+        self.delete_wiki(wiki_id, params)
+    }
+
+    fn get_wiki_history(&self, wiki_id: u64) -> Result<Vec<WikiHistory>> {
+        self.get_wiki_history(wiki_id)
+    }
+
+    fn get_wiki_attachments(&self, wiki_id: u64) -> Result<Vec<WikiAttachment>> {
+        self.get_wiki_attachments(wiki_id)
+    }
 }
 
 pub struct BacklogClient {
@@ -263,6 +300,30 @@ impl BacklogClient {
             .form(params)
             .send()
             .with_context(|| format!("Failed to PATCH {}", url))?;
+
+        let status = response.status();
+        let body: serde_json::Value = response.json().context("Failed to parse JSON response")?;
+
+        if !status.is_success() {
+            anyhow::bail!("API error ({}): {}", status, extract_error_message(&body));
+        }
+
+        Ok(body)
+    }
+
+    pub fn delete_form(
+        &self,
+        path: &str,
+        params: &[(String, String)],
+    ) -> Result<serde_json::Value> {
+        let url = format!("{}{}", self.base_url, path);
+        let response = self
+            .client
+            .delete(&url)
+            .query(&[("apiKey", &self.api_key)])
+            .form(params)
+            .send()
+            .with_context(|| format!("Failed to DELETE {}", url))?;
 
         let status = response.status();
         let body: serde_json::Value = response.json().context("Failed to parse JSON response")?;

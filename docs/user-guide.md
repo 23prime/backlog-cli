@@ -542,6 +542,108 @@ Example output:
 [2] log.txt (1024 bytes)
 ```
 
+## Wiki pages
+
+### `bl wiki list`
+
+List wiki pages in a project.
+
+```bash
+bl wiki list TEST
+bl wiki list TEST --keyword setup
+bl wiki list TEST --json
+```
+
+Example output:
+
+```text
+Home [guide, onboarding]
+Setup
+API Reference
+```
+
+### `bl wiki show`
+
+Show the content of a wiki page.
+
+```bash
+bl wiki show 12345
+bl wiki show 12345 --json
+```
+
+Example output:
+
+```text
+Home
+  Tags:    guide, onboarding
+  Created: 2024-01-01T00:00:00Z
+  Updated: 2024-06-01T00:00:00Z
+
+# Home
+Welcome to the project wiki!
+```
+
+### `bl wiki create`
+
+Create a new wiki page.
+
+```bash
+bl wiki create --project-id 1 --name "Setup" --content "# Setup\nSee README."
+bl wiki create --project-id 1 --name "Setup" --content "# Setup" --mail-notify --json
+```
+
+### `bl wiki update`
+
+Update an existing wiki page. At least one of `--name` or `--content` is required.
+
+```bash
+bl wiki update 12345 --content "# Updated content"
+bl wiki update 12345 --name "New Title" --content "New content" --mail-notify
+bl wiki update 12345 --name "Renamed" --json
+```
+
+### `bl wiki delete`
+
+Delete a wiki page.
+
+```bash
+bl wiki delete 12345
+bl wiki delete 12345 --mail-notify --json
+```
+
+### `bl wiki history`
+
+Show the revision history of a wiki page.
+
+```bash
+bl wiki history 12345
+bl wiki history 12345 --json
+```
+
+Example output:
+
+```text
+v3 Home — 2024-06-01T00:00:00Z
+v2 Home — 2024-03-15T00:00:00Z
+v1 Home — 2024-01-01T00:00:00Z
+```
+
+### `bl wiki attachment list`
+
+List attachments of a wiki page.
+
+```bash
+bl wiki attachment list 12345
+bl wiki attachment list 12345 --json
+```
+
+Example output:
+
+```text
+[1] diagram.png (204800 bytes)
+[2] notes.txt (1024 bytes)
+```
+
 ## Command coverage
 
 The table below maps Backlog API v2 endpoints to `bl` commands.
@@ -590,13 +692,13 @@ Commands that target a specific project accept a `--project <key>` flag.
 
 | Command | API endpoint | Status |
 | --- | --- | --- |
-| `bl wiki list` | `GET /api/v2/wikis` | Planned |
-| `bl wiki show <id>` | `GET /api/v2/wikis/{wikiId}` | Planned |
-| `bl wiki create` | `POST /api/v2/wikis` | Planned |
-| `bl wiki update <id>` | `PUT /api/v2/wikis/{wikiId}` | Planned |
-| `bl wiki delete <id>` | `DELETE /api/v2/wikis/{wikiId}` | Planned |
-| `bl wiki history <id>` | `GET /api/v2/wikis/{wikiId}/history` | Planned |
-| `bl wiki attachment list <id>` | `GET /api/v2/wikis/{wikiId}/attachments` | Planned |
+| `bl wiki list` | `GET /api/v2/wikis` | ✅ Implemented |
+| `bl wiki show <id>` | `GET /api/v2/wikis/{wikiId}` | ✅ Implemented |
+| `bl wiki create` | `POST /api/v2/wikis` | ✅ Implemented |
+| `bl wiki update <id>` | `PATCH /api/v2/wikis/{wikiId}` | ✅ Implemented |
+| `bl wiki delete <id>` | `DELETE /api/v2/wikis/{wikiId}` | ✅ Implemented |
+| `bl wiki history <id>` | `GET /api/v2/wikis/{wikiId}/history` | ✅ Implemented |
+| `bl wiki attachment list <id>` | `GET /api/v2/wikis/{wikiId}/attachments` | ✅ Implemented |
 
 ### Pull Requests
 
