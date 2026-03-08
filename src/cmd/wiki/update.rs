@@ -14,20 +14,25 @@ pub struct WikiUpdateArgs {
 }
 
 impl WikiUpdateArgs {
-    pub fn new(
+    pub fn try_new(
         wiki_id: u64,
         name: Option<String>,
         content: Option<String>,
         mail_notify: bool,
         json: bool,
-    ) -> Self {
-        Self {
+    ) -> Result<Self> {
+        if name.is_none() && content.is_none() {
+            return Err(anyhow::anyhow!(
+                "at least one of --name or --content must be specified"
+            ));
+        }
+        Ok(Self {
             wiki_id,
             name,
             content,
             mail_notify,
             json,
-        }
+        })
     }
 }
 
@@ -37,11 +42,6 @@ pub fn update(args: &WikiUpdateArgs) -> Result<()> {
 }
 
 pub fn update_with(args: &WikiUpdateArgs, api: &dyn BacklogApi) -> Result<()> {
-    if args.name.is_none() && args.content.is_none() {
-        return Err(anyhow::anyhow!(
-            "at least one of --name or --content must be specified"
-        ));
-    }
     let mut params: Vec<(String, String)> = Vec::new();
     if let Some(name) = &args.name {
         params.push(("name".to_string(), name.clone()));
@@ -246,7 +246,7 @@ mod tests {
     }
 
     fn args(json: bool) -> WikiUpdateArgs {
-        WikiUpdateArgs::new(1, Some("Updated".to_string()), None, false, json)
+        WikiUpdateArgs::try_new(1, Some("Updated".to_string()), None, false, json).unwrap()
     }
 
     #[test]
@@ -274,9 +274,7 @@ mod tests {
 
     #[test]
     fn update_rejects_no_fields() {
-        let api = MockApi { wiki: None };
-        let args = WikiUpdateArgs::new(1, None, None, false, false);
-        let err = update_with(&args, &api).unwrap_err();
+        let err = WikiUpdateArgs::try_new(1, None, None, false, false).unwrap_err();
         assert!(
             err.to_string()
                 .contains("at least one of --name or --content")
