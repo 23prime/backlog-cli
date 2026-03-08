@@ -94,9 +94,13 @@ Commands are organized as directories (`src/cmd/<resource>/`) with one file per 
 Validation is split by responsibility:
 
 - **`main.rs` (clap)** — Syntactic/type-level checks only (e.g. "cannot parse as u64").
-- **`cmd/*_with`** — Domain rules and API-spec constraints (e.g. `count <= 100` is a
-  Backlog API limit, not a CLI concern). Place these here so that API spec changes
-  never require touching `main.rs`.
+- **`Args::try_new`** — Domain invariants that must hold before any logic runs
+  (e.g. "at least one of --name or --content must be specified", `count <= 100`).
+  Use a fallible constructor `try_new(...) -> Result<Self>` so errors propagate
+  naturally to `main` via `?`. Do **not** duplicate these checks in `*_with`.
+- **`cmd/*_with`** — API call logic and output formatting only. No validation that
+  belongs in `try_new`. Place API-spec constraints (e.g. field limits) here only
+  when they cannot be known at construction time.
 - **`api/`** — HTTP-level error translation only.
 
 ### Build, lint, and test
