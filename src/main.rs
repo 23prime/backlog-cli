@@ -523,7 +523,11 @@ enum WikiAttachmentCommands {
 #[derive(Subcommand)]
 enum AuthCommands {
     /// Login with your API key
-    Login,
+    Login {
+        /// Skip the banner
+        #[arg(long)]
+        no_banner: bool,
+    },
     /// Show current auth status
     Status {
         /// Output as JSON
@@ -580,7 +584,7 @@ fn run() -> Result<()> {
     };
     match command {
         Commands::Auth { action } => match action {
-            AuthCommands::Login => cmd::auth::login(),
+            AuthCommands::Login { no_banner } => cmd::auth::login(no_banner),
             AuthCommands::Status { json } => cmd::auth::status(&AuthStatusArgs::new(json)),
             AuthCommands::Logout { space_key, all } => {
                 if all {
