@@ -100,7 +100,7 @@ pub fn list() -> Result<()> {
 pub fn use_space(key: &str) -> Result<()> {
     let mut cfg = config::load()?;
 
-    if !cfg.spaces.contains(&key.to_string()) {
+    if !cfg.spaces.iter().any(|s| s == key) {
         anyhow::bail!(
             "Space '{}' is not configured. Run `bl auth login` to add it.",
             key
