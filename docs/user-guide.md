@@ -398,11 +398,11 @@ List issues with optional filters.
 bl issue list
 bl issue list --project-id 1 --status-id 1
 bl issue list --issue-type-id 1 --category-id 2 --milestone-id 3
-bl issue list --parent-child 1 --keyword "login" --count 50
+bl issue list --parent-child not-child --keyword "login" --count 50
 bl issue list --json
 ```
 
-`--parent-child` values: `0` = all, `1` = no children, `2` = has children, `3` = children only, `4` = no parent.
+`--parent-child` values: `all`, `not-child`, `child`, `standalone`, `parent`.
 
 Example output:
 
@@ -417,7 +417,7 @@ Count issues with optional filters. Accepts the same filters as `bl issue list`.
 
 ```bash
 bl issue count
-bl issue count --project-id 1 --issue-type-id 1 --parent-child 1 --json
+bl issue count --project-id 1 --issue-type-id 1 --parent-child not-child --json
 ```
 
 Example output:
