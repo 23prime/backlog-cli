@@ -427,7 +427,15 @@ enum AuthCommands {
     Keyring,
 }
 
-fn main() -> Result<()> {
+fn main() {
+    if let Err(e) = run() {
+        use owo_colors::OwoColorize;
+        anstream::eprintln!("{}: {e}", "ERROR".red().bold());
+        std::process::exit(1);
+    }
+}
+
+fn run() -> Result<()> {
     let cli = Cli::parse();
     if cli.no_color {
         // SAFETY: called before any threads are spawned
