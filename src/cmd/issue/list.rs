@@ -5,18 +5,53 @@ use owo_colors::OwoColorize;
 use crate::api::{BacklogApi, BacklogClient, issue::Issue};
 use crate::cmd::issue::ParentChild;
 
+#[cfg_attr(test, derive(Debug))]
 pub struct IssueListArgs {
-    pub project_ids: Vec<u64>,
-    pub status_ids: Vec<u64>,
-    pub assignee_ids: Vec<u64>,
-    pub issue_type_ids: Vec<u64>,
-    pub category_ids: Vec<u64>,
-    pub milestone_ids: Vec<u64>,
-    pub parent_child: Option<ParentChild>,
-    pub keyword: Option<String>,
-    pub count: u32,
-    pub offset: u64,
-    pub json: bool,
+    project_ids: Vec<u64>,
+    status_ids: Vec<u64>,
+    assignee_ids: Vec<u64>,
+    issue_type_ids: Vec<u64>,
+    category_ids: Vec<u64>,
+    milestone_ids: Vec<u64>,
+    parent_child: Option<ParentChild>,
+    keyword: Option<String>,
+    count: u32,
+    offset: u64,
+    json: bool,
+}
+
+impl IssueListArgs {
+    #[allow(clippy::too_many_arguments)]
+    pub fn try_new(
+        project_ids: Vec<u64>,
+        status_ids: Vec<u64>,
+        assignee_ids: Vec<u64>,
+        issue_type_ids: Vec<u64>,
+        category_ids: Vec<u64>,
+        milestone_ids: Vec<u64>,
+        parent_child: Option<ParentChild>,
+        keyword: Option<String>,
+        count: u32,
+        offset: u64,
+        json: bool,
+    ) -> anyhow::Result<Self> {
+        if count == 0 || count > 100 {
+            return Err(anyhow::anyhow!("--count must be between 1 and 100"));
+        }
+        Ok(Self {
+            project_ids,
+            status_ids,
+            assignee_ids,
+            issue_type_ids,
+            category_ids,
+            milestone_ids,
+            parent_child,
+            keyword,
+            count,
+            offset,
+            json,
+        })
+    }
 }
 
 pub fn list(args: &IssueListArgs) -> Result<()> {
@@ -25,9 +60,6 @@ pub fn list(args: &IssueListArgs) -> Result<()> {
 }
 
 pub fn list_with(args: &IssueListArgs, api: &dyn BacklogApi) -> Result<()> {
-    if args.count == 0 || args.count > 100 {
-        return Err(anyhow::anyhow!("--count must be between 1 and 100"));
-    }
     let params = build_params(args);
     let issues = api.get_issues(&params)?;
     if args.json {
@@ -277,19 +309,20 @@ mod tests {
     }
 
     fn args(json: bool) -> IssueListArgs {
-        IssueListArgs {
-            project_ids: vec![],
-            status_ids: vec![],
-            assignee_ids: vec![],
-            issue_type_ids: vec![],
-            category_ids: vec![],
-            milestone_ids: vec![],
-            parent_child: None,
-            keyword: None,
-            count: 20,
-            offset: 0,
+        IssueListArgs::try_new(
+            vec![],
+            vec![],
+            vec![],
+            vec![],
+            vec![],
+            vec![],
+            None,
+            None,
+            20,
+            0,
             json,
-        }
+        )
+        .unwrap()
     }
 
     #[test]
@@ -317,12 +350,20 @@ mod tests {
 
     #[test]
     fn list_with_rejects_count_zero() {
-        let api = MockApi {
-            issues: Some(vec![]),
-        };
-        let mut a = args(false);
-        a.count = 0;
-        let err = list_with(&a, &api).unwrap_err();
+        let err = IssueListArgs::try_new(
+            vec![],
+            vec![],
+            vec![],
+            vec![],
+            vec![],
+            vec![],
+            None,
+            None,
+            0,
+            0,
+            false,
+        )
+        .unwrap_err();
         assert!(
             err.to_string()
                 .contains("--count must be between 1 and 100")
@@ -331,12 +372,20 @@ mod tests {
 
     #[test]
     fn list_with_rejects_count_over_100() {
-        let api = MockApi {
-            issues: Some(vec![]),
-        };
-        let mut a = args(false);
-        a.count = 101;
-        let err = list_with(&a, &api).unwrap_err();
+        let err = IssueListArgs::try_new(
+            vec![],
+            vec![],
+            vec![],
+            vec![],
+            vec![],
+            vec![],
+            None,
+            None,
+            101,
+            0,
+            false,
+        )
+        .unwrap_err();
         assert!(
             err.to_string()
                 .contains("--count must be between 1 and 100")
@@ -371,19 +420,20 @@ mod tests {
 
     #[test]
     fn build_params_includes_all_fields() {
-        let args = IssueListArgs {
-            project_ids: vec![1, 2],
-            status_ids: vec![3],
-            assignee_ids: vec![4],
-            issue_type_ids: vec![5],
-            category_ids: vec![6],
-            milestone_ids: vec![7],
-            parent_child: Some(ParentChild::NotChild),
-            keyword: Some("login".to_string()),
-            count: 50,
-            offset: 10,
-            json: false,
-        };
+        let args = IssueListArgs::try_new(
+            vec![1, 2],
+            vec![3],
+            vec![4],
+            vec![5],
+            vec![6],
+            vec![7],
+            Some(ParentChild::NotChild),
+            Some("login".to_string()),
+            50,
+            10,
+            false,
+        )
+        .unwrap();
         let params = build_params(&args);
         assert!(params.iter().any(|(k, v)| k == "projectId[]" && v == "1"));
         assert!(params.iter().any(|(k, v)| k == "projectId[]" && v == "2"));

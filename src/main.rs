@@ -436,66 +436,44 @@ fn main() -> Result<()> {
     match cli.command {
         Commands::Auth { action } => match action {
             AuthCommands::Login => cmd::auth::login(),
-            AuthCommands::Status { json } => cmd::auth::status(&AuthStatusArgs { json }),
+            AuthCommands::Status { json } => cmd::auth::status(&AuthStatusArgs::new(json)),
             AuthCommands::Logout => cmd::auth::logout(),
             AuthCommands::Keyring => cmd::auth::check_keyring(),
         },
         Commands::Project { action } => match action {
-            ProjectCommands::List { json } => cmd::project::list(&ProjectListArgs { json }),
-            ProjectCommands::Show { id_or_key, json } => cmd::project::show(&ProjectShowArgs {
-                key: id_or_key,
-                json,
-            }),
+            ProjectCommands::List { json } => cmd::project::list(&ProjectListArgs::new(json)),
+            ProjectCommands::Show { id_or_key, json } => {
+                cmd::project::show(&ProjectShowArgs::new(id_or_key, json))
+            }
             ProjectCommands::Activities { id_or_key, json } => {
-                cmd::project::activities(&ProjectActivitiesArgs {
-                    key: id_or_key,
-                    json,
-                })
+                cmd::project::activities(&ProjectActivitiesArgs::new(id_or_key, json))
             }
             ProjectCommands::DiskUsage { id_or_key, json } => {
-                cmd::project::disk_usage(&ProjectDiskUsageArgs {
-                    key: id_or_key,
-                    json,
-                })
+                cmd::project::disk_usage(&ProjectDiskUsageArgs::new(id_or_key, json))
             }
             ProjectCommands::User { action } => match action {
                 ProjectUserCommands::List { id_or_key, json } => {
-                    cmd::project::user::list(&ProjectUserListArgs {
-                        key: id_or_key,
-                        json,
-                    })
+                    cmd::project::user::list(&ProjectUserListArgs::new(id_or_key, json))
                 }
             },
             ProjectCommands::Status { action } => match action {
                 ProjectStatusCommands::List { id_or_key, json } => {
-                    cmd::project::status::list(&ProjectStatusListArgs {
-                        key: id_or_key,
-                        json,
-                    })
+                    cmd::project::status::list(&ProjectStatusListArgs::new(id_or_key, json))
                 }
             },
             ProjectCommands::IssueType { action } => match action {
                 ProjectIssueTypeCommands::List { id_or_key, json } => {
-                    cmd::project::issue_type::list(&ProjectIssueTypeListArgs {
-                        key: id_or_key,
-                        json,
-                    })
+                    cmd::project::issue_type::list(&ProjectIssueTypeListArgs::new(id_or_key, json))
                 }
             },
             ProjectCommands::Category { action } => match action {
                 ProjectCategoryCommands::List { id_or_key, json } => {
-                    cmd::project::category::list(&ProjectCategoryListArgs {
-                        key: id_or_key,
-                        json,
-                    })
+                    cmd::project::category::list(&ProjectCategoryListArgs::new(id_or_key, json))
                 }
             },
             ProjectCommands::Version { action } => match action {
                 ProjectVersionCommands::List { id_or_key, json } => {
-                    cmd::project::version::list(&ProjectVersionListArgs {
-                        key: id_or_key,
-                        json,
-                    })
+                    cmd::project::version::list(&ProjectVersionListArgs::new(id_or_key, json))
                 }
             },
         },
@@ -512,7 +490,7 @@ fn main() -> Result<()> {
                 count,
                 offset,
                 json,
-            } => cmd::issue::list(&IssueListArgs {
+            } => cmd::issue::list(&IssueListArgs::try_new(
                 project_ids,
                 status_ids,
                 assignee_ids,
@@ -524,7 +502,7 @@ fn main() -> Result<()> {
                 count,
                 offset,
                 json,
-            }),
+            )?),
             IssueCommands::Count {
                 project_ids,
                 status_ids,
@@ -535,7 +513,7 @@ fn main() -> Result<()> {
                 parent_child,
                 keyword,
                 json,
-            } => cmd::issue::count(&IssueCountArgs {
+            } => cmd::issue::count(&IssueCountArgs::new(
                 project_ids,
                 status_ids,
                 assignee_ids,
@@ -545,11 +523,10 @@ fn main() -> Result<()> {
                 parent_child,
                 keyword,
                 json,
-            }),
-            IssueCommands::Show { id_or_key, json } => cmd::issue::show(&IssueShowArgs {
-                key: id_or_key,
-                json,
-            }),
+            )),
+            IssueCommands::Show { id_or_key, json } => {
+                cmd::issue::show(&IssueShowArgs::new(id_or_key, json))
+            }
             IssueCommands::Create {
                 project_id,
                 summary,
@@ -559,7 +536,7 @@ fn main() -> Result<()> {
                 assignee_id,
                 due_date,
                 json,
-            } => cmd::issue::create(&IssueCreateArgs {
+            } => cmd::issue::create(&IssueCreateArgs::new(
                 project_id,
                 summary,
                 issue_type_id,
@@ -568,7 +545,7 @@ fn main() -> Result<()> {
                 assignee_id,
                 due_date,
                 json,
-            }),
+            )),
             IssueCommands::Update {
                 id_or_key,
                 summary,
@@ -579,8 +556,8 @@ fn main() -> Result<()> {
                 due_date,
                 comment,
                 json,
-            } => cmd::issue::update(&IssueUpdateArgs {
-                key: id_or_key,
+            } => cmd::issue::update(&IssueUpdateArgs::try_new(
+                id_or_key,
                 summary,
                 description,
                 status_id,
@@ -589,73 +566,51 @@ fn main() -> Result<()> {
                 due_date,
                 comment,
                 json,
-            }),
-            IssueCommands::Delete { id_or_key, json } => cmd::issue::delete(&IssueDeleteArgs {
-                key: id_or_key,
-                json,
-            }),
+            )?),
+            IssueCommands::Delete { id_or_key, json } => {
+                cmd::issue::delete(&IssueDeleteArgs::new(id_or_key, json))
+            }
             IssueCommands::Comment { action } => match action {
                 IssueCommentCommands::List { id_or_key, json } => {
-                    cmd::issue::comment::list(&IssueCommentListArgs {
-                        key: id_or_key,
-                        json,
-                    })
+                    cmd::issue::comment::list(&IssueCommentListArgs::new(id_or_key, json))
                 }
                 IssueCommentCommands::Add {
                     id_or_key,
                     content,
                     json,
-                } => cmd::issue::comment::add(&IssueCommentAddArgs {
-                    key: id_or_key,
-                    content,
-                    json,
-                }),
+                } => cmd::issue::comment::add(&IssueCommentAddArgs::new(id_or_key, content, json)),
                 IssueCommentCommands::Update {
                     id_or_key,
                     comment_id,
                     content,
                     json,
-                } => cmd::issue::comment::update(&IssueCommentUpdateArgs {
-                    key: id_or_key,
-                    comment_id,
-                    content,
-                    json,
-                }),
+                } => cmd::issue::comment::update(&IssueCommentUpdateArgs::new(
+                    id_or_key, comment_id, content, json,
+                )),
                 IssueCommentCommands::Delete {
                     id_or_key,
                     comment_id,
                     json,
-                } => cmd::issue::comment::delete(&IssueCommentDeleteArgs {
-                    key: id_or_key,
-                    comment_id,
-                    json,
-                }),
+                } => cmd::issue::comment::delete(&IssueCommentDeleteArgs::new(
+                    id_or_key, comment_id, json,
+                )),
             },
             IssueCommands::Attachment { action } => match action {
                 IssueAttachmentCommands::List { id_or_key, json } => {
-                    cmd::issue::attachment::list(&IssueAttachmentListArgs {
-                        key: id_or_key,
-                        json,
-                    })
+                    cmd::issue::attachment::list(&IssueAttachmentListArgs::new(id_or_key, json))
                 }
             },
         },
         Commands::Space { action, json } => match action {
-            None => cmd::space::show(&SpaceShowArgs { json }),
+            None => cmd::space::show(&SpaceShowArgs::new(json)),
             Some(SpaceCommands::Activities { json: sub_json }) => {
-                cmd::space::activities(&SpaceActivitiesArgs {
-                    json: json || sub_json,
-                })
+                cmd::space::activities(&SpaceActivitiesArgs::new(json || sub_json))
             }
             Some(SpaceCommands::DiskUsage { json: sub_json }) => {
-                cmd::space::disk_usage(&SpaceDiskUsageArgs {
-                    json: json || sub_json,
-                })
+                cmd::space::disk_usage(&SpaceDiskUsageArgs::new(json || sub_json))
             }
             Some(SpaceCommands::Notification { json: sub_json }) => {
-                cmd::space::notification(&SpaceNotificationArgs {
-                    json: json || sub_json,
-                })
+                cmd::space::notification(&SpaceNotificationArgs::new(json || sub_json))
             }
         },
     }

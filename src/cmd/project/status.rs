@@ -4,8 +4,14 @@ use anyhow::{Context, Result};
 use crate::api::{BacklogApi, BacklogClient, project::ProjectStatus};
 
 pub struct ProjectStatusListArgs {
-    pub key: String,
-    pub json: bool,
+    key: String,
+    json: bool,
+}
+
+impl ProjectStatusListArgs {
+    pub fn new(key: String, json: bool) -> Self {
+        Self { key, json }
+    }
 }
 
 pub fn list(args: &ProjectStatusListArgs) -> Result<()> {
@@ -193,16 +199,7 @@ mod tests {
         let api = MockApi {
             statuses: Some(vec![sample_status()]),
         };
-        assert!(
-            list_with(
-                &ProjectStatusListArgs {
-                    key: "TEST".to_string(),
-                    json: false
-                },
-                &api
-            )
-            .is_ok()
-        );
+        assert!(list_with(&ProjectStatusListArgs::new("TEST".to_string(), false), &api).is_ok());
     }
 
     #[test]
@@ -210,29 +207,14 @@ mod tests {
         let api = MockApi {
             statuses: Some(vec![sample_status()]),
         };
-        assert!(
-            list_with(
-                &ProjectStatusListArgs {
-                    key: "TEST".to_string(),
-                    json: true
-                },
-                &api
-            )
-            .is_ok()
-        );
+        assert!(list_with(&ProjectStatusListArgs::new("TEST".to_string(), true), &api).is_ok());
     }
 
     #[test]
     fn list_with_propagates_api_error() {
         let api = MockApi { statuses: None };
-        let err = list_with(
-            &ProjectStatusListArgs {
-                key: "TEST".to_string(),
-                json: false,
-            },
-            &api,
-        )
-        .unwrap_err();
+        let err =
+            list_with(&ProjectStatusListArgs::new("TEST".to_string(), false), &api).unwrap_err();
         assert!(err.to_string().contains("no statuses"));
     }
 }

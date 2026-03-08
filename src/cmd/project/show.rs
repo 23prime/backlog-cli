@@ -4,8 +4,14 @@ use anyhow::{Context, Result};
 use crate::api::{BacklogApi, BacklogClient, project::Project};
 
 pub struct ProjectShowArgs {
-    pub key: String,
-    pub json: bool,
+    key: String,
+    json: bool,
+}
+
+impl ProjectShowArgs {
+    pub fn new(key: String, json: bool) -> Self {
+        Self { key, json }
+    }
 }
 
 pub fn show(args: &ProjectShowArgs) -> Result<()> {
@@ -195,16 +201,7 @@ mod tests {
         let api = MockApi {
             project: Some(sample_project()),
         };
-        assert!(
-            show_with(
-                &ProjectShowArgs {
-                    key: "TEST".to_string(),
-                    json: false
-                },
-                &api
-            )
-            .is_ok()
-        );
+        assert!(show_with(&ProjectShowArgs::new("TEST".to_string(), false), &api).is_ok());
     }
 
     #[test]
@@ -212,29 +209,13 @@ mod tests {
         let api = MockApi {
             project: Some(sample_project()),
         };
-        assert!(
-            show_with(
-                &ProjectShowArgs {
-                    key: "TEST".to_string(),
-                    json: true
-                },
-                &api
-            )
-            .is_ok()
-        );
+        assert!(show_with(&ProjectShowArgs::new("TEST".to_string(), true), &api).is_ok());
     }
 
     #[test]
     fn show_with_propagates_api_error() {
         let api = MockApi { project: None };
-        let err = show_with(
-            &ProjectShowArgs {
-                key: "MISSING".to_string(),
-                json: false,
-            },
-            &api,
-        )
-        .unwrap_err();
+        let err = show_with(&ProjectShowArgs::new("MISSING".to_string(), false), &api).unwrap_err();
         assert!(err.to_string().contains("no project"));
     }
 

@@ -5,7 +5,13 @@ use owo_colors::OwoColorize;
 use crate::api::{BacklogApi, BacklogClient};
 
 pub struct ProjectListArgs {
-    pub json: bool,
+    json: bool,
+}
+
+impl ProjectListArgs {
+    pub fn new(json: bool) -> Self {
+        Self { json }
+    }
 }
 
 pub fn list(args: &ProjectListArgs) -> Result<()> {
@@ -208,7 +214,7 @@ mod tests {
         let api = MockApi {
             projects: Some(vec![sample_project()]),
         };
-        assert!(list_with(&ProjectListArgs { json: false }, &api).is_ok());
+        assert!(list_with(&ProjectListArgs::new(false), &api).is_ok());
     }
 
     #[test]
@@ -216,13 +222,13 @@ mod tests {
         let api = MockApi {
             projects: Some(vec![sample_project()]),
         };
-        assert!(list_with(&ProjectListArgs { json: true }, &api).is_ok());
+        assert!(list_with(&ProjectListArgs::new(true), &api).is_ok());
     }
 
     #[test]
     fn list_with_propagates_api_error() {
         let api = MockApi { projects: None };
-        let err = list_with(&ProjectListArgs { json: false }, &api).unwrap_err();
+        let err = list_with(&ProjectListArgs::new(false), &api).unwrap_err();
         assert!(err.to_string().contains("no projects"));
     }
 

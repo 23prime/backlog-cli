@@ -4,8 +4,14 @@ use anyhow::{Context, Result};
 use crate::api::{BacklogApi, BacklogClient, activity::Activity};
 
 pub struct ProjectActivitiesArgs {
-    pub key: String,
-    pub json: bool,
+    key: String,
+    json: bool,
+}
+
+impl ProjectActivitiesArgs {
+    pub fn new(key: String, json: bool) -> Self {
+        Self { key, json }
+    }
 }
 
 pub fn activities(args: &ProjectActivitiesArgs) -> Result<()> {
@@ -216,14 +222,7 @@ mod tests {
             activities: Some(vec![sample_activity()]),
         };
         assert!(
-            activities_with(
-                &ProjectActivitiesArgs {
-                    key: "TEST".to_string(),
-                    json: false
-                },
-                &api
-            )
-            .is_ok()
+            activities_with(&ProjectActivitiesArgs::new("TEST".to_string(), false), &api).is_ok()
         );
     }
 
@@ -233,28 +232,15 @@ mod tests {
             activities: Some(vec![sample_activity()]),
         };
         assert!(
-            activities_with(
-                &ProjectActivitiesArgs {
-                    key: "TEST".to_string(),
-                    json: true
-                },
-                &api
-            )
-            .is_ok()
+            activities_with(&ProjectActivitiesArgs::new("TEST".to_string(), true), &api).is_ok()
         );
     }
 
     #[test]
     fn activities_with_propagates_api_error() {
         let api = MockApi { activities: None };
-        let err = activities_with(
-            &ProjectActivitiesArgs {
-                key: "TEST".to_string(),
-                json: false,
-            },
-            &api,
-        )
-        .unwrap_err();
+        let err = activities_with(&ProjectActivitiesArgs::new("TEST".to_string(), false), &api)
+            .unwrap_err();
         assert!(err.to_string().contains("no activities"));
     }
 }

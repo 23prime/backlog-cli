@@ -4,7 +4,13 @@ use anyhow::{Context, Result};
 use crate::api::{BacklogApi, BacklogClient, space_notification::SpaceNotification};
 
 pub struct SpaceNotificationArgs {
-    pub json: bool,
+    json: bool,
+}
+
+impl SpaceNotificationArgs {
+    pub fn new(json: bool) -> Self {
+        Self { json }
+    }
 }
 
 pub fn notification(args: &SpaceNotificationArgs) -> Result<()> {
@@ -186,7 +192,7 @@ mod tests {
         let api = MockApi {
             notification: Some(sample_notification()),
         };
-        assert!(notification_with(&SpaceNotificationArgs { json: false }, &api).is_ok());
+        assert!(notification_with(&SpaceNotificationArgs::new(false), &api).is_ok());
     }
 
     #[test]
@@ -194,13 +200,13 @@ mod tests {
         let api = MockApi {
             notification: Some(sample_notification()),
         };
-        assert!(notification_with(&SpaceNotificationArgs { json: true }, &api).is_ok());
+        assert!(notification_with(&SpaceNotificationArgs::new(true), &api).is_ok());
     }
 
     #[test]
     fn notification_with_propagates_api_error() {
         let api = MockApi { notification: None };
-        let err = notification_with(&SpaceNotificationArgs { json: false }, &api).unwrap_err();
+        let err = notification_with(&SpaceNotificationArgs::new(false), &api).unwrap_err();
         assert!(err.to_string().contains("no notification"));
     }
 

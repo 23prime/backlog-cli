@@ -4,7 +4,13 @@ use anyhow::{Context, Result};
 use crate::api::{BacklogApi, BacklogClient, disk_usage::DiskUsage};
 
 pub struct SpaceDiskUsageArgs {
-    pub json: bool,
+    json: bool,
+}
+
+impl SpaceDiskUsageArgs {
+    pub fn new(json: bool) -> Self {
+        Self { json }
+    }
 }
 
 pub fn disk_usage(args: &SpaceDiskUsageArgs) -> Result<()> {
@@ -208,7 +214,7 @@ mod tests {
         let api = MockApi {
             disk_usage: Some(sample_disk_usage()),
         };
-        assert!(disk_usage_with(&SpaceDiskUsageArgs { json: false }, &api).is_ok());
+        assert!(disk_usage_with(&SpaceDiskUsageArgs::new(false), &api).is_ok());
     }
 
     #[test]
@@ -216,13 +222,13 @@ mod tests {
         let api = MockApi {
             disk_usage: Some(sample_disk_usage()),
         };
-        assert!(disk_usage_with(&SpaceDiskUsageArgs { json: true }, &api).is_ok());
+        assert!(disk_usage_with(&SpaceDiskUsageArgs::new(true), &api).is_ok());
     }
 
     #[test]
     fn disk_usage_with_propagates_api_error() {
         let api = MockApi { disk_usage: None };
-        let err = disk_usage_with(&SpaceDiskUsageArgs { json: false }, &api).unwrap_err();
+        let err = disk_usage_with(&SpaceDiskUsageArgs::new(false), &api).unwrap_err();
         assert!(err.to_string().contains("no disk usage"));
     }
 

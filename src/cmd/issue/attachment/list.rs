@@ -5,8 +5,14 @@ use owo_colors::OwoColorize;
 use crate::api::{BacklogApi, BacklogClient};
 
 pub struct IssueAttachmentListArgs {
-    pub key: String,
-    pub json: bool,
+    key: String,
+    json: bool,
+}
+
+impl IssueAttachmentListArgs {
+    pub fn new(key: String, json: bool) -> Self {
+        Self { key, json }
+    }
 }
 
 pub fn list(args: &IssueAttachmentListArgs) -> Result<()> {
@@ -184,10 +190,7 @@ mod tests {
     }
 
     fn args(json: bool) -> IssueAttachmentListArgs {
-        IssueAttachmentListArgs {
-            key: "TEST-1".to_string(),
-            json,
-        }
+        IssueAttachmentListArgs::new("TEST-1".to_string(), json)
     }
 
     #[test]

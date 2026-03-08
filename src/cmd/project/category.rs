@@ -4,8 +4,14 @@ use anyhow::{Context, Result};
 use crate::api::{BacklogApi, BacklogClient, project::ProjectCategory};
 
 pub struct ProjectCategoryListArgs {
-    pub key: String,
-    pub json: bool,
+    key: String,
+    json: bool,
+}
+
+impl ProjectCategoryListArgs {
+    pub fn new(key: String, json: bool) -> Self {
+        Self { key, json }
+    }
 }
 
 pub fn list(args: &ProjectCategoryListArgs) -> Result<()> {
@@ -195,10 +201,7 @@ mod tests {
         };
         assert!(
             list_with(
-                &ProjectCategoryListArgs {
-                    key: "TEST".to_string(),
-                    json: false
-                },
+                &ProjectCategoryListArgs::new("TEST".to_string(), false),
                 &api
             )
             .is_ok()
@@ -212,10 +215,7 @@ mod tests {
         };
         assert!(
             list_with(
-                &ProjectCategoryListArgs {
-                    key: "TEST".to_string(),
-                    json: true
-                },
+                &ProjectCategoryListArgs::new("TEST".to_string(), true),
                 &api
             )
             .is_ok()
@@ -226,10 +226,7 @@ mod tests {
     fn list_with_propagates_api_error() {
         let api = MockApi { categories: None };
         let err = list_with(
-            &ProjectCategoryListArgs {
-                key: "TEST".to_string(),
-                json: false,
-            },
+            &ProjectCategoryListArgs::new("TEST".to_string(), false),
             &api,
         )
         .unwrap_err();

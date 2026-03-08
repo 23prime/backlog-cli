@@ -4,8 +4,14 @@ use anyhow::{Context, Result};
 use crate::api::{BacklogApi, BacklogClient, project::ProjectVersion};
 
 pub struct ProjectVersionListArgs {
-    pub key: String,
-    pub json: bool,
+    key: String,
+    json: bool,
+}
+
+impl ProjectVersionListArgs {
+    pub fn new(key: String, json: bool) -> Self {
+        Self { key, json }
+    }
 }
 
 pub fn list(args: &ProjectVersionListArgs) -> Result<()> {
@@ -230,10 +236,7 @@ mod tests {
         };
         assert!(
             list_with(
-                &ProjectVersionListArgs {
-                    key: "TEST".to_string(),
-                    json: false
-                },
+                &ProjectVersionListArgs::new("TEST".to_string(), false),
                 &api
             )
             .is_ok()
@@ -245,26 +248,14 @@ mod tests {
         let api = MockApi {
             versions: Some(vec![sample_version()]),
         };
-        assert!(
-            list_with(
-                &ProjectVersionListArgs {
-                    key: "TEST".to_string(),
-                    json: true
-                },
-                &api
-            )
-            .is_ok()
-        );
+        assert!(list_with(&ProjectVersionListArgs::new("TEST".to_string(), true), &api).is_ok());
     }
 
     #[test]
     fn list_with_propagates_api_error() {
         let api = MockApi { versions: None };
         let err = list_with(
-            &ProjectVersionListArgs {
-                key: "TEST".to_string(),
-                json: false,
-            },
+            &ProjectVersionListArgs::new("TEST".to_string(), false),
             &api,
         )
         .unwrap_err();
