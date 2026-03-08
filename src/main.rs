@@ -230,7 +230,7 @@ enum IssueCommands {
         #[arg(long)]
         keyword: Option<String>,
         /// Number of issues to retrieve (max 100)
-        #[arg(long, default_value = "20")]
+        #[arg(long, default_value = "20", value_parser = clap::value_parser!(u32).range(1..=100))]
         count: u32,
         /// Offset for pagination
         #[arg(long, default_value = "0")]
