@@ -45,6 +45,11 @@ pub fn update_with(args: &IssueUpdateArgs, api: &dyn BacklogApi) -> Result<()> {
         params.push(("comment".to_string(), c.clone()));
     }
 
+    if params.is_empty() {
+        return Err(anyhow::anyhow!(
+            "At least one field must be specified for update"
+        ));
+    }
     let issue = api.update_issue(&args.key, &params)?;
     if args.json {
         println!(
@@ -185,7 +190,7 @@ mod tests {
     fn args(json: bool) -> IssueUpdateArgs {
         IssueUpdateArgs {
             key: "TEST-1".to_string(),
-            summary: None,
+            summary: Some("Updated summary".to_string()),
             description: None,
             status_id: None,
             priority_id: None,
@@ -210,6 +215,26 @@ mod tests {
             issue: Some(sample_issue()),
         };
         assert!(update_with(&args(true), &api).is_ok());
+    }
+
+    #[test]
+    fn update_with_rejects_empty_params() {
+        let api = MockApi {
+            issue: Some(sample_issue()),
+        };
+        let empty = IssueUpdateArgs {
+            key: "TEST-1".to_string(),
+            summary: None,
+            description: None,
+            status_id: None,
+            priority_id: None,
+            assignee_id: None,
+            due_date: None,
+            comment: None,
+            json: false,
+        };
+        let err = update_with(&empty, &api).unwrap_err();
+        assert!(err.to_string().contains("At least one field"));
     }
 
     #[test]
