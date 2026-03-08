@@ -741,13 +741,13 @@ fn run() -> Result<()> {
                 content,
                 mail_notify,
                 json,
-            } => cmd::wiki::update(&WikiUpdateArgs::try_new(
+            } => cmd::wiki::update(&WikiUpdateArgs::new(
                 wiki_id,
                 name,
                 content,
                 mail_notify,
                 json,
-            )?),
+            )),
             WikiCommands::Delete {
                 wiki_id,
                 mail_notify,
