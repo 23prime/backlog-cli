@@ -127,15 +127,25 @@ impl AuthStatusArgs {
 pub fn status(args: &AuthStatusArgs) -> Result<()> {
     let json = args.json;
 
-    let space_key = match config::current_space_key() {
-        Ok(k) => k,
-        Err(_) => {
-            if json {
-                println!("{}", serde_json::json!({"error": "Not logged in"}));
-            } else {
-                println!("Not logged in. Run `bl auth login` to authenticate.");
+    // Resolve space key: BL_SPACE env var takes priority.
+    // Config load errors (IO, parse) are propagated; only missing space is
+    // treated as "not logged in".
+    let space_key = if let Ok(s) = std::env::var("BL_SPACE")
+        && !s.is_empty()
+    {
+        s
+    } else {
+        let cfg = config::load()?;
+        match cfg.current_space {
+            Some(s) => s,
+            None => {
+                if json {
+                    println!("{}", serde_json::json!({"error": "Not logged in"}));
+                } else {
+                    println!("Not logged in. Run `bl auth login` to authenticate.");
+                }
+                return Ok(());
             }
-            return Ok(());
         }
     };
 
