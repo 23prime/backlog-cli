@@ -21,3 +21,4 @@ subtasking
 anstream
 coderabbitai
 nulab
+truecolor

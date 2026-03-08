@@ -170,6 +170,14 @@ bl auth logout --all
 
 ## Commands
 
+### Global options
+
+| Option | Description |
+| --- | --- |
+| `--banner` | Print the Backlog CLI banner and exit |
+| `--no-color` | Disable colored output |
+| `--space <SPACE_KEY>` | Override the active space for this command |
+
 ### `bl auth`
 
 | Command | Description |

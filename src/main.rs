@@ -36,8 +36,11 @@ struct Cli {
     /// Override the active space for this command (or set BL_SPACE env var)
     #[arg(long, global = true, value_name = "SPACE_KEY")]
     space: Option<String>,
+    /// Print the banner and exit
+    #[arg(long)]
+    banner: bool,
     #[command(subcommand)]
-    command: Commands,
+    command: Option<Commands>,
 }
 
 #[derive(Subcommand)]
@@ -565,7 +568,17 @@ fn run() -> Result<()> {
         // SAFETY: called before any threads are spawned
         unsafe { std::env::set_var("BL_SPACE", space) };
     }
-    match cli.command {
+    if cli.banner {
+        cmd::banner::print_banner();
+        return Ok(());
+    }
+    let Some(command) = cli.command else {
+        use clap::CommandFactory;
+        Cli::command().print_help()?;
+        anstream::println!();
+        std::process::exit(2);
+    };
+    match command {
         Commands::Auth { action } => match action {
             AuthCommands::Login => cmd::auth::login(),
             AuthCommands::Status { json } => cmd::auth::status(&AuthStatusArgs::new(json)),
