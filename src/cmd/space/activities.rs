@@ -3,14 +3,18 @@ use anyhow::{Context, Result};
 
 use crate::api::{BacklogApi, BacklogClient, activity::Activity};
 
-pub fn activities(json: bool) -> Result<()> {
-    let client = BacklogClient::from_config()?;
-    activities_with(json, &client)
+pub struct SpaceActivitiesArgs {
+    pub json: bool,
 }
 
-pub fn activities_with(json: bool, api: &dyn BacklogApi) -> Result<()> {
+pub fn activities(args: &SpaceActivitiesArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    activities_with(args, &client)
+}
+
+pub fn activities_with(args: &SpaceActivitiesArgs, api: &dyn BacklogApi) -> Result<()> {
     let activities = api.get_space_activities()?;
-    if json {
+    if args.json {
         println!(
             "{}",
             serde_json::to_string_pretty(&activities).context("Failed to serialize JSON")?
@@ -110,6 +114,71 @@ mod tests {
         ) -> Result<Vec<crate::api::project::ProjectVersion>> {
             unimplemented!()
         }
+        fn get_issues(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::issue::Issue>> {
+            unimplemented!()
+        }
+        fn count_issues(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::IssueCount> {
+            unimplemented!()
+        }
+        fn get_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn create_issue(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn update_issue(
+            &self,
+            _key: &str,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn delete_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn get_issue_comments(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueComment>> {
+            unimplemented!()
+        }
+        fn add_issue_comment(
+            &self,
+            _key: &str,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+            unimplemented!()
+        }
+        fn update_issue_comment(
+            &self,
+            _key: &str,
+            _comment_id: u64,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+            unimplemented!()
+        }
+        fn delete_issue_comment(
+            &self,
+            _key: &str,
+            _comment_id: u64,
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+            unimplemented!()
+        }
+        fn get_issue_attachments(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueAttachment>> {
+            unimplemented!()
+        }
     }
 
     fn sample_activity() -> Activity {
@@ -144,7 +213,7 @@ mod tests {
         let api = MockApi {
             activities: Some(vec![sample_activity()]),
         };
-        assert!(activities_with(false, &api).is_ok());
+        assert!(activities_with(&SpaceActivitiesArgs { json: false }, &api).is_ok());
     }
 
     #[test]
@@ -152,13 +221,13 @@ mod tests {
         let api = MockApi {
             activities: Some(vec![sample_activity()]),
         };
-        assert!(activities_with(true, &api).is_ok());
+        assert!(activities_with(&SpaceActivitiesArgs { json: true }, &api).is_ok());
     }
 
     #[test]
     fn activities_with_propagates_api_error() {
         let api = MockApi { activities: None };
-        let err = activities_with(false, &api).unwrap_err();
+        let err = activities_with(&SpaceActivitiesArgs { json: false }, &api).unwrap_err();
         assert!(err.to_string().contains("no activities"));
     }
 }

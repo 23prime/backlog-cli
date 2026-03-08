@@ -36,7 +36,12 @@ pub fn logout() -> Result<()> {
     Ok(())
 }
 
-pub fn status(json: bool) -> Result<()> {
+pub struct AuthStatusArgs {
+    pub json: bool,
+}
+
+pub fn status(args: &AuthStatusArgs) -> Result<()> {
+    let json = args.json;
     let cfg = config::load()?;
     let Some(auth) = cfg.auth else {
         if json {
@@ -230,6 +235,71 @@ mod tests {
             &self,
             _key: &str,
         ) -> anyhow::Result<Vec<crate::api::project::ProjectVersion>> {
+            unimplemented!()
+        }
+        fn get_issues(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::issue::Issue>> {
+            unimplemented!()
+        }
+        fn count_issues(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::IssueCount> {
+            unimplemented!()
+        }
+        fn get_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn create_issue(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn update_issue(
+            &self,
+            _key: &str,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn delete_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn get_issue_comments(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueComment>> {
+            unimplemented!()
+        }
+        fn add_issue_comment(
+            &self,
+            _key: &str,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+            unimplemented!()
+        }
+        fn update_issue_comment(
+            &self,
+            _key: &str,
+            _comment_id: u64,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+            unimplemented!()
+        }
+        fn delete_issue_comment(
+            &self,
+            _key: &str,
+            _comment_id: u64,
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+            unimplemented!()
+        }
+        fn get_issue_attachments(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueAttachment>> {
             unimplemented!()
         }
     }

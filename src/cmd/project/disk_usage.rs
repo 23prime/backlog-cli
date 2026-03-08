@@ -3,14 +3,19 @@ use anyhow::{Context, Result};
 
 use crate::api::{BacklogApi, BacklogClient, project::ProjectDiskUsage};
 
-pub fn disk_usage(key: &str, json: bool) -> Result<()> {
-    let client = BacklogClient::from_config()?;
-    disk_usage_with(key, json, &client)
+pub struct ProjectDiskUsageArgs {
+    pub key: String,
+    pub json: bool,
 }
 
-pub fn disk_usage_with(key: &str, json: bool, api: &dyn BacklogApi) -> Result<()> {
-    let usage = api.get_project_disk_usage(key)?;
-    if json {
+pub fn disk_usage(args: &ProjectDiskUsageArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    disk_usage_with(args, &client)
+}
+
+pub fn disk_usage_with(args: &ProjectDiskUsageArgs, api: &dyn BacklogApi) -> Result<()> {
+    let usage = api.get_project_disk_usage(&args.key)?;
+    if args.json {
         println!(
             "{}",
             serde_json::to_string_pretty(&usage).context("Failed to serialize JSON")?
@@ -108,6 +113,71 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::project::ProjectVersion>> {
             unimplemented!()
         }
+        fn get_issues(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::issue::Issue>> {
+            unimplemented!()
+        }
+        fn count_issues(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::IssueCount> {
+            unimplemented!()
+        }
+        fn get_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn create_issue(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn update_issue(
+            &self,
+            _key: &str,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn delete_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn get_issue_comments(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueComment>> {
+            unimplemented!()
+        }
+        fn add_issue_comment(
+            &self,
+            _key: &str,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+            unimplemented!()
+        }
+        fn update_issue_comment(
+            &self,
+            _key: &str,
+            _comment_id: u64,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+            unimplemented!()
+        }
+        fn delete_issue_comment(
+            &self,
+            _key: &str,
+            _comment_id: u64,
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+            unimplemented!()
+        }
+        fn get_issue_attachments(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueAttachment>> {
+            unimplemented!()
+        }
     }
 
     fn sample_disk_usage() -> ProjectDiskUsage {
@@ -128,7 +198,16 @@ mod tests {
         let api = MockApi {
             disk_usage: Some(sample_disk_usage()),
         };
-        assert!(disk_usage_with("TEST", false, &api).is_ok());
+        assert!(
+            disk_usage_with(
+                &ProjectDiskUsageArgs {
+                    key: "TEST".to_string(),
+                    json: false
+                },
+                &api
+            )
+            .is_ok()
+        );
     }
 
     #[test]
@@ -136,13 +215,29 @@ mod tests {
         let api = MockApi {
             disk_usage: Some(sample_disk_usage()),
         };
-        assert!(disk_usage_with("TEST", true, &api).is_ok());
+        assert!(
+            disk_usage_with(
+                &ProjectDiskUsageArgs {
+                    key: "TEST".to_string(),
+                    json: true
+                },
+                &api
+            )
+            .is_ok()
+        );
     }
 
     #[test]
     fn disk_usage_with_propagates_api_error() {
         let api = MockApi { disk_usage: None };
-        let err = disk_usage_with("TEST", false, &api).unwrap_err();
+        let err = disk_usage_with(
+            &ProjectDiskUsageArgs {
+                key: "TEST".to_string(),
+                json: false,
+            },
+            &api,
+        )
+        .unwrap_err();
         assert!(err.to_string().contains("no disk usage"));
     }
 

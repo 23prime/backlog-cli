@@ -6,6 +6,23 @@ mod secret;
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
+use cmd::auth::AuthStatusArgs;
+use cmd::issue::attachment::IssueAttachmentListArgs;
+use cmd::issue::comment::{
+    IssueCommentAddArgs, IssueCommentDeleteArgs, IssueCommentListArgs, IssueCommentUpdateArgs,
+};
+use cmd::issue::{
+    IssueCountArgs, IssueCreateArgs, IssueDeleteArgs, IssueListArgs, IssueShowArgs,
+    IssueUpdateArgs, ParentChild,
+};
+use cmd::project::category::ProjectCategoryListArgs;
+use cmd::project::issue_type::ProjectIssueTypeListArgs;
+use cmd::project::status::ProjectStatusListArgs;
+use cmd::project::user::ProjectUserListArgs;
+use cmd::project::version::ProjectVersionListArgs;
+use cmd::project::{ProjectActivitiesArgs, ProjectDiskUsageArgs, ProjectListArgs, ProjectShowArgs};
+use cmd::space::{SpaceActivitiesArgs, SpaceDiskUsageArgs, SpaceNotificationArgs, SpaceShowArgs};
+
 #[derive(Parser)]
 #[command(name = "bl", version, about = "Backlog CLI")]
 struct Cli {
@@ -35,6 +52,11 @@ enum Commands {
     Project {
         #[command(subcommand)]
         action: ProjectCommands,
+    },
+    /// Manage issues
+    Issue {
+        #[command(subcommand)]
+        action: IssueCommands,
     },
 }
 
@@ -180,6 +202,216 @@ enum ProjectVersionCommands {
 }
 
 #[derive(Subcommand)]
+enum IssueCommands {
+    /// List issues
+    List {
+        /// Filter by project ID (repeatable)
+        #[arg(long = "project-id", value_name = "ID")]
+        project_ids: Vec<u64>,
+        /// Filter by status ID (repeatable)
+        #[arg(long = "status-id", value_name = "ID")]
+        status_ids: Vec<u64>,
+        /// Filter by assignee ID (repeatable)
+        #[arg(long = "assignee-id", value_name = "ID")]
+        assignee_ids: Vec<u64>,
+        /// Filter by issue type ID (repeatable)
+        #[arg(long = "issue-type-id", value_name = "ID")]
+        issue_type_ids: Vec<u64>,
+        /// Filter by category ID (repeatable)
+        #[arg(long = "category-id", value_name = "ID")]
+        category_ids: Vec<u64>,
+        /// Filter by milestone ID (repeatable)
+        #[arg(long = "milestone-id", value_name = "ID")]
+        milestone_ids: Vec<u64>,
+        /// Filter by parent-child relation
+        #[arg(long)]
+        parent_child: Option<ParentChild>,
+        /// Search keyword
+        #[arg(long)]
+        keyword: Option<String>,
+        /// Number of issues to retrieve (max 100)
+        #[arg(long, default_value = "20", value_parser = clap::value_parser!(u32).range(1..=100))]
+        count: u32,
+        /// Offset for pagination
+        #[arg(long, default_value = "0")]
+        offset: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Count issues
+    Count {
+        /// Filter by project ID (repeatable)
+        #[arg(long = "project-id", value_name = "ID")]
+        project_ids: Vec<u64>,
+        /// Filter by status ID (repeatable)
+        #[arg(long = "status-id", value_name = "ID")]
+        status_ids: Vec<u64>,
+        /// Filter by assignee ID (repeatable)
+        #[arg(long = "assignee-id", value_name = "ID")]
+        assignee_ids: Vec<u64>,
+        /// Filter by issue type ID (repeatable)
+        #[arg(long = "issue-type-id", value_name = "ID")]
+        issue_type_ids: Vec<u64>,
+        /// Filter by category ID (repeatable)
+        #[arg(long = "category-id", value_name = "ID")]
+        category_ids: Vec<u64>,
+        /// Filter by milestone ID (repeatable)
+        #[arg(long = "milestone-id", value_name = "ID")]
+        milestone_ids: Vec<u64>,
+        /// Filter by parent-child relation
+        #[arg(long)]
+        parent_child: Option<ParentChild>,
+        /// Search keyword
+        #[arg(long)]
+        keyword: Option<String>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Show an issue
+    Show {
+        /// Issue ID or key (e.g. TEST-1 or 123)
+        id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Create an issue
+    Create {
+        /// Project ID
+        #[arg(long)]
+        project_id: u64,
+        /// Issue summary
+        #[arg(long)]
+        summary: String,
+        /// Issue type ID
+        #[arg(long)]
+        issue_type_id: u64,
+        /// Priority ID (1=High, 2=Normal, 3=Low)
+        #[arg(long)]
+        priority_id: u64,
+        /// Description
+        #[arg(long)]
+        description: Option<String>,
+        /// Assignee user ID
+        #[arg(long)]
+        assignee_id: Option<u64>,
+        /// Due date (YYYY-MM-DD)
+        #[arg(long)]
+        due_date: Option<String>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Update an issue
+    Update {
+        /// Issue ID or key
+        id_or_key: String,
+        /// New summary
+        #[arg(long)]
+        summary: Option<String>,
+        /// New description
+        #[arg(long)]
+        description: Option<String>,
+        /// New status ID
+        #[arg(long)]
+        status_id: Option<u64>,
+        /// New priority ID
+        #[arg(long)]
+        priority_id: Option<u64>,
+        /// New assignee user ID
+        #[arg(long)]
+        assignee_id: Option<u64>,
+        /// New due date (YYYY-MM-DD)
+        #[arg(long)]
+        due_date: Option<String>,
+        /// Comment to add with update
+        #[arg(long)]
+        comment: Option<String>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Delete an issue
+    Delete {
+        /// Issue ID or key
+        id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Manage issue comments
+    Comment {
+        #[command(subcommand)]
+        action: IssueCommentCommands,
+    },
+    /// Manage issue attachments
+    Attachment {
+        #[command(subcommand)]
+        action: IssueAttachmentCommands,
+    },
+}
+
+#[derive(Subcommand)]
+enum IssueCommentCommands {
+    /// List comments on an issue
+    List {
+        /// Issue ID or key
+        id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Add a comment to an issue
+    Add {
+        /// Issue ID or key
+        id_or_key: String,
+        /// Comment content
+        #[arg(long)]
+        content: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Update a comment
+    Update {
+        /// Issue ID or key
+        id_or_key: String,
+        /// Comment ID
+        comment_id: u64,
+        /// New content
+        #[arg(long)]
+        content: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Delete a comment
+    Delete {
+        /// Issue ID or key
+        id_or_key: String,
+        /// Comment ID
+        comment_id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum IssueAttachmentCommands {
+    /// List attachments on an issue
+    List {
+        /// Issue ID or key
+        id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
 enum AuthCommands {
     /// Login with your API key
     Login,
@@ -204,55 +436,226 @@ fn main() -> Result<()> {
     match cli.command {
         Commands::Auth { action } => match action {
             AuthCommands::Login => cmd::auth::login(),
-            AuthCommands::Status { json } => cmd::auth::status(json),
+            AuthCommands::Status { json } => cmd::auth::status(&AuthStatusArgs { json }),
             AuthCommands::Logout => cmd::auth::logout(),
             AuthCommands::Keyring => cmd::auth::check_keyring(),
         },
         Commands::Project { action } => match action {
-            ProjectCommands::List { json } => cmd::project::list(json),
-            ProjectCommands::Show { id_or_key, json } => cmd::project::show(&id_or_key, json),
+            ProjectCommands::List { json } => cmd::project::list(&ProjectListArgs { json }),
+            ProjectCommands::Show { id_or_key, json } => cmd::project::show(&ProjectShowArgs {
+                key: id_or_key,
+                json,
+            }),
             ProjectCommands::Activities { id_or_key, json } => {
-                cmd::project::activities(&id_or_key, json)
+                cmd::project::activities(&ProjectActivitiesArgs {
+                    key: id_or_key,
+                    json,
+                })
             }
             ProjectCommands::DiskUsage { id_or_key, json } => {
-                cmd::project::disk_usage(&id_or_key, json)
+                cmd::project::disk_usage(&ProjectDiskUsageArgs {
+                    key: id_or_key,
+                    json,
+                })
             }
             ProjectCommands::User { action } => match action {
                 ProjectUserCommands::List { id_or_key, json } => {
-                    cmd::project::user::list(&id_or_key, json)
+                    cmd::project::user::list(&ProjectUserListArgs {
+                        key: id_or_key,
+                        json,
+                    })
                 }
             },
             ProjectCommands::Status { action } => match action {
                 ProjectStatusCommands::List { id_or_key, json } => {
-                    cmd::project::status::list(&id_or_key, json)
+                    cmd::project::status::list(&ProjectStatusListArgs {
+                        key: id_or_key,
+                        json,
+                    })
                 }
             },
             ProjectCommands::IssueType { action } => match action {
                 ProjectIssueTypeCommands::List { id_or_key, json } => {
-                    cmd::project::issue_type::list(&id_or_key, json)
+                    cmd::project::issue_type::list(&ProjectIssueTypeListArgs {
+                        key: id_or_key,
+                        json,
+                    })
                 }
             },
             ProjectCommands::Category { action } => match action {
                 ProjectCategoryCommands::List { id_or_key, json } => {
-                    cmd::project::category::list(&id_or_key, json)
+                    cmd::project::category::list(&ProjectCategoryListArgs {
+                        key: id_or_key,
+                        json,
+                    })
                 }
             },
             ProjectCommands::Version { action } => match action {
                 ProjectVersionCommands::List { id_or_key, json } => {
-                    cmd::project::version::list(&id_or_key, json)
+                    cmd::project::version::list(&ProjectVersionListArgs {
+                        key: id_or_key,
+                        json,
+                    })
+                }
+            },
+        },
+        Commands::Issue { action } => match action {
+            IssueCommands::List {
+                project_ids,
+                status_ids,
+                assignee_ids,
+                issue_type_ids,
+                category_ids,
+                milestone_ids,
+                parent_child,
+                keyword,
+                count,
+                offset,
+                json,
+            } => cmd::issue::list(&IssueListArgs {
+                project_ids,
+                status_ids,
+                assignee_ids,
+                issue_type_ids,
+                category_ids,
+                milestone_ids,
+                parent_child,
+                keyword,
+                count,
+                offset,
+                json,
+            }),
+            IssueCommands::Count {
+                project_ids,
+                status_ids,
+                assignee_ids,
+                issue_type_ids,
+                category_ids,
+                milestone_ids,
+                parent_child,
+                keyword,
+                json,
+            } => cmd::issue::count(&IssueCountArgs {
+                project_ids,
+                status_ids,
+                assignee_ids,
+                issue_type_ids,
+                category_ids,
+                milestone_ids,
+                parent_child,
+                keyword,
+                json,
+            }),
+            IssueCommands::Show { id_or_key, json } => cmd::issue::show(&IssueShowArgs {
+                key: id_or_key,
+                json,
+            }),
+            IssueCommands::Create {
+                project_id,
+                summary,
+                issue_type_id,
+                priority_id,
+                description,
+                assignee_id,
+                due_date,
+                json,
+            } => cmd::issue::create(&IssueCreateArgs {
+                project_id,
+                summary,
+                issue_type_id,
+                priority_id,
+                description,
+                assignee_id,
+                due_date,
+                json,
+            }),
+            IssueCommands::Update {
+                id_or_key,
+                summary,
+                description,
+                status_id,
+                priority_id,
+                assignee_id,
+                due_date,
+                comment,
+                json,
+            } => cmd::issue::update(&IssueUpdateArgs {
+                key: id_or_key,
+                summary,
+                description,
+                status_id,
+                priority_id,
+                assignee_id,
+                due_date,
+                comment,
+                json,
+            }),
+            IssueCommands::Delete { id_or_key, json } => cmd::issue::delete(&IssueDeleteArgs {
+                key: id_or_key,
+                json,
+            }),
+            IssueCommands::Comment { action } => match action {
+                IssueCommentCommands::List { id_or_key, json } => {
+                    cmd::issue::comment::list(&IssueCommentListArgs {
+                        key: id_or_key,
+                        json,
+                    })
+                }
+                IssueCommentCommands::Add {
+                    id_or_key,
+                    content,
+                    json,
+                } => cmd::issue::comment::add(&IssueCommentAddArgs {
+                    key: id_or_key,
+                    content,
+                    json,
+                }),
+                IssueCommentCommands::Update {
+                    id_or_key,
+                    comment_id,
+                    content,
+                    json,
+                } => cmd::issue::comment::update(&IssueCommentUpdateArgs {
+                    key: id_or_key,
+                    comment_id,
+                    content,
+                    json,
+                }),
+                IssueCommentCommands::Delete {
+                    id_or_key,
+                    comment_id,
+                    json,
+                } => cmd::issue::comment::delete(&IssueCommentDeleteArgs {
+                    key: id_or_key,
+                    comment_id,
+                    json,
+                }),
+            },
+            IssueCommands::Attachment { action } => match action {
+                IssueAttachmentCommands::List { id_or_key, json } => {
+                    cmd::issue::attachment::list(&IssueAttachmentListArgs {
+                        key: id_or_key,
+                        json,
+                    })
                 }
             },
         },
         Commands::Space { action, json } => match action {
-            None => cmd::space::show(json),
+            None => cmd::space::show(&SpaceShowArgs { json }),
             Some(SpaceCommands::Activities { json: sub_json }) => {
-                cmd::space::activities(json || sub_json)
+                cmd::space::activities(&SpaceActivitiesArgs {
+                    json: json || sub_json,
+                })
             }
             Some(SpaceCommands::DiskUsage { json: sub_json }) => {
-                cmd::space::disk_usage(json || sub_json)
+                cmd::space::disk_usage(&SpaceDiskUsageArgs {
+                    json: json || sub_json,
+                })
             }
             Some(SpaceCommands::Notification { json: sub_json }) => {
-                cmd::space::notification(json || sub_json)
+                cmd::space::notification(&SpaceNotificationArgs {
+                    json: json || sub_json,
+                })
             }
         },
     }

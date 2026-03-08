@@ -3,14 +3,19 @@ use anyhow::{Context, Result};
 
 use crate::api::{BacklogApi, BacklogClient, activity::Activity};
 
-pub fn activities(key: &str, json: bool) -> Result<()> {
-    let client = BacklogClient::from_config()?;
-    activities_with(key, json, &client)
+pub struct ProjectActivitiesArgs {
+    pub key: String,
+    pub json: bool,
 }
 
-pub fn activities_with(key: &str, json: bool, api: &dyn BacklogApi) -> Result<()> {
-    let activities = api.get_project_activities(key)?;
-    if json {
+pub fn activities(args: &ProjectActivitiesArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    activities_with(args, &client)
+}
+
+pub fn activities_with(args: &ProjectActivitiesArgs, api: &dyn BacklogApi) -> Result<()> {
+    let activities = api.get_project_activities(&args.key)?;
+    if args.json {
         println!(
             "{}",
             serde_json::to_string_pretty(&activities).context("Failed to serialize JSON")?
@@ -69,7 +74,8 @@ mod tests {
         fn get_project(&self, _key: &str) -> anyhow::Result<crate::api::project::Project> {
             unimplemented!()
         }
-        fn get_project_activities(&self, _key: &str) -> anyhow::Result<Vec<Activity>> {
+        fn get_project_activities(&self, key: &str) -> anyhow::Result<Vec<Activity>> {
+            assert_eq!(key, "TEST");
             self.activities
                 .clone()
                 .ok_or_else(|| anyhow!("no activities"))
@@ -110,6 +116,71 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::project::ProjectVersion>> {
             unimplemented!()
         }
+        fn get_issues(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::issue::Issue>> {
+            unimplemented!()
+        }
+        fn count_issues(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::IssueCount> {
+            unimplemented!()
+        }
+        fn get_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn create_issue(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn update_issue(
+            &self,
+            _key: &str,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn delete_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn get_issue_comments(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueComment>> {
+            unimplemented!()
+        }
+        fn add_issue_comment(
+            &self,
+            _key: &str,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+            unimplemented!()
+        }
+        fn update_issue_comment(
+            &self,
+            _key: &str,
+            _comment_id: u64,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+            unimplemented!()
+        }
+        fn delete_issue_comment(
+            &self,
+            _key: &str,
+            _comment_id: u64,
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+            unimplemented!()
+        }
+        fn get_issue_attachments(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueAttachment>> {
+            unimplemented!()
+        }
     }
 
     fn sample_activity() -> Activity {
@@ -144,7 +215,16 @@ mod tests {
         let api = MockApi {
             activities: Some(vec![sample_activity()]),
         };
-        assert!(activities_with("TEST", false, &api).is_ok());
+        assert!(
+            activities_with(
+                &ProjectActivitiesArgs {
+                    key: "TEST".to_string(),
+                    json: false
+                },
+                &api
+            )
+            .is_ok()
+        );
     }
 
     #[test]
@@ -152,13 +232,29 @@ mod tests {
         let api = MockApi {
             activities: Some(vec![sample_activity()]),
         };
-        assert!(activities_with("TEST", true, &api).is_ok());
+        assert!(
+            activities_with(
+                &ProjectActivitiesArgs {
+                    key: "TEST".to_string(),
+                    json: true
+                },
+                &api
+            )
+            .is_ok()
+        );
     }
 
     #[test]
     fn activities_with_propagates_api_error() {
         let api = MockApi { activities: None };
-        let err = activities_with("TEST", false, &api).unwrap_err();
+        let err = activities_with(
+            &ProjectActivitiesArgs {
+                key: "TEST".to_string(),
+                json: false,
+            },
+            &api,
+        )
+        .unwrap_err();
         assert!(err.to_string().contains("no activities"));
     }
 }

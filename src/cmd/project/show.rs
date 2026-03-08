@@ -3,14 +3,19 @@ use anyhow::{Context, Result};
 
 use crate::api::{BacklogApi, BacklogClient, project::Project};
 
-pub fn show(key: &str, json: bool) -> Result<()> {
-    let client = BacklogClient::from_config()?;
-    show_with(key, json, &client)
+pub struct ProjectShowArgs {
+    pub key: String,
+    pub json: bool,
 }
 
-pub fn show_with(key: &str, json: bool, api: &dyn BacklogApi) -> Result<()> {
-    let project = api.get_project(key)?;
-    if json {
+pub fn show(args: &ProjectShowArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    show_with(args, &client)
+}
+
+pub fn show_with(args: &ProjectShowArgs, api: &dyn BacklogApi) -> Result<()> {
+    let project = api.get_project(&args.key)?;
+    if args.json {
         println!(
             "{}",
             serde_json::to_string_pretty(&project).context("Failed to serialize JSON")?
@@ -104,6 +109,71 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::project::ProjectVersion>> {
             unimplemented!()
         }
+        fn get_issues(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::issue::Issue>> {
+            unimplemented!()
+        }
+        fn count_issues(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::IssueCount> {
+            unimplemented!()
+        }
+        fn get_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn create_issue(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn update_issue(
+            &self,
+            _key: &str,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn delete_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn get_issue_comments(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueComment>> {
+            unimplemented!()
+        }
+        fn add_issue_comment(
+            &self,
+            _key: &str,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+            unimplemented!()
+        }
+        fn update_issue_comment(
+            &self,
+            _key: &str,
+            _comment_id: u64,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+            unimplemented!()
+        }
+        fn delete_issue_comment(
+            &self,
+            _key: &str,
+            _comment_id: u64,
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+            unimplemented!()
+        }
+        fn get_issue_attachments(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueAttachment>> {
+            unimplemented!()
+        }
     }
 
     fn sample_project() -> Project {
@@ -125,7 +195,16 @@ mod tests {
         let api = MockApi {
             project: Some(sample_project()),
         };
-        assert!(show_with("TEST", false, &api).is_ok());
+        assert!(
+            show_with(
+                &ProjectShowArgs {
+                    key: "TEST".to_string(),
+                    json: false
+                },
+                &api
+            )
+            .is_ok()
+        );
     }
 
     #[test]
@@ -133,13 +212,29 @@ mod tests {
         let api = MockApi {
             project: Some(sample_project()),
         };
-        assert!(show_with("TEST", true, &api).is_ok());
+        assert!(
+            show_with(
+                &ProjectShowArgs {
+                    key: "TEST".to_string(),
+                    json: true
+                },
+                &api
+            )
+            .is_ok()
+        );
     }
 
     #[test]
     fn show_with_propagates_api_error() {
         let api = MockApi { project: None };
-        let err = show_with("MISSING", false, &api).unwrap_err();
+        let err = show_with(
+            &ProjectShowArgs {
+                key: "MISSING".to_string(),
+                json: false,
+            },
+            &api,
+        )
+        .unwrap_err();
         assert!(err.to_string().contains("no project"));
     }
 
