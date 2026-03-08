@@ -532,7 +532,7 @@ enum AuthCommands {
         /// Space key to logout from (defaults to current space)
         space_key: Option<String>,
         /// Logout from all spaces and remove all config files
-        #[arg(long)]
+        #[arg(long, conflicts_with = "space_key")]
         all: bool,
     },
     /// Check if the system keyring is available
