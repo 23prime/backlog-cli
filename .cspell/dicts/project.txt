@@ -19,3 +19,4 @@ msvc
 USERPROFILE
 subtasking
 anstream
+coderabbitai
