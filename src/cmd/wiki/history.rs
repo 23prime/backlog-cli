@@ -1,57 +1,58 @@
 use anstream::println;
 use anyhow::{Context, Result};
+use owo_colors::OwoColorize;
 
-use crate::api::{BacklogApi, BacklogClient, project::ProjectDiskUsage};
+use crate::api::{BacklogApi, BacklogClient, wiki::WikiHistory};
 
-pub struct ProjectDiskUsageArgs {
-    key: String,
+pub struct WikiHistoryArgs {
+    wiki_id: u64,
     json: bool,
 }
 
-impl ProjectDiskUsageArgs {
-    pub fn new(key: String, json: bool) -> Self {
-        Self { key, json }
+impl WikiHistoryArgs {
+    pub fn new(wiki_id: u64, json: bool) -> Self {
+        Self { wiki_id, json }
     }
 }
 
-pub fn disk_usage(args: &ProjectDiskUsageArgs) -> Result<()> {
+pub fn history(args: &WikiHistoryArgs) -> Result<()> {
     let client = BacklogClient::from_config()?;
-    disk_usage_with(args, &client)
+    history_with(args, &client)
 }
 
-pub fn disk_usage_with(args: &ProjectDiskUsageArgs, api: &dyn BacklogApi) -> Result<()> {
-    let usage = api.get_project_disk_usage(&args.key)?;
+pub fn history_with(args: &WikiHistoryArgs, api: &dyn BacklogApi) -> Result<()> {
+    let entries = api.get_wiki_history(args.wiki_id)?;
     if args.json {
         println!(
             "{}",
-            serde_json::to_string_pretty(&usage).context("Failed to serialize JSON")?
+            serde_json::to_string_pretty(&entries).context("Failed to serialize JSON")?
         );
     } else {
-        println!("{}", format_disk_usage_text(&usage));
+        for entry in &entries {
+            println!("{}", format_history_row(entry));
+        }
     }
     Ok(())
 }
 
-fn format_disk_usage_text(usage: &ProjectDiskUsage) -> String {
+pub fn format_history_row(entry: &WikiHistory) -> String {
     format!(
-        "Issue:      {} bytes\nWiki:       {} bytes\nDocument:   {} bytes\nFile:       {} bytes\nSubversion: {} bytes\nGit:        {} bytes\nGit LFS:    {} bytes",
-        usage.issue,
-        usage.wiki,
-        usage.document,
-        usage.file,
-        usage.subversion,
-        usage.git,
-        usage.git_lfs,
+        "{} {} — {}",
+        format!("v{}", entry.version).cyan().bold(),
+        entry.name,
+        entry.created
     )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::api::wiki::{Wiki, WikiAttachment, WikiHistory, WikiListItem, WikiUser};
+    use crate::cmd::wiki::list::tests_helper::sample_wiki_user;
     use anyhow::anyhow;
 
     struct MockApi {
-        disk_usage: Option<ProjectDiskUsage>,
+        history: Option<Vec<WikiHistory>>,
     }
 
     impl crate::api::BacklogApi for MockApi {
@@ -84,10 +85,11 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
             unimplemented!()
         }
-        fn get_project_disk_usage(&self, _key: &str) -> anyhow::Result<ProjectDiskUsage> {
-            self.disk_usage
-                .clone()
-                .ok_or_else(|| anyhow!("no disk usage"))
+        fn get_project_disk_usage(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<crate::api::project::ProjectDiskUsage> {
+            unimplemented!()
         }
         fn get_project_users(
             &self,
@@ -184,97 +186,73 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::issue::IssueAttachment>> {
             unimplemented!()
         }
-        fn get_wikis(
-            &self,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<Vec<crate::api::wiki::WikiListItem>> {
+        fn get_wikis(&self, _params: &[(String, String)]) -> anyhow::Result<Vec<WikiListItem>> {
             unimplemented!()
         }
-        fn get_wiki(&self, _wiki_id: u64) -> anyhow::Result<crate::api::wiki::Wiki> {
+        fn get_wiki(&self, _wiki_id: u64) -> anyhow::Result<Wiki> {
             unimplemented!()
         }
-        fn create_wiki(
-            &self,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::wiki::Wiki> {
+        fn create_wiki(&self, _params: &[(String, String)]) -> anyhow::Result<Wiki> {
             unimplemented!()
         }
-        fn update_wiki(
-            &self,
-            _wiki_id: u64,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::wiki::Wiki> {
+        fn update_wiki(&self, _wiki_id: u64, _params: &[(String, String)]) -> anyhow::Result<Wiki> {
             unimplemented!()
         }
-        fn delete_wiki(
-            &self,
-            _wiki_id: u64,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::wiki::Wiki> {
+        fn delete_wiki(&self, _wiki_id: u64, _params: &[(String, String)]) -> anyhow::Result<Wiki> {
             unimplemented!()
         }
-        fn get_wiki_history(
-            &self,
-            _wiki_id: u64,
-        ) -> anyhow::Result<Vec<crate::api::wiki::WikiHistory>> {
-            unimplemented!()
+        fn get_wiki_history(&self, _wiki_id: u64) -> anyhow::Result<Vec<WikiHistory>> {
+            self.history.clone().ok_or_else(|| anyhow!("no history"))
         }
-        fn get_wiki_attachments(
-            &self,
-            _wiki_id: u64,
-        ) -> anyhow::Result<Vec<crate::api::wiki::WikiAttachment>> {
+        fn get_wiki_attachments(&self, _wiki_id: u64) -> anyhow::Result<Vec<WikiAttachment>> {
             unimplemented!()
         }
     }
 
-    fn sample_disk_usage() -> ProjectDiskUsage {
-        ProjectDiskUsage {
-            project_id: 1,
-            issue: 2048,
-            wiki: 512,
-            document: 0,
-            file: 1024,
-            subversion: 64,
-            git: 256,
-            git_lfs: 128,
+    fn sample_history(user: WikiUser) -> WikiHistory {
+        WikiHistory {
+            page_id: 1,
+            version: 3,
+            name: "Home".to_string(),
+            content: "# Home v3".to_string(),
+            created_user: user,
+            created: "2024-03-01T00:00:00Z".to_string(),
         }
+    }
+
+    fn args(json: bool) -> WikiHistoryArgs {
+        WikiHistoryArgs::new(1, json)
     }
 
     #[test]
-    fn disk_usage_with_text_output_succeeds() {
+    fn history_with_text_output_succeeds() {
         let api = MockApi {
-            disk_usage: Some(sample_disk_usage()),
+            history: Some(vec![sample_history(sample_wiki_user())]),
         };
-        assert!(
-            disk_usage_with(&ProjectDiskUsageArgs::new("TEST".to_string(), false), &api).is_ok()
-        );
+        assert!(history_with(&args(false), &api).is_ok());
     }
 
     #[test]
-    fn disk_usage_with_json_output_succeeds() {
+    fn history_with_json_output_succeeds() {
         let api = MockApi {
-            disk_usage: Some(sample_disk_usage()),
+            history: Some(vec![sample_history(sample_wiki_user())]),
         };
-        assert!(
-            disk_usage_with(&ProjectDiskUsageArgs::new("TEST".to_string(), true), &api).is_ok()
-        );
+        assert!(history_with(&args(true), &api).is_ok());
     }
 
     #[test]
-    fn disk_usage_with_propagates_api_error() {
-        let api = MockApi { disk_usage: None };
-        let err = disk_usage_with(&ProjectDiskUsageArgs::new("TEST".to_string(), false), &api)
-            .unwrap_err();
-        assert!(err.to_string().contains("no disk usage"));
+    fn history_with_propagates_api_error() {
+        let api = MockApi { history: None };
+        let err = history_with(&args(false), &api).unwrap_err();
+        assert!(err.to_string().contains("no history"));
     }
 
     #[test]
-    fn format_disk_usage_text_contains_fields() {
-        let text = format_disk_usage_text(&sample_disk_usage());
-        assert!(text.contains("2048"));
-        assert!(text.contains("512"));
-        assert!(text.contains("128"));
-        assert!(text.contains("Issue:"));
-        assert!(text.contains("Git LFS:"));
+    fn format_history_row_contains_version_and_name() {
+        let entry = sample_history(sample_wiki_user());
+        let row = format_history_row(&entry);
+        assert!(row.contains("v3"));
+        assert!(row.contains("Home"));
+        assert!(row.contains("2024-03-01"));
     }
 }

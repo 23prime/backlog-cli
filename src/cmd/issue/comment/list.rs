@@ -199,6 +199,47 @@ mod tests {
         fn get_issue_attachments(&self, _key: &str) -> anyhow::Result<Vec<IssueAttachment>> {
             unimplemented!()
         }
+        fn get_wikis(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::wiki::WikiListItem>> {
+            unimplemented!()
+        }
+        fn get_wiki(&self, _wiki_id: u64) -> anyhow::Result<crate::api::wiki::Wiki> {
+            unimplemented!()
+        }
+        fn create_wiki(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::wiki::Wiki> {
+            unimplemented!()
+        }
+        fn update_wiki(
+            &self,
+            _wiki_id: u64,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::wiki::Wiki> {
+            unimplemented!()
+        }
+        fn delete_wiki(
+            &self,
+            _wiki_id: u64,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::wiki::Wiki> {
+            unimplemented!()
+        }
+        fn get_wiki_history(
+            &self,
+            _wiki_id: u64,
+        ) -> anyhow::Result<Vec<crate::api::wiki::WikiHistory>> {
+            unimplemented!()
+        }
+        fn get_wiki_attachments(
+            &self,
+            _wiki_id: u64,
+        ) -> anyhow::Result<Vec<crate::api::wiki::WikiAttachment>> {
+            unimplemented!()
+        }
     }
 
     fn args(json: bool) -> IssueCommentListArgs {
