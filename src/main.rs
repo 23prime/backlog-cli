@@ -33,6 +33,9 @@ struct Cli {
     /// Disable colored output
     #[arg(long, global = true)]
     no_color: bool,
+    /// Override the active space for this command (or set BL_SPACE env var)
+    #[arg(long, global = true, value_name = "SPACE_KEY")]
+    space: Option<String>,
     #[command(subcommand)]
     command: Commands,
 }
@@ -525,9 +528,22 @@ enum AuthCommands {
         json: bool,
     },
     /// Logout and remove stored credentials
-    Logout,
+    Logout {
+        /// Space key to logout from (defaults to current space)
+        space_key: Option<String>,
+        /// Logout from all spaces and remove all config files
+        #[arg(long)]
+        all: bool,
+    },
     /// Check if the system keyring is available
     Keyring,
+    /// List all configured spaces
+    List,
+    /// Switch the current space
+    Use {
+        /// Space key to switch to
+        space_key: String,
+    },
 }
 
 fn main() -> std::process::ExitCode {
@@ -545,12 +561,24 @@ fn run() -> Result<()> {
         // SAFETY: called before any threads are spawned
         unsafe { std::env::set_var("NO_COLOR", "1") };
     }
+    if let Some(ref space) = cli.space {
+        // SAFETY: called before any threads are spawned
+        unsafe { std::env::set_var("BL_SPACE", space) };
+    }
     match cli.command {
         Commands::Auth { action } => match action {
             AuthCommands::Login => cmd::auth::login(),
             AuthCommands::Status { json } => cmd::auth::status(&AuthStatusArgs::new(json)),
-            AuthCommands::Logout => cmd::auth::logout(),
+            AuthCommands::Logout { space_key, all } => {
+                if all {
+                    cmd::auth::logout_all()
+                } else {
+                    cmd::auth::logout(space_key.as_deref())
+                }
+            }
             AuthCommands::Keyring => cmd::auth::check_keyring(),
+            AuthCommands::List => cmd::auth::list(),
+            AuthCommands::Use { space_key } => cmd::auth::use_space(&space_key),
         },
         Commands::Project { action } => match action {
             ProjectCommands::List { json } => cmd::project::list(&ProjectListArgs::new(json)),
