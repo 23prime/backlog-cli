@@ -39,10 +39,7 @@ pub fn logout(space_key: Option<&str>) -> Result<()> {
     };
 
     secret::delete(&key)?;
-    cfg.spaces.retain(|s| s != &key);
-    if cfg.current_space.as_deref() == Some(&key) {
-        cfg.current_space = cfg.spaces.first().cloned();
-    }
+    remove_space_from_config(&mut cfg, &key);
     config::save(&cfg)?;
 
     println!("{} from {}", "Logged out".yellow(), key);
@@ -214,6 +211,13 @@ pub fn check_keyring() -> Result<()> {
     }
 
     Ok(())
+}
+
+fn remove_space_from_config(cfg: &mut config::Config, key: &str) {
+    cfg.spaces.retain(|s| s != key);
+    if cfg.current_space.as_deref() == Some(key) {
+        cfg.current_space = cfg.spaces.first().cloned();
+    }
 }
 
 fn build_status_json(space_key: &str, backend: Backend, user: Option<User>) -> Result<String> {
@@ -488,5 +492,45 @@ mod tests {
         let api = MockApi { user: None };
         let result = status_with(true, "mycompany", "abcd1234", Backend::File, &api);
         assert!(result.is_ok());
+    }
+
+    fn make_config(current: &str, spaces: &[&str]) -> crate::config::Config {
+        crate::config::Config {
+            current_space: Some(current.to_string()),
+            spaces: spaces.iter().map(|s| s.to_string()).collect(),
+            auth: None,
+        }
+    }
+
+    #[test]
+    fn remove_space_removes_from_list_and_clears_current() {
+        let mut cfg = make_config("mycompany", &["mycompany", "another"]);
+        remove_space_from_config(&mut cfg, "mycompany");
+        assert_eq!(cfg.spaces, vec!["another"]);
+        assert_eq!(cfg.current_space.as_deref(), Some("another"));
+    }
+
+    #[test]
+    fn remove_space_promotes_next_when_current_removed() {
+        let mut cfg = make_config("a", &["a", "b", "c"]);
+        remove_space_from_config(&mut cfg, "a");
+        assert_eq!(cfg.current_space.as_deref(), Some("b"));
+        assert_eq!(cfg.spaces, vec!["b", "c"]);
+    }
+
+    #[test]
+    fn remove_space_sets_current_to_none_when_last_space_removed() {
+        let mut cfg = make_config("mycompany", &["mycompany"]);
+        remove_space_from_config(&mut cfg, "mycompany");
+        assert!(cfg.spaces.is_empty());
+        assert!(cfg.current_space.is_none());
+    }
+
+    #[test]
+    fn remove_space_does_not_change_current_when_non_current_removed() {
+        let mut cfg = make_config("mycompany", &["mycompany", "another"]);
+        remove_space_from_config(&mut cfg, "another");
+        assert_eq!(cfg.current_space.as_deref(), Some("mycompany"));
+        assert_eq!(cfg.spaces, vec!["mycompany"]);
     }
 }
