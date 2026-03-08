@@ -122,7 +122,7 @@ pub(crate) fn sample_issue() -> crate::api::issue::Issue {
         },
         summary: "Fix login".to_string(),
         description: None,
-        resolutions: None,
+        resolution: None,
         priority: IssuePriority {
             id: 2,
             name: "Normal".to_string(),

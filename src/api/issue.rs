@@ -62,7 +62,7 @@ pub struct Issue {
     pub issue_type: IssueType,
     pub summary: String,
     pub description: Option<String>,
-    pub resolutions: Option<IssueResolution>,
+    pub resolution: Option<IssueResolution>,
     pub priority: IssuePriority,
     pub status: IssueStatus,
     pub assignee: Option<IssueUser>,
@@ -216,7 +216,7 @@ mod tests {
             },
             "summary": "Test issue",
             "description": null,
-            "resolutions": null,
+            "resolution": null,
             "priority": { "id": 2, "name": "Normal" },
             "status": {
                 "id": 1,
@@ -370,7 +370,7 @@ mod tests {
             },
             "summary": "Bot issue",
             "description": null,
-            "resolutions": null,
+            "resolution": null,
             "priority": { "id": 2, "name": "Normal" },
             "status": {
                 "id": 1, "projectId": 1, "name": "Open",
