@@ -123,7 +123,7 @@ EOF
 After opening the PR, GitHub Copilot and CodeRabbit will post review comments automatically. Check whether reviews have arrived:
 
 ```bash
-gh pr-review review view <PR_NUMBER> | jq '[.reviews[].author_login]'
+gh pr view <PR_NUMBER> --json reviews | jq '[.reviews[].author.login]'
 ```
 
 - If the array is empty, reviews have not arrived yet. Wait ~2–3 minutes and check again.
