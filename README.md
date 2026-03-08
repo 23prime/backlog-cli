@@ -1,6 +1,6 @@
 # backlog-cli
 
-An unofficial CLI tool for [Backlog](https://backlog.com).
+An unofficial CLI tool for [Nulab's Backlog](https://backlog.com).
 
 ## Features
 
