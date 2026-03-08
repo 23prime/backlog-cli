@@ -576,15 +576,15 @@ Commands that target a specific project accept a `--project <key>` flag.
 | --- | --- | --- |
 | `bl issue list` | `GET /api/v2/issues` | ✅ Implemented |
 | `bl issue count` | `GET /api/v2/issues/count` | ✅ Implemented |
-| `bl issue show <id>` | `GET /api/v2/issues/{issueIdOrKey}` | ✅ Implemented |
+| `bl issue show <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}` | ✅ Implemented |
 | `bl issue create` | `POST /api/v2/issues` | ✅ Implemented |
-| `bl issue update <id>` | `PATCH /api/v2/issues/{issueIdOrKey}` | ✅ Implemented |
-| `bl issue delete <id>` | `DELETE /api/v2/issues/{issueIdOrKey}` | ✅ Implemented |
-| `bl issue comment list <id>` | `GET /api/v2/issues/{issueIdOrKey}/comments` | ✅ Implemented |
-| `bl issue comment add <id>` | `POST /api/v2/issues/{issueIdOrKey}/comments` | ✅ Implemented |
-| `bl issue comment update <id> <comment-id>` | `PATCH /api/v2/issues/{issueIdOrKey}/comments/{commentId}` | ✅ Implemented |
-| `bl issue comment delete <id> <comment-id>` | `DELETE /api/v2/issues/{issueIdOrKey}/comments/{commentId}` | ✅ Implemented |
-| `bl issue attachment list <id>` | `GET /api/v2/issues/{issueIdOrKey}/attachments` | ✅ Implemented |
+| `bl issue update <id-or-key>` | `PATCH /api/v2/issues/{issueIdOrKey}` | ✅ Implemented |
+| `bl issue delete <id-or-key>` | `DELETE /api/v2/issues/{issueIdOrKey}` | ✅ Implemented |
+| `bl issue comment list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/comments` | ✅ Implemented |
+| `bl issue comment add <id-or-key>` | `POST /api/v2/issues/{issueIdOrKey}/comments` | ✅ Implemented |
+| `bl issue comment update <id-or-key> <comment-id>` | `PATCH /api/v2/issues/{issueIdOrKey}/comments/{commentId}` | ✅ Implemented |
+| `bl issue comment delete <id-or-key> <comment-id>` | `DELETE /api/v2/issues/{issueIdOrKey}/comments/{commentId}` | ✅ Implemented |
+| `bl issue attachment list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/attachments` | ✅ Implemented |
 
 ### Wiki
 
