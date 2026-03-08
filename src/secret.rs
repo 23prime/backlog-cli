@@ -151,6 +151,15 @@ pub fn delete(space_key: &str) -> Result<()> {
     delete_impl(space_key, &default_stores()?)
 }
 
+pub fn remove_credentials_file() -> Result<()> {
+    let store = FileStore::new()?;
+    if store.path.exists() {
+        std::fs::remove_file(&store.path)
+            .with_context(|| format!("Failed to remove {}", store.path.display()))?;
+    }
+    Ok(())
+}
+
 fn set_impl(
     space_key: &str,
     api_key: &str,

@@ -56,21 +56,8 @@ pub fn logout_all() -> Result<()> {
         secret::delete(key)?;
     }
 
-    // Remove config and credentials files entirely
-    if let Some(config_dir) = dirs::config_dir() {
-        let bl_dir = config_dir.join("bl");
-        let config_path = bl_dir.join("config.toml");
-        let credentials_path = bl_dir.join("credentials.toml");
-
-        if config_path.exists() {
-            std::fs::remove_file(&config_path)
-                .with_context(|| format!("Failed to remove {}", config_path.display()))?;
-        }
-        if credentials_path.exists() {
-            std::fs::remove_file(&credentials_path)
-                .with_context(|| format!("Failed to remove {}", credentials_path.display()))?;
-        }
-    }
+    config::remove_config_file()?;
+    secret::remove_credentials_file()?;
 
     println!(
         "{}",

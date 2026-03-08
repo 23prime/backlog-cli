@@ -35,6 +35,15 @@ pub fn save(config: &Config) -> Result<()> {
     save_to(&config_path()?, config)
 }
 
+pub fn remove_config_file() -> Result<()> {
+    let path = config_path()?;
+    if path.exists() {
+        std::fs::remove_file(&path)
+            .with_context(|| format!("Failed to remove {}", path.display()))?;
+    }
+    Ok(())
+}
+
 /// Resolve the effective space key: `BL_SPACE` env var → `current_space` in config.
 pub fn current_space_key() -> Result<String> {
     if let Ok(s) = std::env::var("BL_SPACE")
