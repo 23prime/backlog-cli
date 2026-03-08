@@ -37,7 +37,13 @@ pub fn logout() -> Result<()> {
 }
 
 pub struct AuthStatusArgs {
-    pub json: bool,
+    json: bool,
+}
+
+impl AuthStatusArgs {
+    pub fn new(json: bool) -> Self {
+        Self { json }
+    }
 }
 
 pub fn status(args: &AuthStatusArgs) -> Result<()> {

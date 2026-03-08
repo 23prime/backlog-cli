@@ -5,8 +5,14 @@ use owo_colors::OwoColorize;
 use crate::api::{BacklogApi, BacklogClient, issue::Issue};
 
 pub struct IssueShowArgs {
-    pub key: String,
-    pub json: bool,
+    key: String,
+    json: bool,
+}
+
+impl IssueShowArgs {
+    pub fn new(key: String, json: bool) -> Self {
+        Self { key, json }
+    }
 }
 
 pub fn show(args: &IssueShowArgs) -> Result<()> {
@@ -176,10 +182,7 @@ mod tests {
     }
 
     fn args(json: bool) -> IssueShowArgs {
-        IssueShowArgs {
-            key: "TEST-1".to_string(),
-            json,
-        }
+        IssueShowArgs::new("TEST-1".to_string(), json)
     }
 
     #[test]
@@ -201,14 +204,7 @@ mod tests {
     #[test]
     fn show_with_propagates_api_error() {
         let api = MockApi { issue: None };
-        let err = show_with(
-            &IssueShowArgs {
-                key: "TEST-999".to_string(),
-                json: false,
-            },
-            &api,
-        )
-        .unwrap_err();
+        let err = show_with(&IssueShowArgs::new("TEST-999".to_string(), false), &api).unwrap_err();
         assert!(err.to_string().contains("no issue"));
     }
 }

@@ -4,16 +4,56 @@ use anyhow::{Context, Result};
 use crate::api::{BacklogApi, BacklogClient};
 use crate::cmd::issue::show::print_issue;
 
+#[cfg_attr(test, derive(Debug))]
 pub struct IssueUpdateArgs {
-    pub key: String,
-    pub summary: Option<String>,
-    pub description: Option<String>,
-    pub status_id: Option<u64>,
-    pub priority_id: Option<u64>,
-    pub assignee_id: Option<u64>,
-    pub due_date: Option<String>,
-    pub comment: Option<String>,
-    pub json: bool,
+    key: String,
+    summary: Option<String>,
+    description: Option<String>,
+    status_id: Option<u64>,
+    priority_id: Option<u64>,
+    assignee_id: Option<u64>,
+    due_date: Option<String>,
+    comment: Option<String>,
+    json: bool,
+}
+
+impl IssueUpdateArgs {
+    #[allow(clippy::too_many_arguments)]
+    pub fn try_new(
+        key: String,
+        summary: Option<String>,
+        description: Option<String>,
+        status_id: Option<u64>,
+        priority_id: Option<u64>,
+        assignee_id: Option<u64>,
+        due_date: Option<String>,
+        comment: Option<String>,
+        json: bool,
+    ) -> anyhow::Result<Self> {
+        if summary.is_none()
+            && description.is_none()
+            && status_id.is_none()
+            && priority_id.is_none()
+            && assignee_id.is_none()
+            && due_date.is_none()
+            && comment.is_none()
+        {
+            return Err(anyhow::anyhow!(
+                "At least one field must be specified for update"
+            ));
+        }
+        Ok(Self {
+            key,
+            summary,
+            description,
+            status_id,
+            priority_id,
+            assignee_id,
+            due_date,
+            comment,
+            json,
+        })
+    }
 }
 
 pub fn update(args: &IssueUpdateArgs) -> Result<()> {
@@ -45,11 +85,6 @@ pub fn update_with(args: &IssueUpdateArgs, api: &dyn BacklogApi) -> Result<()> {
         params.push(("comment".to_string(), c.clone()));
     }
 
-    if params.is_empty() {
-        return Err(anyhow::anyhow!(
-            "At least one field must be specified for update"
-        ));
-    }
     let issue = api.update_issue(&args.key, &params)?;
     if args.json {
         println!(
@@ -188,17 +223,18 @@ mod tests {
     }
 
     fn args(json: bool) -> IssueUpdateArgs {
-        IssueUpdateArgs {
-            key: "TEST-1".to_string(),
-            summary: Some("Updated summary".to_string()),
-            description: None,
-            status_id: None,
-            priority_id: None,
-            assignee_id: None,
-            due_date: None,
-            comment: None,
+        IssueUpdateArgs::try_new(
+            "TEST-1".to_string(),
+            Some("Updated summary".to_string()),
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
             json,
-        }
+        )
+        .unwrap()
     }
 
     #[test]
@@ -219,21 +255,18 @@ mod tests {
 
     #[test]
     fn update_with_rejects_empty_params() {
-        let api = MockApi {
-            issue: Some(sample_issue()),
-        };
-        let empty = IssueUpdateArgs {
-            key: "TEST-1".to_string(),
-            summary: None,
-            description: None,
-            status_id: None,
-            priority_id: None,
-            assignee_id: None,
-            due_date: None,
-            comment: None,
-            json: false,
-        };
-        let err = update_with(&empty, &api).unwrap_err();
+        let err = IssueUpdateArgs::try_new(
+            "TEST-1".to_string(),
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            false,
+        )
+        .unwrap_err();
         assert!(err.to_string().contains("At least one field"));
     }
 

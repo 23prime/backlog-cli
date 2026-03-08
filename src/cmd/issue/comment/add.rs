@@ -5,9 +5,15 @@ use crate::api::{BacklogApi, BacklogClient};
 use crate::cmd::issue::comment::list::format_comment_row;
 
 pub struct IssueCommentAddArgs {
-    pub key: String,
-    pub content: String,
-    pub json: bool,
+    key: String,
+    content: String,
+    json: bool,
+}
+
+impl IssueCommentAddArgs {
+    pub fn new(key: String, content: String, json: bool) -> Self {
+        Self { key, content, json }
+    }
 }
 
 pub fn add(args: &IssueCommentAddArgs) -> Result<()> {
@@ -155,11 +161,7 @@ mod tests {
     }
 
     fn args(json: bool) -> IssueCommentAddArgs {
-        IssueCommentAddArgs {
-            key: "TEST-1".to_string(),
-            content: "hello".to_string(),
-            json,
-        }
+        IssueCommentAddArgs::new("TEST-1".to_string(), "hello".to_string(), json)
     }
 
     #[test]

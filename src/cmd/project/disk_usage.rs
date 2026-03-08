@@ -4,8 +4,14 @@ use anyhow::{Context, Result};
 use crate::api::{BacklogApi, BacklogClient, project::ProjectDiskUsage};
 
 pub struct ProjectDiskUsageArgs {
-    pub key: String,
-    pub json: bool,
+    key: String,
+    json: bool,
+}
+
+impl ProjectDiskUsageArgs {
+    pub fn new(key: String, json: bool) -> Self {
+        Self { key, json }
+    }
 }
 
 pub fn disk_usage(args: &ProjectDiskUsageArgs) -> Result<()> {
@@ -199,14 +205,7 @@ mod tests {
             disk_usage: Some(sample_disk_usage()),
         };
         assert!(
-            disk_usage_with(
-                &ProjectDiskUsageArgs {
-                    key: "TEST".to_string(),
-                    json: false
-                },
-                &api
-            )
-            .is_ok()
+            disk_usage_with(&ProjectDiskUsageArgs::new("TEST".to_string(), false), &api).is_ok()
         );
     }
 
@@ -216,28 +215,15 @@ mod tests {
             disk_usage: Some(sample_disk_usage()),
         };
         assert!(
-            disk_usage_with(
-                &ProjectDiskUsageArgs {
-                    key: "TEST".to_string(),
-                    json: true
-                },
-                &api
-            )
-            .is_ok()
+            disk_usage_with(&ProjectDiskUsageArgs::new("TEST".to_string(), true), &api).is_ok()
         );
     }
 
     #[test]
     fn disk_usage_with_propagates_api_error() {
         let api = MockApi { disk_usage: None };
-        let err = disk_usage_with(
-            &ProjectDiskUsageArgs {
-                key: "TEST".to_string(),
-                json: false,
-            },
-            &api,
-        )
-        .unwrap_err();
+        let err = disk_usage_with(&ProjectDiskUsageArgs::new("TEST".to_string(), false), &api)
+            .unwrap_err();
         assert!(err.to_string().contains("no disk usage"));
     }
 

@@ -4,7 +4,13 @@ use anyhow::{Context, Result};
 use crate::api::{BacklogApi, BacklogClient, activity::Activity};
 
 pub struct SpaceActivitiesArgs {
-    pub json: bool,
+    json: bool,
+}
+
+impl SpaceActivitiesArgs {
+    pub fn new(json: bool) -> Self {
+        Self { json }
+    }
 }
 
 pub fn activities(args: &SpaceActivitiesArgs) -> Result<()> {
@@ -213,7 +219,7 @@ mod tests {
         let api = MockApi {
             activities: Some(vec![sample_activity()]),
         };
-        assert!(activities_with(&SpaceActivitiesArgs { json: false }, &api).is_ok());
+        assert!(activities_with(&SpaceActivitiesArgs::new(false), &api).is_ok());
     }
 
     #[test]
@@ -221,13 +227,13 @@ mod tests {
         let api = MockApi {
             activities: Some(vec![sample_activity()]),
         };
-        assert!(activities_with(&SpaceActivitiesArgs { json: true }, &api).is_ok());
+        assert!(activities_with(&SpaceActivitiesArgs::new(true), &api).is_ok());
     }
 
     #[test]
     fn activities_with_propagates_api_error() {
         let api = MockApi { activities: None };
-        let err = activities_with(&SpaceActivitiesArgs { json: false }, &api).unwrap_err();
+        let err = activities_with(&SpaceActivitiesArgs::new(false), &api).unwrap_err();
         assert!(err.to_string().contains("no activities"));
     }
 }

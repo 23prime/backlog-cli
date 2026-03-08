@@ -5,14 +5,39 @@ use crate::api::{BacklogApi, BacklogClient};
 use crate::cmd::issue::show::print_issue;
 
 pub struct IssueCreateArgs {
-    pub project_id: u64,
-    pub summary: String,
-    pub issue_type_id: u64,
-    pub priority_id: u64,
-    pub description: Option<String>,
-    pub assignee_id: Option<u64>,
-    pub due_date: Option<String>,
-    pub json: bool,
+    project_id: u64,
+    summary: String,
+    issue_type_id: u64,
+    priority_id: u64,
+    description: Option<String>,
+    assignee_id: Option<u64>,
+    due_date: Option<String>,
+    json: bool,
+}
+
+impl IssueCreateArgs {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        project_id: u64,
+        summary: String,
+        issue_type_id: u64,
+        priority_id: u64,
+        description: Option<String>,
+        assignee_id: Option<u64>,
+        due_date: Option<String>,
+        json: bool,
+    ) -> Self {
+        Self {
+            project_id,
+            summary,
+            issue_type_id,
+            priority_id,
+            description,
+            assignee_id,
+            due_date,
+            json,
+        }
+    }
 }
 
 pub fn create(args: &IssueCreateArgs) -> Result<()> {
@@ -175,16 +200,7 @@ mod tests {
     }
 
     fn args(json: bool) -> IssueCreateArgs {
-        IssueCreateArgs {
-            project_id: 1,
-            summary: "Bug".to_string(),
-            issue_type_id: 1,
-            priority_id: 2,
-            description: None,
-            assignee_id: None,
-            due_date: None,
-            json,
-        }
+        IssueCreateArgs::new(1, "Bug".to_string(), 1, 2, None, None, None, json)
     }
 
     #[test]

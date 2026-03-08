@@ -5,15 +5,42 @@ use crate::api::{BacklogApi, BacklogClient};
 use crate::cmd::issue::ParentChild;
 
 pub struct IssueCountArgs {
-    pub project_ids: Vec<u64>,
-    pub status_ids: Vec<u64>,
-    pub assignee_ids: Vec<u64>,
-    pub issue_type_ids: Vec<u64>,
-    pub category_ids: Vec<u64>,
-    pub milestone_ids: Vec<u64>,
-    pub parent_child: Option<ParentChild>,
-    pub keyword: Option<String>,
-    pub json: bool,
+    project_ids: Vec<u64>,
+    status_ids: Vec<u64>,
+    assignee_ids: Vec<u64>,
+    issue_type_ids: Vec<u64>,
+    category_ids: Vec<u64>,
+    milestone_ids: Vec<u64>,
+    parent_child: Option<ParentChild>,
+    keyword: Option<String>,
+    json: bool,
+}
+
+impl IssueCountArgs {
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        project_ids: Vec<u64>,
+        status_ids: Vec<u64>,
+        assignee_ids: Vec<u64>,
+        issue_type_ids: Vec<u64>,
+        category_ids: Vec<u64>,
+        milestone_ids: Vec<u64>,
+        parent_child: Option<ParentChild>,
+        keyword: Option<String>,
+        json: bool,
+    ) -> Self {
+        Self {
+            project_ids,
+            status_ids,
+            assignee_ids,
+            issue_type_ids,
+            category_ids,
+            milestone_ids,
+            parent_child,
+            keyword,
+            json,
+        }
+    }
 }
 
 pub fn count(args: &IssueCountArgs) -> Result<()> {
@@ -191,17 +218,17 @@ mod tests {
     }
 
     fn args(json: bool) -> IssueCountArgs {
-        IssueCountArgs {
-            project_ids: vec![],
-            status_ids: vec![],
-            assignee_ids: vec![],
-            issue_type_ids: vec![],
-            category_ids: vec![],
-            milestone_ids: vec![],
-            parent_child: None,
-            keyword: None,
+        IssueCountArgs::new(
+            vec![],
+            vec![],
+            vec![],
+            vec![],
+            vec![],
+            vec![],
+            None,
+            None,
             json,
-        }
+        )
     }
 
     #[test]

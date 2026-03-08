@@ -4,8 +4,14 @@ use anyhow::{Context, Result};
 use crate::api::{BacklogApi, BacklogClient};
 
 pub struct IssueDeleteArgs {
-    pub key: String,
-    pub json: bool,
+    key: String,
+    json: bool,
+}
+
+impl IssueDeleteArgs {
+    pub fn new(key: String, json: bool) -> Self {
+        Self { key, json }
+    }
 }
 
 pub fn delete(args: &IssueDeleteArgs) -> Result<()> {
@@ -152,10 +158,7 @@ mod tests {
     }
 
     fn args(json: bool) -> IssueDeleteArgs {
-        IssueDeleteArgs {
-            key: "TEST-1".to_string(),
-            json,
-        }
+        IssueDeleteArgs::new("TEST-1".to_string(), json)
     }
 
     #[test]

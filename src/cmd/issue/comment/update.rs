@@ -5,10 +5,21 @@ use crate::api::{BacklogApi, BacklogClient};
 use crate::cmd::issue::comment::list::format_comment_row;
 
 pub struct IssueCommentUpdateArgs {
-    pub key: String,
-    pub comment_id: u64,
-    pub content: String,
-    pub json: bool,
+    key: String,
+    comment_id: u64,
+    content: String,
+    json: bool,
+}
+
+impl IssueCommentUpdateArgs {
+    pub fn new(key: String, comment_id: u64, content: String, json: bool) -> Self {
+        Self {
+            key,
+            comment_id,
+            content,
+            json,
+        }
+    }
 }
 
 pub fn update(args: &IssueCommentUpdateArgs) -> Result<()> {
@@ -156,12 +167,7 @@ mod tests {
     }
 
     fn args(json: bool) -> IssueCommentUpdateArgs {
-        IssueCommentUpdateArgs {
-            key: "TEST-1".to_string(),
-            comment_id: 1,
-            content: "updated".to_string(),
-            json,
-        }
+        IssueCommentUpdateArgs::new("TEST-1".to_string(), 1, "updated".to_string(), json)
     }
 
     #[test]

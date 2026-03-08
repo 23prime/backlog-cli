@@ -4,7 +4,13 @@ use anyhow::{Context, Result};
 use crate::api::{BacklogApi, BacklogClient, space::Space};
 
 pub struct SpaceShowArgs {
-    pub json: bool,
+    json: bool,
+}
+
+impl SpaceShowArgs {
+    pub fn new(json: bool) -> Self {
+        Self { json }
+    }
 }
 
 pub fn show(args: &SpaceShowArgs) -> Result<()> {
@@ -195,7 +201,7 @@ mod tests {
         let api = MockApi {
             space: Some(sample_space()),
         };
-        assert!(show_with(&SpaceShowArgs { json: false }, &api).is_ok());
+        assert!(show_with(&SpaceShowArgs::new(false), &api).is_ok());
     }
 
     #[test]
@@ -203,13 +209,13 @@ mod tests {
         let api = MockApi {
             space: Some(sample_space()),
         };
-        assert!(show_with(&SpaceShowArgs { json: true }, &api).is_ok());
+        assert!(show_with(&SpaceShowArgs::new(true), &api).is_ok());
     }
 
     #[test]
     fn show_with_propagates_api_error() {
         let api = MockApi { space: None };
-        let err = show_with(&SpaceShowArgs { json: false }, &api).unwrap_err();
+        let err = show_with(&SpaceShowArgs::new(false), &api).unwrap_err();
         assert!(err.to_string().contains("no space"));
     }
 

@@ -4,9 +4,19 @@ use anyhow::{Context, Result};
 use crate::api::{BacklogApi, BacklogClient};
 
 pub struct IssueCommentDeleteArgs {
-    pub key: String,
-    pub comment_id: u64,
-    pub json: bool,
+    key: String,
+    comment_id: u64,
+    json: bool,
+}
+
+impl IssueCommentDeleteArgs {
+    pub fn new(key: String, comment_id: u64, json: bool) -> Self {
+        Self {
+            key,
+            comment_id,
+            json,
+        }
+    }
 }
 
 pub fn delete(args: &IssueCommentDeleteArgs) -> Result<()> {
@@ -153,11 +163,7 @@ mod tests {
     }
 
     fn args(json: bool) -> IssueCommentDeleteArgs {
-        IssueCommentDeleteArgs {
-            key: "TEST-1".to_string(),
-            comment_id: 1,
-            json,
-        }
+        IssueCommentDeleteArgs::new("TEST-1".to_string(), 1, json)
     }
 
     #[test]
