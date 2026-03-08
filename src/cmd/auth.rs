@@ -3,7 +3,7 @@ use anyhow::{Context, Result};
 use owo_colors::OwoColorize;
 
 use crate::api::{BacklogApi, BacklogClient, user::User};
-use crate::config::{self, AuthConfig};
+use crate::config::{self};
 use crate::secret::{self, Backend};
 
 pub fn login() -> Result<()> {
@@ -13,7 +13,10 @@ pub fn login() -> Result<()> {
     let backend = secret::set(&space_key, &api_key)?;
 
     let mut cfg = config::load()?;
-    cfg.auth = Some(AuthConfig { space_key });
+    if !cfg.spaces.contains(&space_key) {
+        cfg.spaces.push(space_key.clone());
+    }
+    cfg.current_space = Some(space_key);
     config::save(&cfg)?;
 
     println!(
@@ -24,15 +27,90 @@ pub fn login() -> Result<()> {
     Ok(())
 }
 
-pub fn logout() -> Result<()> {
-    let cfg = config::load()?;
-    if let Some(auth) = cfg.auth {
-        secret::delete(&auth.space_key)?;
-    }
+pub fn logout(space_key: Option<&str>) -> Result<()> {
     let mut cfg = config::load()?;
-    cfg.auth = None;
+
+    let key = if let Some(k) = space_key {
+        k.to_string()
+    } else {
+        cfg.current_space
+            .clone()
+            .context("No current space set. Specify a space key: `bl auth logout <space_key>`.")?
+    };
+
+    secret::delete(&key)?;
+    cfg.spaces.retain(|s| s != &key);
+    if cfg.current_space.as_deref() == Some(&key) {
+        cfg.current_space = cfg.spaces.first().cloned();
+    }
     config::save(&cfg)?;
-    println!("{}", "Logged out.".yellow());
+
+    println!("{} from {}", "Logged out".yellow(), key);
+    Ok(())
+}
+
+pub fn logout_all() -> Result<()> {
+    let cfg = config::load()?;
+
+    for key in &cfg.spaces {
+        secret::delete(key)?;
+    }
+
+    // Remove config and credentials files entirely
+    if let Some(config_dir) = dirs::config_dir() {
+        let bl_dir = config_dir.join("bl");
+        let config_path = bl_dir.join("config.toml");
+        let credentials_path = bl_dir.join("credentials.toml");
+
+        if config_path.exists() {
+            std::fs::remove_file(&config_path)
+                .with_context(|| format!("Failed to remove {}", config_path.display()))?;
+        }
+        if credentials_path.exists() {
+            std::fs::remove_file(&credentials_path)
+                .with_context(|| format!("Failed to remove {}", credentials_path.display()))?;
+        }
+    }
+
+    println!(
+        "{}",
+        "Logged out from all spaces. Config files removed.".yellow()
+    );
+    Ok(())
+}
+
+pub fn list() -> Result<()> {
+    let cfg = config::load()?;
+
+    if cfg.spaces.is_empty() {
+        println!("No spaces configured. Run `bl auth login` to add one.");
+        return Ok(());
+    }
+
+    for space in &cfg.spaces {
+        if cfg.current_space.as_deref() == Some(space) {
+            println!("* {}", space.green());
+        } else {
+            println!("  {}", space);
+        }
+    }
+    Ok(())
+}
+
+pub fn use_space(key: &str) -> Result<()> {
+    let mut cfg = config::load()?;
+
+    if !cfg.spaces.contains(&key.to_string()) {
+        anyhow::bail!(
+            "Space '{}' is not configured. Run `bl auth login` to add it.",
+            key
+        );
+    }
+
+    cfg.current_space = Some(key.to_string());
+    config::save(&cfg)?;
+
+    println!("Switched to space: {}", key.green());
     Ok(())
 }
 
@@ -48,17 +126,20 @@ impl AuthStatusArgs {
 
 pub fn status(args: &AuthStatusArgs) -> Result<()> {
     let json = args.json;
-    let cfg = config::load()?;
-    let Some(auth) = cfg.auth else {
-        if json {
-            println!("{}", serde_json::json!({"error": "Not logged in"}));
-        } else {
-            println!("Not logged in. Run `bl auth login` to authenticate.");
+
+    let space_key = match config::current_space_key() {
+        Ok(k) => k,
+        Err(_) => {
+            if json {
+                println!("{}", serde_json::json!({"error": "Not logged in"}));
+            } else {
+                println!("Not logged in. Run `bl auth login` to authenticate.");
+            }
+            return Ok(());
         }
-        return Ok(());
     };
 
-    let (api_key, backend) = match secret::get(&auth.space_key) {
+    let (api_key, backend) = match secret::get(&space_key) {
         Ok(v) => v,
         Err(e) => {
             if json {
@@ -71,10 +152,10 @@ pub fn status(args: &AuthStatusArgs) -> Result<()> {
     };
 
     let client = BacklogClient::new_with(
-        &format!("https://{}.backlog.com/api/v2", auth.space_key),
+        &format!("https://{}.backlog.com/api/v2", space_key),
         &api_key,
     )?;
-    status_with(json, &auth.space_key, &api_key, backend, &client)
+    status_with(json, &space_key, &api_key, backend, &client)
 }
 
 pub fn status_with(
