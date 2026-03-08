@@ -91,11 +91,13 @@ To also remove stored credentials and configuration files, pass `-Purge`:
 & ([scriptblock]::Create((irm https://raw.githubusercontent.com/23prime/backlog-cli/latest/uninstall.ps1))) -Purge
 ```
 
-> **Note:** With `--purge` / `-Purge`, the uninstall script first runs `bl auth logout`,
-> which clears the API key from the system keyring and resets authentication in the config file,
+> **Note:** With `--purge` / `-Purge`, the uninstall script first runs `bl auth logout --all`,
+> which clears all API keys from the system keyring and removes all configuration files,
 > and then deletes the Backlog CLI configuration directory along with the binary.
 > Without this flag, only the binary is removed and credentials are left intact
 > (useful if you plan to reinstall later).
+>
+> You can also clean up credentials manually at any time with `bl auth logout --all`.
 
 ## Authentication
 
@@ -118,6 +120,26 @@ You will be prompted for:
   For `mycompany.backlog.com`, enter `mycompany`.
 - **API key** — the key issued in the step above (input is hidden)
 
+Running `bl auth login` again with a different space key adds another space.
+The most recently logged-in space becomes the current (active) space.
+
+### Managing multiple spaces
+
+```bash
+# List all configured spaces (* marks the current space)
+bl auth list
+
+# Switch the current space
+bl auth use another-company
+
+# Use a different space for a single command
+bl --space another-company project list
+
+# Or set the BL_SPACE environment variable
+export BL_SPACE=another-company
+bl project list
+```
+
 ### Checking auth status
 
 ```bash
@@ -136,10 +158,15 @@ Space: mycompany.backlog.com
 ### Logging out
 
 ```bash
+# Logout from the current space
 bl auth logout
-```
 
-Removes the API key from the keyring and credentials file, and clears the stored space key.
+# Logout from a specific space
+bl auth logout another-company
+
+# Logout from all spaces and remove all config files (useful before uninstalling)
+bl auth logout --all
+```
 
 ## Commands
 
@@ -147,9 +174,12 @@ Removes the API key from the keyring and credentials file, and clears the stored
 
 | Command | Description |
 | --- | --- |
-| `bl auth login` | Authenticate with a Backlog API key |
+| `bl auth login` | Authenticate with a Backlog API key (adds or updates a space) |
 | `bl auth status` | Show current auth status and verify credentials |
-| `bl auth logout` | Remove stored credentials |
+| `bl auth list` | List all configured spaces |
+| `bl auth use <space-key>` | Switch the current space |
+| `bl auth logout [<space-key>]` | Remove credentials for the current or specified space |
+| `bl auth logout --all` | Remove all spaces and delete all config files |
 
 ### `bl space`
 
@@ -773,9 +803,11 @@ Commands that target a specific project accept a `--project <key>` flag.
 ### Config file format
 
 ```toml
-[auth]
-space_key = "mycompany"
+current_space = "mycompany"
+spaces = ["mycompany", "another-company"]
 ```
+
+Old configs using the `[auth] space_key` format are migrated automatically on first run.
 
 ## Troubleshooting
 

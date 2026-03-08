@@ -205,12 +205,8 @@ pub struct BacklogClient {
 
 impl BacklogClient {
     pub fn from_config() -> Result<Self> {
-        let cfg = crate::config::load()?;
-        let auth = cfg
-            .auth
-            .context("Not logged in. Run `bl auth login` first.")?;
-
-        let (api_key, _) = crate::secret::get(&auth.space_key)?;
+        let space_key = crate::config::current_space_key()?;
+        let (api_key, _) = crate::secret::get(&space_key)?;
 
         let client = Client::builder()
             .build()
@@ -218,7 +214,7 @@ impl BacklogClient {
 
         Ok(Self {
             client,
-            base_url: format!("https://{}.backlog.com/api/v2", auth.space_key),
+            base_url: format!("https://{}.backlog.com/api/v2", space_key),
             api_key,
         })
     }

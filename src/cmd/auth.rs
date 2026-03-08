@@ -3,7 +3,7 @@ use anyhow::{Context, Result};
 use owo_colors::OwoColorize;
 
 use crate::api::{BacklogApi, BacklogClient, user::User};
-use crate::config::{self, AuthConfig};
+use crate::config::{self};
 use crate::secret::{self, Backend};
 
 pub fn login() -> Result<()> {
@@ -13,7 +13,10 @@ pub fn login() -> Result<()> {
     let backend = secret::set(&space_key, &api_key)?;
 
     let mut cfg = config::load()?;
-    cfg.auth = Some(AuthConfig { space_key });
+    if !cfg.spaces.contains(&space_key) {
+        cfg.spaces.push(space_key.clone());
+    }
+    cfg.current_space = Some(space_key);
     config::save(&cfg)?;
 
     println!(
@@ -24,15 +27,74 @@ pub fn login() -> Result<()> {
     Ok(())
 }
 
-pub fn logout() -> Result<()> {
-    let cfg = config::load()?;
-    if let Some(auth) = cfg.auth {
-        secret::delete(&auth.space_key)?;
-    }
+pub fn logout(space_key: Option<&str>) -> Result<()> {
     let mut cfg = config::load()?;
-    cfg.auth = None;
+
+    let key = if let Some(k) = space_key {
+        k.to_string()
+    } else {
+        cfg.current_space
+            .clone()
+            .context("No current space set. Specify a space key: `bl auth logout <space_key>`.")?
+    };
+
+    secret::delete(&key)?;
+    remove_space_from_config(&mut cfg, &key);
     config::save(&cfg)?;
-    println!("{}", "Logged out.".yellow());
+
+    println!("{} from {}", "Logged out".yellow(), key);
+    Ok(())
+}
+
+pub fn logout_all() -> Result<()> {
+    let cfg = config::load()?;
+
+    for key in &cfg.spaces {
+        secret::delete(key)?;
+    }
+
+    config::remove_config_file()?;
+    secret::remove_credentials_file()?;
+
+    println!(
+        "{}",
+        "Logged out from all spaces. Config files removed.".yellow()
+    );
+    Ok(())
+}
+
+pub fn list() -> Result<()> {
+    let cfg = config::load()?;
+
+    if cfg.spaces.is_empty() {
+        println!("No spaces configured. Run `bl auth login` to add one.");
+        return Ok(());
+    }
+
+    for space in &cfg.spaces {
+        if cfg.current_space.as_deref() == Some(space) {
+            println!("* {}", space.green());
+        } else {
+            println!("  {}", space);
+        }
+    }
+    Ok(())
+}
+
+pub fn use_space(key: &str) -> Result<()> {
+    let mut cfg = config::load()?;
+
+    if !cfg.spaces.iter().any(|s| s == key) {
+        anyhow::bail!(
+            "Space '{}' is not configured. Run `bl auth login` to add it.",
+            key
+        );
+    }
+
+    cfg.current_space = Some(key.to_string());
+    config::save(&cfg)?;
+
+    println!("Switched to space: {}", key.green());
     Ok(())
 }
 
@@ -48,17 +110,30 @@ impl AuthStatusArgs {
 
 pub fn status(args: &AuthStatusArgs) -> Result<()> {
     let json = args.json;
-    let cfg = config::load()?;
-    let Some(auth) = cfg.auth else {
-        if json {
-            println!("{}", serde_json::json!({"error": "Not logged in"}));
-        } else {
-            println!("Not logged in. Run `bl auth login` to authenticate.");
+
+    // Resolve space key: BL_SPACE env var takes priority.
+    // Config load errors (IO, parse) are propagated; only missing space is
+    // treated as "not logged in".
+    let space_key = if let Ok(s) = std::env::var("BL_SPACE")
+        && !s.is_empty()
+    {
+        s
+    } else {
+        let cfg = config::load()?;
+        match cfg.current_space {
+            Some(s) => s,
+            None => {
+                if json {
+                    println!("{}", serde_json::json!({"error": "Not logged in"}));
+                } else {
+                    println!("Not logged in. Run `bl auth login` to authenticate.");
+                }
+                return Ok(());
+            }
         }
-        return Ok(());
     };
 
-    let (api_key, backend) = match secret::get(&auth.space_key) {
+    let (api_key, backend) = match secret::get(&space_key) {
         Ok(v) => v,
         Err(e) => {
             if json {
@@ -71,10 +146,10 @@ pub fn status(args: &AuthStatusArgs) -> Result<()> {
     };
 
     let client = BacklogClient::new_with(
-        &format!("https://{}.backlog.com/api/v2", auth.space_key),
+        &format!("https://{}.backlog.com/api/v2", space_key),
         &api_key,
     )?;
-    status_with(json, &auth.space_key, &api_key, backend, &client)
+    status_with(json, &space_key, &api_key, backend, &client)
 }
 
 pub fn status_with(
@@ -136,6 +211,13 @@ pub fn check_keyring() -> Result<()> {
     }
 
     Ok(())
+}
+
+fn remove_space_from_config(cfg: &mut config::Config, key: &str) {
+    cfg.spaces.retain(|s| s != key);
+    if cfg.current_space.as_deref() == Some(key) {
+        cfg.current_space = cfg.spaces.first().cloned();
+    }
 }
 
 fn build_status_json(space_key: &str, backend: Backend, user: Option<User>) -> Result<String> {
@@ -410,5 +492,45 @@ mod tests {
         let api = MockApi { user: None };
         let result = status_with(true, "mycompany", "abcd1234", Backend::File, &api);
         assert!(result.is_ok());
+    }
+
+    fn make_config(current: &str, spaces: &[&str]) -> crate::config::Config {
+        crate::config::Config {
+            current_space: Some(current.to_string()),
+            spaces: spaces.iter().map(|s| s.to_string()).collect(),
+            auth: None,
+        }
+    }
+
+    #[test]
+    fn remove_space_removes_from_list_and_clears_current() {
+        let mut cfg = make_config("mycompany", &["mycompany", "another"]);
+        remove_space_from_config(&mut cfg, "mycompany");
+        assert_eq!(cfg.spaces, vec!["another"]);
+        assert_eq!(cfg.current_space.as_deref(), Some("another"));
+    }
+
+    #[test]
+    fn remove_space_promotes_next_when_current_removed() {
+        let mut cfg = make_config("a", &["a", "b", "c"]);
+        remove_space_from_config(&mut cfg, "a");
+        assert_eq!(cfg.current_space.as_deref(), Some("b"));
+        assert_eq!(cfg.spaces, vec!["b", "c"]);
+    }
+
+    #[test]
+    fn remove_space_sets_current_to_none_when_last_space_removed() {
+        let mut cfg = make_config("mycompany", &["mycompany"]);
+        remove_space_from_config(&mut cfg, "mycompany");
+        assert!(cfg.spaces.is_empty());
+        assert!(cfg.current_space.is_none());
+    }
+
+    #[test]
+    fn remove_space_does_not_change_current_when_non_current_removed() {
+        let mut cfg = make_config("mycompany", &["mycompany", "another"]);
+        remove_space_from_config(&mut cfg, "another");
+        assert_eq!(cfg.current_space.as_deref(), Some("mycompany"));
+        assert_eq!(cfg.spaces, vec!["mycompany"]);
     }
 }
