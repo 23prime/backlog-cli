@@ -74,7 +74,8 @@ mod tests {
         fn get_project(&self, _key: &str) -> anyhow::Result<crate::api::project::Project> {
             unimplemented!()
         }
-        fn get_project_activities(&self, _key: &str) -> anyhow::Result<Vec<Activity>> {
+        fn get_project_activities(&self, key: &str) -> anyhow::Result<Vec<Activity>> {
+            assert_eq!(key, "TEST");
             self.activities
                 .clone()
                 .ok_or_else(|| anyhow!("no activities"))
