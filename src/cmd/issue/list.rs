@@ -319,7 +319,7 @@ mod tests {
         assert!(row.contains("Fix login"));
         assert!(row.contains("Open"));
         assert!(row.contains("Normal"));
-        assert!(row.contains('-'));
+        assert!(row.ends_with("-)"));
     }
 
     #[test]
