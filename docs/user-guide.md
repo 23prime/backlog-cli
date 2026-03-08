@@ -695,7 +695,7 @@ Commands that target a specific project accept a `--project <key>` flag.
 | `bl wiki list` | `GET /api/v2/wikis` | ✅ Implemented |
 | `bl wiki show <id>` | `GET /api/v2/wikis/{wikiId}` | ✅ Implemented |
 | `bl wiki create` | `POST /api/v2/wikis` | ✅ Implemented |
-| `bl wiki update <id>` | `PUT /api/v2/wikis/{wikiId}` | ✅ Implemented |
+| `bl wiki update <id>` | `PATCH /api/v2/wikis/{wikiId}` | ✅ Implemented |
 | `bl wiki delete <id>` | `DELETE /api/v2/wikis/{wikiId}` | ✅ Implemented |
 | `bl wiki history <id>` | `GET /api/v2/wikis/{wikiId}/history` | ✅ Implemented |
 | `bl wiki attachment list <id>` | `GET /api/v2/wikis/{wikiId}/attachments` | ✅ Implemented |
