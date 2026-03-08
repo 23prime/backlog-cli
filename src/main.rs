@@ -427,12 +427,13 @@ enum AuthCommands {
     Keyring,
 }
 
-fn main() {
+fn main() -> std::process::ExitCode {
     if let Err(e) = run() {
         use owo_colors::OwoColorize;
-        anstream::eprintln!("{}: {e}", "ERROR".red().bold());
-        std::process::exit(1);
+        anstream::eprintln!("{}: {e:#}", "ERROR".red().bold());
+        return std::process::ExitCode::FAILURE;
     }
+    std::process::ExitCode::SUCCESS
 }
 
 fn run() -> Result<()> {
