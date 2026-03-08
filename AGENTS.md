@@ -81,11 +81,23 @@ Commands are organized as directories (`src/cmd/<resource>/`) with one file per 
 
 ### Conventions
 
+#### General
+
 - Use `anyhow` for error handling throughout.
 - API key is stored via `CredentialStore` trait: keyring first, falling back to `~/.config/bl/credentials.toml` (0600).
 - `space_key` is stored in `~/.config/bl/config.toml` (non-sensitive).
 - HTTP client uses `reqwest` (blocking) with `rustls-tls` (no OpenSSL dependency).
 - `BacklogClient::from_config()` loads both config and credentials automatically.
+
+#### Validation layer boundaries
+
+Validation is split by responsibility:
+
+- **`main.rs` (clap)** — Syntactic/type-level checks only (e.g. "cannot parse as u64").
+- **`cmd/*_with`** — Domain rules and API-spec constraints (e.g. `count <= 100` is a
+  Backlog API limit, not a CLI concern). Place these here so that API spec changes
+  never require touching `main.rs`.
+- **`api/`** — HTTP-level error translation only.
 
 ### Build, lint, and test
 

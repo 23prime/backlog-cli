@@ -25,6 +25,9 @@ pub fn list(args: &IssueListArgs) -> Result<()> {
 }
 
 pub fn list_with(args: &IssueListArgs, api: &dyn BacklogApi) -> Result<()> {
+    if args.count == 0 || args.count > 100 {
+        return Err(anyhow::anyhow!("--count must be between 1 and 100"));
+    }
     let params = build_params(args);
     let issues = api.get_issues(&params)?;
     if args.json {
@@ -310,6 +313,34 @@ mod tests {
         let api = MockApi { issues: None };
         let err = list_with(&args(false), &api).unwrap_err();
         assert!(err.to_string().contains("no issues"));
+    }
+
+    #[test]
+    fn list_with_rejects_count_zero() {
+        let api = MockApi {
+            issues: Some(vec![]),
+        };
+        let mut a = args(false);
+        a.count = 0;
+        let err = list_with(&a, &api).unwrap_err();
+        assert!(
+            err.to_string()
+                .contains("--count must be between 1 and 100")
+        );
+    }
+
+    #[test]
+    fn list_with_rejects_count_over_100() {
+        let api = MockApi {
+            issues: Some(vec![]),
+        };
+        let mut a = args(false);
+        a.count = 101;
+        let err = list_with(&a, &api).unwrap_err();
+        assert!(
+            err.to_string()
+                .contains("--count must be between 1 and 100")
+        );
     }
 
     #[test]
