@@ -1,6 +1,10 @@
 use anyhow::{Context, Result};
 use reqwest::blocking::Client;
 use std::cell::RefCell;
+use std::time::Duration;
+
+const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 
 pub mod activity;
 pub mod disk_usage;
@@ -223,6 +227,8 @@ impl BacklogClient {
     pub fn from_config() -> Result<Self> {
         let space_key = crate::config::current_space_key()?;
         let client = Client::builder()
+            .connect_timeout(CONNECT_TIMEOUT)
+            .timeout(REQUEST_TIMEOUT)
             .build()
             .context("Failed to build HTTP client")?;
         let base_url = format!("https://{space_key}.backlog.com/api/v2");
@@ -398,6 +404,8 @@ fn extract_error_message(body: &serde_json::Value) -> &str {
 impl BacklogClient {
     pub(crate) fn new_with(base_url: &str, api_key: &str) -> Result<Self> {
         let client = Client::builder()
+            .connect_timeout(CONNECT_TIMEOUT)
+            .timeout(REQUEST_TIMEOUT)
             .build()
             .context("Failed to build HTTP client")?;
         Ok(Self {

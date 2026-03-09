@@ -3,6 +3,10 @@ use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 use std::io::{BufRead, BufReader, Write};
 use std::net::TcpListener;
+use std::time::Duration;
+
+const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 
 pub const DEFAULT_OAUTH_PORT: u16 = 54321;
 
@@ -88,6 +92,8 @@ pub fn exchange_code(
 ) -> Result<OAuthTokens> {
     let token_url = format!("https://{space_key}.backlog.com/api/v2/oauth2/token");
     let client = Client::builder()
+        .connect_timeout(CONNECT_TIMEOUT)
+        .timeout(REQUEST_TIMEOUT)
         .build()
         .context("Failed to build HTTP client")?;
 
@@ -124,6 +130,8 @@ pub fn exchange_code(
 pub fn refresh_access_token(space_key: &str, tokens: &OAuthTokens) -> Result<OAuthTokens> {
     let token_url = format!("https://{space_key}.backlog.com/api/v2/oauth2/token");
     let client = Client::builder()
+        .connect_timeout(CONNECT_TIMEOUT)
+        .timeout(REQUEST_TIMEOUT)
         .build()
         .context("Failed to build HTTP client")?;
 
