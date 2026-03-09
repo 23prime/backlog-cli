@@ -6,7 +6,12 @@ use crate::api::{BacklogApi, BacklogClient, user::User};
 use crate::config::{self};
 use crate::secret::{self, Backend};
 
-pub fn login() -> Result<()> {
+pub fn login(no_banner: bool) -> Result<()> {
+    if !no_banner {
+        println!("Welcome to");
+        crate::cmd::banner::print_banner();
+    }
+
     let space_key = prompt("Backlog space key (e.g. mycompany for mycompany.backlog.com): ")?;
     let api_key = rpassword::prompt_password("API key: ").context("Failed to read API key")?;
 

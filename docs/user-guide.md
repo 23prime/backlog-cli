@@ -170,11 +170,19 @@ bl auth logout --all
 
 ## Commands
 
+### Global options
+
+| Option | Description |
+| --- | --- |
+| `--banner` | Print the Backlog CLI banner and exit |
+| `--no-color` | Disable colored output |
+| `--space <SPACE_KEY>` | Override the active space for this command |
+
 ### `bl auth`
 
 | Command | Description |
 | --- | --- |
-| `bl auth login` | Authenticate with a Backlog API key (adds or updates a space) |
+| `bl auth login` | Authenticate with a Backlog API key (adds or updates a space); use `--no-banner` to skip the banner |
 | `bl auth status` | Show current auth status and verify credentials |
 | `bl auth list` | List all configured spaces |
 | `bl auth use <space-key>` | Switch the current space |
