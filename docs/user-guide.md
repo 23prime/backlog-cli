@@ -132,8 +132,8 @@ The most recently logged-in space becomes the current (active) space.
 1. Log in to your Backlog space as an administrator
 2. Go to **Space settings** → **Apps**
 3. Create a new application:
-   - **Redirect URI**: `http://localhost:54321/callback`
-     (use `http://localhost:<port>/callback` if you will pass `--port <port>`)
+   - **Redirect URI**: `http://127.0.0.1:54321/callback`
+     (use `http://127.0.0.1:<port>/callback` if you will pass `--port <port>`)
    - **Application type**: Confidential Client
 4. Note the **Client ID** and **Client Secret**
 
@@ -150,7 +150,7 @@ You will be prompted for:
 - **Client Secret** — from the registered application (input is hidden)
 
 The command opens your browser to the Backlog authorization page.
-After you approve, the browser is redirected to `http://localhost:54321/callback`
+After you approve, the browser is redirected to `http://127.0.0.1:54321/callback`
 and the access token is stored automatically.
 
 To use a custom port (must match the Redirect URI registered in Backlog):
@@ -235,7 +235,7 @@ bl auth logout --all
 | Command | Description |
 | --- | --- |
 | `bl auth login` | Authenticate with a Backlog API key (adds or updates a space); use `--no-banner` to skip the banner |
-| `bl auth login-oauth` | Authenticate via browser-based OAuth 2.0; use `--port <port>` to override the default callback port (54321) |
+| `bl auth login-oauth` | Authenticate via browser-based OAuth 2.0; use `--port <port>` to override the default callback port (54321); use `--no-banner` to skip the banner |
 | `bl auth status` | Show current auth status and verify credentials |
 | `bl auth list` | List all configured spaces |
 | `bl auth use <space-key>` | Switch the current space |
@@ -891,10 +891,12 @@ Run `bl auth login` to re-enter your credentials.
 
 On Linux, the keyring requires a running Secret Service daemon (GNOME Keyring or KWallet).
 If no daemon is available (e.g. headless or SSH environments), `bl` automatically falls back
-to storing the API key in `~/.config/bl/credentials.toml` with mode 0600.
+to storing the API key in `~/.config/bl/credentials.toml` and OAuth tokens in
+`~/.config/bl/oauth_tokens.toml`, both with mode 0600.
 
 On macOS, the system Keychain is used. On Windows, the Windows Credential Manager is used.
-If the Credential Manager is unavailable, `bl` falls back to `%APPDATA%\bl\credentials.toml`.
+If the Credential Manager is unavailable, `bl` falls back to `%APPDATA%\bl\credentials.toml`
+(API key) and `%APPDATA%\bl\oauth_tokens.toml` (OAuth tokens).
 
 The `bl auth status` output shows which backend is in use:
 
