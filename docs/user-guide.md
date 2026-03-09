@@ -175,6 +175,7 @@ bl auth logout --all
 | Option | Description |
 | --- | --- |
 | `--banner` | Print the Backlog CLI banner and exit |
+| `--no-banner` | Do not print the Backlog CLI banner when running `bl auth login` |
 | `--no-color` | Disable colored output |
 | `--space <SPACE_KEY>` | Override the active space for this command |
 
