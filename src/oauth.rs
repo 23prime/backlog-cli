@@ -7,7 +7,7 @@ use std::net::TcpListener;
 pub const DEFAULT_OAUTH_PORT: u16 = 54321;
 
 /// Tokens and client credentials for OAuth 2.0 authentication.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct OAuthTokens {
     pub client_id: String,
     pub client_secret: String,
@@ -15,8 +15,19 @@ pub struct OAuthTokens {
     pub refresh_token: String,
 }
 
+impl std::fmt::Debug for OAuthTokens {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("OAuthTokens")
+            .field("client_id", &self.client_id)
+            .field("client_secret", &"<redacted>")
+            .field("access_token", &"<redacted>")
+            .field("refresh_token", &"<redacted>")
+            .finish()
+    }
+}
+
 /// Response body from Backlog's `/api/v2/oauth2/token` endpoint.
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 struct TokenResponse {
     access_token: String,
     refresh_token: String,
@@ -24,17 +35,25 @@ struct TokenResponse {
 
 /// Run the full OAuth 2.0 authorization code flow.
 ///
-/// 1. Open the browser to the Backlog authorization page.
-/// 2. Start a local HTTP server to receive the callback.
-/// 3. Exchange the authorization code for tokens.
+/// 1. Bind the local callback listener first (fail fast on port conflicts).
+/// 2. Open the browser to the Backlog authorization page.
+/// 3. Wait for the callback and exchange the code for tokens.
 pub fn run_oauth_flow(
     space_key: &str,
     client_id: &str,
     client_secret: &str,
     port: u16,
 ) -> Result<OAuthTokens> {
-    let redirect_uri = format!("http://localhost:{port}/callback");
-    let state = generate_state();
+    // Bind before opening the browser so a port conflict is caught immediately.
+    let listener = TcpListener::bind(format!("127.0.0.1:{port}")).with_context(|| {
+        format!(
+            "Failed to bind to port {port}. \
+             Is the port already in use? Try a different port with --port."
+        )
+    })?;
+
+    let redirect_uri = format!("http://127.0.0.1:{port}/callback");
+    let state = generate_state()?;
     let auth_url = format!(
         "https://{space_key}.backlog.com/OAuth2AccessRequest.action\
          ?response_type=code\
@@ -51,9 +70,9 @@ pub fn run_oauth_flow(
     let _ = open::that(&auth_url);
 
     anstream::eprintln!(
-        "Waiting for authorization at http://localhost:{port}/callback (Ctrl+C to cancel)..."
+        "Waiting for authorization at http://127.0.0.1:{port}/callback (Ctrl+C to cancel)..."
     );
-    let code = wait_for_callback(port, &state)?;
+    let code = wait_for_callback(listener, &state)?;
 
     let tokens = exchange_code(space_key, client_id, client_secret, &code, &redirect_uri)?;
     Ok(tokens)
@@ -136,19 +155,12 @@ pub fn refresh_access_token(space_key: &str, tokens: &OAuthTokens) -> Result<OAu
     })
 }
 
-/// Start a local HTTP server on `port` and block until the OAuth callback arrives.
+/// Block on `listener` until the OAuth callback arrives.
 /// Returns the authorization code after verifying the state parameter.
 ///
 /// Non-callback requests (e.g. browser favicon fetches) are answered with a
 /// minimal 200 response and then ignored so that the loop continues waiting.
-fn wait_for_callback(port: u16, expected_state: &str) -> Result<String> {
-    let listener = TcpListener::bind(format!("127.0.0.1:{port}")).with_context(|| {
-        format!(
-            "Failed to bind to port {port}. \
-                 Is the port already in use? Try a different port with --port."
-        )
-    })?;
-
+fn wait_for_callback(listener: TcpListener, expected_state: &str) -> Result<String> {
     // Accept connections in a loop until a valid OAuth callback arrives.
     // This handles cases where the browser also issues a favicon request.
     const MAX_ATTEMPTS: usize = 10;
@@ -240,10 +252,11 @@ fn send_html_response(stream: &mut impl Write, status: u16, body: &str) {
 }
 
 /// Generate an opaque state value for CSRF protection using OS CSPRNG.
-fn generate_state() -> String {
+fn generate_state() -> Result<String> {
     let mut bytes = [0u8; 16];
-    getrandom::fill(&mut bytes).expect("Failed to generate random state");
-    bytes.iter().map(|b| format!("{b:02x}")).collect()
+    getrandom::fill(&mut bytes)
+        .map_err(|e| anyhow::anyhow!("Failed to generate random state: {e}"))?;
+    Ok(bytes.iter().map(|b| format!("{b:02x}")).collect())
 }
 
 fn percent_encode(s: &str) -> String {
@@ -269,8 +282,6 @@ fn percent_decode(s: &str) -> String {
             if let Ok(byte) = u8::from_str_radix(&format!("{h1}{h2}"), 16) {
                 bytes.push(byte);
             }
-        } else if c == '+' {
-            bytes.push(b' ');
         } else {
             let mut buf = [0u8; 4];
             bytes.extend_from_slice(c.encode_utf8(&mut buf).as_bytes());
@@ -320,14 +331,14 @@ mod tests {
 
     #[test]
     fn generate_state_is_nonempty() {
-        let s = generate_state();
+        let s = generate_state().unwrap();
         assert!(!s.is_empty());
     }
 
     #[test]
     fn generate_state_two_calls_differ() {
-        let s1 = generate_state();
-        let s2 = generate_state();
+        let s1 = generate_state().unwrap();
+        let s2 = generate_state().unwrap();
         assert!(!s1.is_empty());
         assert!(!s2.is_empty());
         assert_ne!(s1, s2);
