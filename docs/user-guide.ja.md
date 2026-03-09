@@ -14,7 +14,7 @@
 ## 前提条件
 
 - 少なくとも 1 つのスペースにアクセスできる [Backlog](https://backlog.com) アカウント
-- Backlog API キー（[認証](#認証) を参照）
+- Backlog API キーまたは OAuth 2.0 クライアント認証情報（[認証](#認証) を参照）
 
 ## インストール
 
@@ -104,7 +104,7 @@ irm https://raw.githubusercontent.com/23prime/backlog-cli/latest/uninstall.ps1 |
 3. メモを入力して **送信** をクリックします
 4. 生成された API キーをコピーします
 
-### ログイン
+### API キーでログイン
 
 ```bash
 bl auth login
@@ -118,6 +118,42 @@ bl auth login
 
 別のスペースキーで `bl auth login` を再実行すると、そのスペースが追加されます。
 最後にログインしたスペースがカレント（アクティブ）スペースになります。
+
+### OAuth 2.0 でログイン
+
+API キーの代わりに、ブラウザベースの OAuth 2.0 認証を使用できます。
+
+#### ステップ 1 — Backlog で OAuth アプリケーションを登録する
+
+1. スペース管理者として Backlog にログインします
+2. **スペース設定** → **アプリ** に移動します
+3. 新しいアプリケーションを作成します:
+   - **リダイレクト URI**: `http://localhost:54321/callback`
+     （`--port <port>` を使用する場合は `http://localhost:<port>/callback`）
+   - **アプリケーション種別**: Confidential Client
+4. **クライアント ID** と **クライアントシークレット** を控えておきます
+
+#### ステップ 2 — OAuth ログインコマンドを実行する
+
+```bash
+bl auth login oauth
+```
+
+以下の入力を求められます。
+
+- **スペースキー** — Backlog スペースのサブドメイン
+- **クライアント ID** — 登録したアプリケーションのクライアント ID
+- **クライアントシークレット** — 登録したアプリケーションのクライアントシークレット（入力は非表示）
+
+コマンドを実行するとブラウザが開き、Backlog の認証画面が表示されます。
+承認後、ブラウザは `http://localhost:54321/callback` にリダイレクトされ、
+アクセストークンが自動的に保存されます。
+
+カスタムポートを使用する場合（Backlog に登録したリダイレクト URI と一致させてください）:
+
+```bash
+bl auth login oauth --port 8080
+```
 
 ### 複数スペースの管理
 
@@ -156,6 +192,15 @@ Space: mycompany.backlog.com
   - Logged in as Your Name (your-id)
 ```
 
+OAuth 2.0 認証の場合:
+
+```text
+Space: mycompany.backlog.com
+  - Auth method: OAuth 2.0
+  - Client ID: abc123
+  - Logged in as Your Name (your-id)
+```
+
 `BL_API_KEY` が設定されている場合、`Stored in` には `Environment variable` と表示されます。
 
 ### ログアウト
@@ -186,6 +231,7 @@ bl auth logout --all
 | コマンド | 説明 |
 | --- | --- |
 | `bl auth login` | Backlog API キーで認証（スペースを追加または更新）。`--no-banner` でバナーをスキップ |
+| `bl auth login oauth` | ブラウザベースの OAuth 2.0 で認証。`--port <port>` でコールバックポートを変更（デフォルト: 54321） |
 | `bl auth status` | 現在の認証状態を表示して認証情報を検証 |
 | `bl auth list` | 設定済みスペースの一覧を表示 |
 | `bl auth use <space-key>` | カレントスペースを切り替え |
@@ -799,16 +845,18 @@ bl wiki attachment list 12345 --json
 | 場所 | 内容 |
 | --- | --- |
 | `~/.config/bl/config.toml` | スペースキー（非機密メタデータ） |
-| システムキーリング | API キー（優先; GNOME Keyring / Keychain） |
+| システムキーリング | API キーと OAuth トークン（優先; GNOME Keyring / Keychain） |
 | `~/.config/bl/credentials.toml` | API キーのフォールバック（mode 0600、キーリングが使えない場合） |
+| `~/.config/bl/oauth_tokens.toml` | OAuth トークンのフォールバック（mode 0600、キーリングが使えない場合） |
 
 ### Windows
 
 | 場所 | 内容 |
 | --- | --- |
 | `%APPDATA%\bl\config.toml` | スペースキー（非機密メタデータ） |
-| Windows 資格情報マネージャー | API キー（優先） |
+| Windows 資格情報マネージャー | API キーと OAuth トークン（優先） |
 | `%APPDATA%\bl\credentials.toml` | API キーのフォールバック（資格情報マネージャーが使えない場合） |
+| `%APPDATA%\bl\oauth_tokens.toml` | OAuth トークンのフォールバック（資格情報マネージャーが使えない場合） |
 
 ### 設定ファイルの形式
 
