@@ -140,7 +140,7 @@ The most recently logged-in space becomes the current (active) space.
 #### Step 2 — Run the OAuth login command
 
 ```bash
-bl auth login oauth
+bl auth login-oauth
 ```
 
 You will be prompted for:
@@ -156,7 +156,7 @@ and the access token is stored automatically.
 To use a custom port (must match the Redirect URI registered in Backlog):
 
 ```bash
-bl auth login oauth --port 8080
+bl auth login-oauth --port 8080
 ```
 
 ### Managing multiple spaces
@@ -235,7 +235,7 @@ bl auth logout --all
 | Command | Description |
 | --- | --- |
 | `bl auth login` | Authenticate with a Backlog API key (adds or updates a space); use `--no-banner` to skip the banner |
-| `bl auth login oauth` | Authenticate via browser-based OAuth 2.0; use `--port <port>` to override the default callback port (54321) |
+| `bl auth login-oauth` | Authenticate via browser-based OAuth 2.0; use `--port <port>` to override the default callback port (54321) |
 | `bl auth status` | Show current auth status and verify credentials |
 | `bl auth list` | List all configured spaces |
 | `bl auth use <space-key>` | Switch the current space |
