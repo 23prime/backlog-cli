@@ -197,6 +197,21 @@ fn wait_for_callback(listener: TcpListener, expected_state: &str) -> Result<Stri
             continue;
         }
 
+        // Handle OAuth denial or error response from the provider.
+        if let Some((error, description)) = parse_error_params(&path) {
+            let msg = if description.is_empty() {
+                error.clone()
+            } else {
+                format!("{error}: {description}")
+            };
+            send_html_response(
+                &mut writer,
+                400,
+                &format!("<h1>Authorization denied</h1><p>{msg}</p>"),
+            );
+            anyhow::bail!("Authorization denied by provider: {msg}");
+        }
+
         let (code, state) = parse_callback_params(&path)?;
 
         if state != expected_state {
@@ -240,6 +255,24 @@ fn parse_callback_params(path: &str) -> Result<(String, String)> {
     let code = code.context("OAuth callback: 'code' parameter missing")?;
     let state = state.context("OAuth callback: 'state' parameter missing")?;
     Ok((code, state))
+}
+
+/// Parse `error` and `error_description` from a callback query string.
+/// Returns `Some((error, description))` when an `error` parameter is present.
+fn parse_error_params(path: &str) -> Option<(String, String)> {
+    let query = path.split_once('?').map(|(_, q)| q).unwrap_or("");
+    let mut error = None;
+    let mut description = String::new();
+    for pair in query.split('&') {
+        if let Some((k, v)) = pair.split_once('=') {
+            match k {
+                "error" => error = Some(percent_decode(v)),
+                "error_description" => description = percent_decode(v),
+                _ => {}
+            }
+        }
+    }
+    error.map(|e| (e, description))
 }
 
 fn send_html_response(stream: &mut impl Write, status: u16, body: &str) {
@@ -335,6 +368,30 @@ mod tests {
     #[test]
     fn parse_callback_params_missing_state() {
         assert!(parse_callback_params("/callback?code=abc123").is_err());
+    }
+
+    #[test]
+    fn parse_error_params_with_description() {
+        let result =
+            parse_error_params("/callback?error=access_denied&error_description=User+denied");
+        assert!(result.is_some());
+        let (error, desc) = result.unwrap();
+        assert_eq!(error, "access_denied");
+        assert_eq!(desc, "User+denied");
+    }
+
+    #[test]
+    fn parse_error_params_without_description() {
+        let result = parse_error_params("/callback?error=access_denied");
+        assert!(result.is_some());
+        let (error, desc) = result.unwrap();
+        assert_eq!(error, "access_denied");
+        assert!(desc.is_empty());
+    }
+
+    #[test]
+    fn parse_error_params_no_error() {
+        assert!(parse_error_params("/callback?code=abc&state=xyz").is_none());
     }
 
     #[test]
