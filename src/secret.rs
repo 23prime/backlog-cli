@@ -207,7 +207,10 @@ pub fn set_oauth_tokens(space_key: &str, tokens: &OAuthTokens) -> Result<()> {
 
 pub fn delete_oauth_tokens(space_key: &str) -> Result<()> {
     if let Ok(entry) = keyring::Entry::new(OAUTH_SERVICE, space_key) {
-        let _ = entry.delete_credential();
+        match entry.delete_credential() {
+            Ok(()) | Err(keyring::Error::NoEntry) => {}
+            Err(e) => return Err(e).context("Failed to delete OAuth tokens from keyring"),
+        }
     }
     oauth_file_delete(space_key)
 }
@@ -262,7 +265,7 @@ fn oauth_file_get(space_key: &str) -> Result<OAuthTokens> {
 }
 
 fn oauth_file_set(space_key: &str, tokens: &OAuthTokens) -> Result<()> {
-    let mut file = oauth_file_load().unwrap_or_default();
+    let mut file = oauth_file_load()?;
     file.tokens.insert(space_key.to_string(), tokens.clone());
     oauth_file_save(&file)
 }
