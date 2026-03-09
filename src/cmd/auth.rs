@@ -138,7 +138,7 @@ pub fn status(args: &AuthStatusArgs) -> Result<()> {
         }
     };
 
-    let (api_key, backend) = match secret::get(&space_key) {
+    let (api_key, backend) = match secret::current_api_key(&space_key) {
         Ok(v) => v,
         Err(e) => {
             if json {
@@ -465,6 +465,15 @@ mod tests {
         assert_eq!(value["space_key"], "mycompany");
         assert_eq!(value["stored_in"], "Credentials file");
         assert!(value["user"].is_null());
+    }
+
+    #[test]
+    fn build_status_json_with_env_backend() {
+        let json = build_status_json("mycompany", Backend::Env, Some(sample_user())).unwrap();
+        let value: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert_eq!(value["space_key"], "mycompany");
+        assert_eq!(value["stored_in"], "Environment variable");
+        assert_eq!(value["user"]["userId"], "john");
     }
 
     #[test]

@@ -8,6 +8,7 @@ const SERVICE: &str = "bl";
 pub enum Backend {
     Keyring,
     File,
+    Env,
 }
 
 impl std::fmt::Display for Backend {
@@ -15,6 +16,7 @@ impl std::fmt::Display for Backend {
         match self {
             Backend::Keyring => write!(f, "System keyring"),
             Backend::File => write!(f, "Credentials file"),
+            Backend::Env => write!(f, "Environment variable"),
         }
     }
 }
@@ -147,6 +149,16 @@ pub fn get(space_key: &str) -> Result<(String, Backend)> {
     get_impl(space_key, &default_stores()?)
 }
 
+/// Resolve the effective API key: `BL_API_KEY` env var → credential store.
+pub fn current_api_key(space_key: &str) -> Result<(String, Backend)> {
+    if let Ok(key) = std::env::var("BL_API_KEY")
+        && !key.is_empty()
+    {
+        return Ok((key, Backend::Env));
+    }
+    get(space_key)
+}
+
 pub fn delete(space_key: &str) -> Result<()> {
     delete_impl(space_key, &default_stores()?)
 }
@@ -270,5 +282,6 @@ mod tests {
     fn backend_display() {
         assert_eq!(Backend::Keyring.to_string(), "System keyring");
         assert_eq!(Backend::File.to_string(), "Credentials file");
+        assert_eq!(Backend::Env.to_string(), "Environment variable");
     }
 }

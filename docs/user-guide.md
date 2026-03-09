@@ -138,6 +138,11 @@ bl --space another-company project list
 # Or set the BL_SPACE environment variable
 export BL_SPACE=another-company
 bl project list
+
+# Inject credentials via environment variables (useful in CI/CD)
+export BL_SPACE=mycompany
+export BL_API_KEY=your-api-key
+bl project list
 ```
 
 ### Checking auth status
@@ -154,6 +159,8 @@ Space: mycompany.backlog.com
   - Stored in: System keyring
   - Logged in as Your Name (your-id)
 ```
+
+When `BL_API_KEY` is set, `Stored in` shows `Environment variable`.
 
 ### Logging out
 
