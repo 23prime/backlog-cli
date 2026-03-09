@@ -4,6 +4,7 @@ use owo_colors::OwoColorize;
 
 use crate::api::{BacklogApi, BacklogClient, user::User};
 use crate::config::{self};
+use crate::oauth::{self};
 use crate::secret::{self, Backend};
 
 pub fn login(no_banner: bool) -> Result<()> {
@@ -32,6 +33,42 @@ pub fn login(no_banner: bool) -> Result<()> {
     Ok(())
 }
 
+pub fn login_oauth(no_banner: bool, port: u16) -> Result<()> {
+    if !no_banner {
+        println!("Welcome to");
+        crate::cmd::banner::print_banner();
+    }
+
+    println!("Backlog OAuth Login\n");
+    println!("  Register an OAuth 2.0 application (Confidential Client) at:");
+    println!(
+        "    {}",
+        "https://backlog.com/developer/applications/oauth2Clients/add".bold()
+    );
+    println!(
+        "    Redirect URI: {}\n",
+        format!("http://127.0.0.1:{port}/callback").bold()
+    );
+
+    let space_key = prompt("Space key (e.g. mycompany for mycompany.backlog.com): ")?;
+    let client_id = prompt("Client ID: ")?;
+    let client_secret =
+        rpassword::prompt_password("Client secret: ").context("Failed to read client secret")?;
+
+    let tokens = oauth::run_oauth_flow(&space_key, &client_id, &client_secret, port)?;
+    secret::set_oauth_tokens(&space_key, &tokens)?;
+
+    let mut cfg = config::load()?;
+    if !cfg.spaces.contains(&space_key) {
+        cfg.spaces.push(space_key.clone());
+    }
+    cfg.current_space = Some(space_key);
+    config::save(&cfg)?;
+
+    println!("{}", "Logged in successfully via OAuth.".green());
+    Ok(())
+}
+
 pub fn logout(space_key: Option<&str>) -> Result<()> {
     let mut cfg = config::load()?;
 
@@ -44,6 +81,7 @@ pub fn logout(space_key: Option<&str>) -> Result<()> {
     };
 
     secret::delete(&key)?;
+    secret::delete_oauth_tokens(&key)?;
     remove_space_from_config(&mut cfg, &key);
     config::save(&cfg)?;
 
@@ -56,6 +94,7 @@ pub fn logout_all() -> Result<()> {
 
     for key in &cfg.spaces {
         secret::delete(key)?;
+        secret::delete_oauth_tokens(key)?;
     }
 
     config::remove_config_file()?;
@@ -113,12 +152,24 @@ impl AuthStatusArgs {
     }
 }
 
+/// Auth information displayed by `bl auth status`.
+pub enum AuthDisplay {
+    ApiKey {
+        masked: String,
+        backend: Backend,
+    },
+    OAuth {
+        masked_token: String,
+        client_id: String,
+        masked_client_secret: String,
+        backend: Backend,
+    },
+}
+
 pub fn status(args: &AuthStatusArgs) -> Result<()> {
     let json = args.json;
 
     // Resolve space key: BL_SPACE env var takes priority.
-    // Config load errors (IO, parse) are propagated; only missing space is
-    // treated as "not logged in".
     let space_key = if let Ok(s) = std::env::var("BL_SPACE")
         && !s.is_empty()
     {
@@ -138,6 +189,36 @@ pub fn status(args: &AuthStatusArgs) -> Result<()> {
         }
     };
 
+    // OAuth tokens take priority over API key.
+    if let Ok((tokens, backend)) = secret::get_oauth_tokens(&space_key) {
+        let auth = AuthDisplay::OAuth {
+            masked_token: format!(
+                "{}...",
+                tokens.access_token.chars().take(4).collect::<String>()
+            ),
+            client_id: tokens.client_id.clone(),
+            masked_client_secret: format!(
+                "{}...",
+                tokens.client_secret.chars().take(4).collect::<String>()
+            ),
+            backend,
+        };
+        // Build a client that will use the stored OAuth tokens.
+        let client = match BacklogClient::from_config() {
+            Ok(c) => c,
+            Err(e) => {
+                if json {
+                    println!("{}", serde_json::json!({"error": e.to_string()}));
+                } else {
+                    println!("  {} {}", "!".red(), e);
+                }
+                return Ok(());
+            }
+        };
+        return status_with(json, &space_key, &auth, &client);
+    }
+
+    // Fall back to API key.
     let (api_key, backend) = match secret::current_api_key(&space_key) {
         Ok(v) => v,
         Err(e) => {
@@ -150,30 +231,49 @@ pub fn status(args: &AuthStatusArgs) -> Result<()> {
         }
     };
 
+    let auth = AuthDisplay::ApiKey {
+        masked: format!("{}...", api_key.chars().take(4).collect::<String>()),
+        backend,
+    };
     let client = BacklogClient::new_with(
         &format!("https://{}.backlog.com/api/v2", space_key),
         &api_key,
     )?;
-    status_with(json, &space_key, &api_key, backend, &client)
+    status_with(json, &space_key, &auth, &client)
 }
 
 pub fn status_with(
     json: bool,
     space_key: &str,
-    api_key: &str,
-    backend: Backend,
+    auth: &AuthDisplay,
     api: &dyn BacklogApi,
 ) -> Result<()> {
     if json {
         let user = api.get_myself().ok();
-        println!("{}", build_status_json(space_key, backend, user)?);
+        println!("{}", build_status_json(space_key, auth, user)?);
         return Ok(());
     }
 
-    let masked = format!("{}...", &api_key[..4.min(api_key.len())]);
     println!("Space: {}.backlog.com", space_key);
-    println!("  - API key: {}", masked);
-    println!("  - Stored in: {}", backend);
+    match auth {
+        AuthDisplay::ApiKey { masked, backend } => {
+            println!("  - Auth method: API key");
+            println!("  - API key: {}", masked);
+            println!("  - Stored in: {}", backend);
+        }
+        AuthDisplay::OAuth {
+            masked_token,
+            client_id,
+            masked_client_secret,
+            backend,
+        } => {
+            println!("  - Auth method: OAuth 2.0");
+            println!("  - Client ID: {}", client_id);
+            println!("  - Client Secret: {}", masked_client_secret);
+            println!("  - Access token: {}", masked_token);
+            println!("  - Stored in: {}", backend);
+        }
+    }
 
     match api.get_myself() {
         Ok(user) => println!("  - Logged in as {} ({})", user.name.green(), user.user_id),
@@ -225,12 +325,21 @@ fn remove_space_from_config(cfg: &mut config::Config, key: &str) {
     }
 }
 
-fn build_status_json(space_key: &str, backend: Backend, user: Option<User>) -> Result<String> {
-    let output = serde_json::json!({
-        "space_key": space_key,
-        "stored_in": backend.to_string(),
-        "user": user,
-    });
+fn build_status_json(space_key: &str, auth: &AuthDisplay, user: Option<User>) -> Result<String> {
+    let output = match auth {
+        AuthDisplay::ApiKey { backend, .. } => serde_json::json!({
+            "space_key": space_key,
+            "auth_method": "api_key",
+            "stored_in": backend.to_string(),
+            "user": user,
+        }),
+        AuthDisplay::OAuth { client_id, .. } => serde_json::json!({
+            "space_key": space_key,
+            "auth_method": "oauth",
+            "client_id": client_id,
+            "user": user,
+        }),
+    };
     serde_json::to_string_pretty(&output).context("Failed to serialize JSON")
 }
 
@@ -448,11 +557,29 @@ mod tests {
         }
     }
 
+    fn api_key_auth(backend: Backend) -> AuthDisplay {
+        AuthDisplay::ApiKey {
+            masked: "abcd...".to_string(),
+            backend,
+        }
+    }
+
+    fn oauth_auth() -> AuthDisplay {
+        AuthDisplay::OAuth {
+            masked_token: "toke...".to_string(),
+            client_id: "my-client-id".to_string(),
+            masked_client_secret: "my-c...".to_string(),
+            backend: Backend::Keyring,
+        }
+    }
+
     #[test]
     fn build_status_json_with_user() {
-        let json = build_status_json("mycompany", Backend::Keyring, Some(sample_user())).unwrap();
+        let auth = api_key_auth(Backend::Keyring);
+        let json = build_status_json("mycompany", &auth, Some(sample_user())).unwrap();
         let value: serde_json::Value = serde_json::from_str(&json).unwrap();
         assert_eq!(value["space_key"], "mycompany");
+        assert_eq!(value["auth_method"], "api_key");
         assert_eq!(value["stored_in"], "System keyring");
         assert_eq!(value["user"]["userId"], "john");
         assert_eq!(value["user"]["name"], "John Doe");
@@ -460,19 +587,32 @@ mod tests {
 
     #[test]
     fn build_status_json_without_user() {
-        let json = build_status_json("mycompany", Backend::File, None).unwrap();
+        let auth = api_key_auth(Backend::File);
+        let json = build_status_json("mycompany", &auth, None).unwrap();
         let value: serde_json::Value = serde_json::from_str(&json).unwrap();
         assert_eq!(value["space_key"], "mycompany");
+        assert_eq!(value["auth_method"], "api_key");
         assert_eq!(value["stored_in"], "Credentials file");
         assert!(value["user"].is_null());
     }
 
     #[test]
     fn build_status_json_with_env_backend() {
-        let json = build_status_json("mycompany", Backend::Env, Some(sample_user())).unwrap();
+        let auth = api_key_auth(Backend::Env);
+        let json = build_status_json("mycompany", &auth, Some(sample_user())).unwrap();
+        let value: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert_eq!(value["stored_in"], "Environment variable");
+        assert_eq!(value["user"]["userId"], "john");
+    }
+
+    #[test]
+    fn build_status_json_with_oauth() {
+        let auth = oauth_auth();
+        let json = build_status_json("mycompany", &auth, Some(sample_user())).unwrap();
         let value: serde_json::Value = serde_json::from_str(&json).unwrap();
         assert_eq!(value["space_key"], "mycompany");
-        assert_eq!(value["stored_in"], "Environment variable");
+        assert_eq!(value["auth_method"], "oauth");
+        assert_eq!(value["client_id"], "my-client-id");
         assert_eq!(value["user"]["userId"], "john");
     }
 
@@ -481,14 +621,16 @@ mod tests {
         let api = MockApi {
             user: Some(sample_user()),
         };
-        let result = status_with(false, "mycompany", "abcd1234", Backend::Keyring, &api);
+        let auth = api_key_auth(Backend::Keyring);
+        let result = status_with(false, "mycompany", &auth, &api);
         assert!(result.is_ok());
     }
 
     #[test]
     fn status_with_text_shows_token_invalid_on_error() {
         let api = MockApi { user: None };
-        let result = status_with(false, "mycompany", "abcd1234", Backend::Keyring, &api);
+        let auth = api_key_auth(Backend::Keyring);
+        let result = status_with(false, "mycompany", &auth, &api);
         assert!(result.is_ok());
     }
 
@@ -497,14 +639,36 @@ mod tests {
         let api = MockApi {
             user: Some(sample_user()),
         };
-        let result = status_with(true, "mycompany", "abcd1234", Backend::File, &api);
+        let auth = api_key_auth(Backend::File);
+        let result = status_with(true, "mycompany", &auth, &api);
         assert!(result.is_ok());
     }
 
     #[test]
     fn status_with_json_null_user_on_api_error() {
         let api = MockApi { user: None };
-        let result = status_with(true, "mycompany", "abcd1234", Backend::File, &api);
+        let auth = api_key_auth(Backend::File);
+        let result = status_with(true, "mycompany", &auth, &api);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn status_with_oauth_text_shows_method() {
+        let api = MockApi {
+            user: Some(sample_user()),
+        };
+        let auth = oauth_auth();
+        let result = status_with(false, "mycompany", &auth, &api);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn status_with_oauth_json_includes_client_id() {
+        let api = MockApi {
+            user: Some(sample_user()),
+        };
+        let auth = oauth_auth();
+        let result = status_with(true, "mycompany", &auth, &api);
         assert!(result.is_ok());
     }
 

@@ -21,6 +21,8 @@ rpassword = "7"
 keyring = { version = "3", default-features = false, features = ["async-secret-service", "crypto-rust"] }
 anstream = "0.6"
 owo-colors = "4"
+open = "5"
+getrandom = "0.3"
 
 [target.'cfg(windows)'.dependencies]
 keyring = { version = "3", features = ["windows-native"] }
