@@ -23,17 +23,18 @@ curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.
 irm https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.ps1 | iex
 ```
 
+For other installation methods (building from source, etc.), see the [User Guide](docs/user-guide.md#installation).
+
 ## Usage
 
-1. Issue an API key from Backlog personal settings > API.
-
-2. Authenticate.
+1. Authenticate — choose one method:
 
     ```bash
-    bl auth login
+    bl auth login         # API key
+    bl auth login-oauth   # OAuth 2.0 (browser-based)
     ```
 
-3. Run commands.
+2. Run commands.
     e.g.) Show your space information.
 
     ```bash

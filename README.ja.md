@@ -23,17 +23,18 @@ curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.
 irm https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.ps1 | iex
 ```
 
+その他のインストール方法（ソースからのビルドなど）は [ユーザーガイド](docs/user-guide.ja.md#インストール) を参照してください。
+
 ## 使い方
 
-1. Backlog の個人設定 → API から API キーを発行します。
-
-2. 認証します。
+1. 認証します — どちらかの方法を選んでください。
 
     ```bash
-    bl auth login
+    bl auth login         # API キー
+    bl auth login-oauth   # OAuth 2.0（ブラウザ認証）
     ```
 
-3. コマンドを実行します。
+2. コマンドを実行します。
    例）スペース情報を表示する。
 
     ```bash
