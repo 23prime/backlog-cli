@@ -234,7 +234,7 @@ impl BacklogClient {
         let base_url = format!("https://{space_key}.backlog.com/api/v2");
 
         // OAuth tokens take priority over API key.
-        if let Ok(tokens) = crate::secret::get_oauth_tokens(&space_key) {
+        if let Ok((tokens, _backend)) = crate::secret::get_oauth_tokens(&space_key) {
             return Ok(Self {
                 client,
                 base_url,

@@ -198,6 +198,8 @@ OAuth 2.0 認証の場合:
 Space: mycompany.backlog.com
   - Auth method: OAuth 2.0
   - Client ID: abc123
+  - Client Secret: abcd...
+  - Access token: abcd...
   - Logged in as Your Name (your-id)
 ```
 

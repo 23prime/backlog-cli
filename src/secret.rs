@@ -183,13 +183,14 @@ pub fn remove_credentials_file() -> Result<()> {
 // (`oauth_tokens.toml`) is used when the keyring is unavailable.
 // ---------------------------------------------------------------------------
 
-pub fn get_oauth_tokens(space_key: &str) -> Result<OAuthTokens> {
+pub fn get_oauth_tokens(space_key: &str) -> Result<(OAuthTokens, Backend)> {
     // Keyring first
     if let Ok(entry) = keyring::Entry::new(OAUTH_SERVICE, space_key)
         && let Ok(json) = entry.get_password()
     {
         return serde_json::from_str(&json)
-            .context("Failed to deserialize OAuth tokens from keyring");
+            .context("Failed to deserialize OAuth tokens from keyring")
+            .map(|tokens| (tokens, Backend::Keyring));
     }
     // File fallback
     oauth_file_get(space_key)
@@ -256,12 +257,13 @@ fn oauth_file_save(file: &OAuthFile) -> Result<()> {
     Ok(())
 }
 
-fn oauth_file_get(space_key: &str) -> Result<OAuthTokens> {
+fn oauth_file_get(space_key: &str) -> Result<(OAuthTokens, Backend)> {
     let file = oauth_file_load()?;
     file.tokens
         .get(space_key)
         .cloned()
         .with_context(|| format!("OAuth tokens not found for space '{space_key}'"))
+        .map(|tokens| (tokens, Backend::File))
 }
 
 fn oauth_file_set(space_key: &str, tokens: &OAuthTokens) -> Result<()> {

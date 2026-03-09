@@ -161,6 +161,8 @@ pub enum AuthDisplay {
     OAuth {
         masked_token: String,
         client_id: String,
+        masked_client_secret: String,
+        backend: Backend,
     },
 }
 
@@ -188,13 +190,18 @@ pub fn status(args: &AuthStatusArgs) -> Result<()> {
     };
 
     // OAuth tokens take priority over API key.
-    if let Ok(tokens) = secret::get_oauth_tokens(&space_key) {
+    if let Ok((tokens, backend)) = secret::get_oauth_tokens(&space_key) {
         let auth = AuthDisplay::OAuth {
             masked_token: format!(
                 "{}...",
                 tokens.access_token.chars().take(4).collect::<String>()
             ),
             client_id: tokens.client_id.clone(),
+            masked_client_secret: format!(
+                "{}...",
+                tokens.client_secret.chars().take(4).collect::<String>()
+            ),
+            backend,
         };
         // Build a client that will use the stored OAuth tokens.
         let client = match BacklogClient::from_config() {
@@ -257,10 +264,14 @@ pub fn status_with(
         AuthDisplay::OAuth {
             masked_token,
             client_id,
+            masked_client_secret,
+            backend,
         } => {
             println!("  - Auth method: OAuth 2.0");
-            println!("  - Access token: {}", masked_token);
             println!("  - Client ID: {}", client_id);
+            println!("  - Client Secret: {}", masked_client_secret);
+            println!("  - Access token: {}", masked_token);
+            println!("  - Stored in: {}", backend);
         }
     }
 
@@ -557,6 +568,8 @@ mod tests {
         AuthDisplay::OAuth {
             masked_token: "toke...".to_string(),
             client_id: "my-client-id".to_string(),
+            masked_client_secret: "my-c...".to_string(),
+            backend: Backend::Keyring,
         }
     }
 
