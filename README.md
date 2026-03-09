@@ -5,8 +5,11 @@ An unofficial CLI tool for [Nulab's Backlog](https://backlog.com).
 ## Features
 
 - 🌐 **Cross-platform** — Runs on Linux, macOS, and Windows (x86\_64 / aarch64 / Apple Silicon)
-- 🔐 **Secure authentication** — API key stored in the system keyring (GNOME Keyring, macOS Keychain, or Windows Credential Manager); if the keyring is unavailable, falls back to a local `credentials.toml` file (owner-only permissions on Unix)
-- 📦 **No OpenSSL dependency** — Built with rustls for a clean, portable binary
+- 🔐 **Flexible authentication** — API key or browser-based OAuth 2.0; credentials stored in the system keyring (GNOME Keyring, macOS Keychain, or Windows Credential Manager) with a file fallback
+- 🏢 **Multi-space support** — Manage multiple Backlog spaces and switch between them with `bl auth use`
+- 🔧 **JSON output** — All primary commands support `--json` for machine-readable output
+- 🤖 **CI/CD friendly** — Inject credentials via `BL_API_KEY` and `BL_SPACE` environment variables; no interactive prompts needed
+- 📦 **Single binary** — Just download and run; no extra setup required
 - ⚡ **Easy install** — Single-command installation via shell script or PowerShell
 
 ## Installation
@@ -23,17 +26,18 @@ curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.
 irm https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.ps1 | iex
 ```
 
+For other installation methods (building from source, etc.), see the [User Guide](docs/user-guide.md#installation).
+
 ## Usage
 
-1. Issue an API key from Backlog personal settings > API.
-
-2. Authenticate.
+1. Authenticate — choose one method:
 
     ```bash
-    bl auth login
+    bl auth login         # API key
+    bl auth login-oauth   # OAuth 2.0 (browser-based)
     ```
 
-3. Run commands.
+2. Run commands.
     e.g.) Show your space information.
 
     ```bash

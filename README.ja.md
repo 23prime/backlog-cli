@@ -5,8 +5,11 @@
 ## 特徴
 
 - 🌐 **クロスプラットフォーム** — Linux・macOS・Windows（x86\_64 / aarch64 / Apple Silicon）に対応
-- 🔐 **セキュアな認証** — API キーをシステムキーリング（GNOME Keyring・macOS Keychain・Windows 資格情報マネージャー）に保存。キーリングが利用できない場合は `credentials.toml`（Unix では所有者専用権限）にフォールバック
-- 📦 **OpenSSL 不要** — rustls を使用したクリーンでポータブルなバイナリ
+- 🔐 **柔軟な認証** — API キーまたはブラウザ経由の OAuth 2.0 に対応。認証情報はシステムキーリング（GNOME Keyring・macOS Keychain・Windows 資格情報マネージャー）に保存し、利用できない場合はファイルにフォールバック
+- 🏢 **マルチスペース対応** — 複数の Backlog スペースを管理し、`bl auth use` で切り替え可能
+- 🔧 **JSON 出力** — 主要なコマンドで `--json` オプションをサポートし、機械可読な出力を提供
+- 🤖 **CI/CD フレンドリー** — `BL_API_KEY` / `BL_SPACE` 環境変数で認証情報を注入可能。対話的な操作不要
+- 📦 **シングルバイナリ** — ダウンロードしてすぐ実行可能。追加のセットアップ不要
 - ⚡ **簡単インストール** — シェルスクリプトまたは PowerShell でワンコマンド導入
 
 ## インストール
@@ -23,17 +26,18 @@ curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.
 irm https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.ps1 | iex
 ```
 
+その他のインストール方法（ソースからのビルドなど）は [ユーザーガイド](docs/user-guide.ja.md#インストール) を参照してください。
+
 ## 使い方
 
-1. Backlog の個人設定 → API から API キーを発行します。
-
-2. 認証します。
+1. 認証します — どちらかの方法を選んでください。
 
     ```bash
-    bl auth login
+    bl auth login         # API キー
+    bl auth login-oauth   # OAuth 2.0（ブラウザ認証）
     ```
 
-3. コマンドを実行します。
+2. コマンドを実行します。
    例）スペース情報を表示する。
 
     ```bash
