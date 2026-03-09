@@ -41,10 +41,11 @@ pub fn login_oauth(no_banner: bool, port: u16) -> Result<()> {
 
     println!("Backlog OAuth Login\n");
     println!("  Register an OAuth 2.0 application in your Backlog space:");
-    println!("    Personal settings → OAuth 2.0 Applications → Add");
+    println!("    Space settings → Apps → Add");
+    println!("    Application type: Confidential Client");
     println!(
         "    Redirect URI: {}\n",
-        format!("http://localhost:{port}/callback").bold()
+        format!("http://127.0.0.1:{port}/callback").bold()
     );
 
     let space_key = prompt("Space key (e.g. mycompany for mycompany.backlog.com): ")?;
