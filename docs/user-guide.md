@@ -129,13 +129,12 @@ The most recently logged-in space becomes the current (active) space.
 
 #### Step 1 — Register an OAuth application in Backlog
 
-1. Log in to your Backlog space as an administrator
-2. Go to **Space settings** → **Apps**
-3. Create a new application:
+1. Open <https://backlog.com/developer/applications/oauth2Clients/add>
+2. Create a new application:
+   - **Application type**: Confidential Client
    - **Redirect URI**: `http://127.0.0.1:54321/callback`
      (use `http://127.0.0.1:<port>/callback` if you will pass `--port <port>`)
-   - **Application type**: Confidential Client
-4. Note the **Client ID** and **Client Secret**
+3. Note the **Client ID** and **Client Secret**
 
 #### Step 2 — Run the OAuth login command
 

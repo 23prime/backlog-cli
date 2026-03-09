@@ -40,9 +40,11 @@ pub fn login_oauth(no_banner: bool, port: u16) -> Result<()> {
     }
 
     println!("Backlog OAuth Login\n");
-    println!("  Register an OAuth 2.0 application in your Backlog space:");
-    println!("    Space settings → Apps → Add");
-    println!("    Application type: Confidential Client");
+    println!("  Register an OAuth 2.0 application (Confidential Client) at:");
+    println!(
+        "    {}",
+        "https://backlog.com/developer/applications/oauth2Clients/add".bold()
+    );
     println!(
         "    Redirect URI: {}\n",
         format!("http://127.0.0.1:{port}/callback").bold()
