@@ -206,14 +206,7 @@ pub struct BacklogClient {
 impl BacklogClient {
     pub fn from_config() -> Result<Self> {
         let space_key = crate::config::current_space_key()?;
-        let api_key = if let Ok(key) = std::env::var("BL_API_KEY")
-            && !key.is_empty()
-        {
-            key
-        } else {
-            let (key, _) = crate::secret::get(&space_key)?;
-            key
-        };
+        let (api_key, _) = crate::secret::current_api_key(&space_key)?;
 
         let client = Client::builder()
             .build()
