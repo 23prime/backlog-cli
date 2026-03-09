@@ -138,6 +138,9 @@ pub fn refresh_access_token(space_key: &str, tokens: &OAuthTokens) -> Result<OAu
 
 /// Start a local HTTP server on `port` and block until the OAuth callback arrives.
 /// Returns the authorization code after verifying the state parameter.
+///
+/// Non-callback requests (e.g. browser favicon fetches) are answered with a
+/// minimal 200 response and then ignored so that the loop continues waiting.
 fn wait_for_callback(port: u16, expected_state: &str) -> Result<String> {
     let listener = TcpListener::bind(format!("127.0.0.1:{port}")).with_context(|| {
         format!(
@@ -146,43 +149,56 @@ fn wait_for_callback(port: u16, expected_state: &str) -> Result<String> {
         )
     })?;
 
-    let (stream, _) = listener
-        .accept()
-        .context("Failed to accept OAuth callback")?;
-    let mut writer = stream.try_clone().context("Failed to clone TCP stream")?;
-    let reader = BufReader::new(&stream);
+    // Accept connections in a loop until a valid OAuth callback arrives.
+    // This handles cases where the browser also issues a favicon request.
+    const MAX_ATTEMPTS: usize = 10;
+    for _ in 0..MAX_ATTEMPTS {
+        let (stream, _) = listener
+            .accept()
+            .context("Failed to accept OAuth callback")?;
+        let mut writer = stream.try_clone().context("Failed to clone TCP stream")?;
+        let reader = BufReader::new(&stream);
 
-    // Read the request line: "GET /callback?code=...&state=... HTTP/1.1"
-    let request_line = reader
-        .lines()
-        .next()
-        .context("OAuth callback: empty request")??;
+        // Read the request line: "GET /callback?code=...&state=... HTTP/1.1"
+        let request_line = match reader.lines().next() {
+            Some(Ok(line)) => line,
+            _ => continue,
+        };
 
-    // Second token is the path+query string.
-    let path = request_line
-        .split_whitespace()
-        .nth(1)
-        .context("OAuth callback: malformed HTTP request")?;
+        // Second token is the path+query string.
+        let path = match request_line.split_whitespace().nth(1) {
+            Some(p) => p.to_string(),
+            None => continue,
+        };
 
-    let (code, state) = parse_callback_params(path)?;
+        // Skip requests that are not the OAuth callback (e.g. /favicon.ico).
+        if !path.starts_with("/callback") {
+            send_html_response(&mut writer, 200, "");
+            continue;
+        }
 
-    if state != expected_state {
+        let (code, state) = parse_callback_params(&path)?;
+
+        if state != expected_state {
+            send_html_response(
+                &mut writer,
+                400,
+                "<h1>Authorization failed</h1><p>State mismatch. Please try again.</p>",
+            );
+            anyhow::bail!("OAuth state mismatch — possible CSRF attempt");
+        }
+
         send_html_response(
             &mut writer,
-            400,
-            "<h1>Authorization failed</h1><p>State mismatch. Please try again.</p>",
+            200,
+            "<h1>Authorization successful!</h1>\
+             <p>You can close this tab and return to the terminal.</p>",
         );
-        anyhow::bail!("OAuth state mismatch — possible CSRF attempt");
+
+        return Ok(code);
     }
 
-    send_html_response(
-        &mut writer,
-        200,
-        "<h1>Authorization successful!</h1>\
-         <p>You can close this tab and return to the terminal.</p>",
-    );
-
-    Ok(code)
+    anyhow::bail!("OAuth callback not received after {MAX_ATTEMPTS} connection attempts")
 }
 
 fn parse_callback_params(path: &str) -> Result<(String, String)> {
@@ -310,10 +326,10 @@ mod tests {
 
     #[test]
     fn generate_state_two_calls_differ() {
-        // At minimum both should be non-empty.
         let s1 = generate_state();
         let s2 = generate_state();
         assert!(!s1.is_empty());
         assert!(!s2.is_empty());
+        assert_ne!(s1, s2);
     }
 }
