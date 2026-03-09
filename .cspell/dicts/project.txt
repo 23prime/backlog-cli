@@ -22,3 +22,6 @@ anstream
 coderabbitai
 nulab
 truecolor
+getrandom
+CSPRNG
+subsec
