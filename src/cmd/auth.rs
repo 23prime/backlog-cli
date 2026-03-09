@@ -138,15 +138,21 @@ pub fn status(args: &AuthStatusArgs) -> Result<()> {
         }
     };
 
-    let (api_key, backend) = match secret::get(&space_key) {
-        Ok(v) => v,
-        Err(e) => {
-            if json {
-                println!("{}", serde_json::json!({"error": e.to_string()}));
-            } else {
-                println!("  {} {}", "!".red(), e);
+    let (api_key, backend) = if let Ok(key) = std::env::var("BL_API_KEY")
+        && !key.is_empty()
+    {
+        (key, Backend::Env)
+    } else {
+        match secret::get(&space_key) {
+            Ok(v) => v,
+            Err(e) => {
+                if json {
+                    println!("{}", serde_json::json!({"error": e.to_string()}));
+                } else {
+                    println!("  {} {}", "!".red(), e);
+                }
+                return Ok(());
             }
-            return Ok(());
         }
     };
 

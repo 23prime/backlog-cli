@@ -8,6 +8,7 @@ const SERVICE: &str = "bl";
 pub enum Backend {
     Keyring,
     File,
+    Env,
 }
 
 impl std::fmt::Display for Backend {
@@ -15,6 +16,7 @@ impl std::fmt::Display for Backend {
         match self {
             Backend::Keyring => write!(f, "System keyring"),
             Backend::File => write!(f, "Credentials file"),
+            Backend::Env => write!(f, "Environment variable"),
         }
     }
 }
@@ -270,5 +272,6 @@ mod tests {
     fn backend_display() {
         assert_eq!(Backend::Keyring.to_string(), "System keyring");
         assert_eq!(Backend::File.to_string(), "Credentials file");
+        assert_eq!(Backend::Env.to_string(), "Environment variable");
     }
 }
