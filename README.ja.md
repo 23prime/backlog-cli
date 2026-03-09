@@ -1,0 +1,65 @@
+# backlog-cli
+
+[Nulab Backlog](https://backlog.com) 向け非公式 CLI ツールです。
+
+## 特徴
+
+- 🌐 **クロスプラットフォーム** — Linux・macOS・Windows（x86\_64 / aarch64 / Apple Silicon）に対応
+- 🔐 **セキュアな認証** — API キーをシステムキーリング（GNOME Keyring・macOS Keychain・Windows 資格情報マネージャー）に保存。キーリングが利用できない場合は `credentials.toml`（Unix では所有者専用権限）にフォールバック
+- 📦 **OpenSSL 不要** — rustls を使用したクリーンでポータブルなバイナリ
+- ⚡ **簡単インストール** — シェルスクリプトまたは PowerShell でワンコマンド導入
+
+## インストール
+
+### Linux / macOS
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.sh | sh
+```
+
+### Windows
+
+```powershell
+irm https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.ps1 | iex
+```
+
+## 使い方
+
+1. Backlog の個人設定 → API から API キーを発行します。
+
+2. 認証します。
+
+    ```bash
+    bl auth login
+    ```
+
+3. コマンドを実行します。
+   例）スペース情報を表示する。
+
+    ```bash
+    bl space
+    ```
+
+詳細は [ユーザーガイド](docs/user-guide.ja.md) を参照してください。
+
+## 開発
+
+### 前提ツール
+
+- [mise](https://mise.jdx.dev)
+- [rustup](https://rustup.rs)
+
+### コマンド
+
+```bash
+mise run setup   # ツールのインストール
+mise run check   # リント / フォーマット / テスト
+mise run fix     # 自動修正
+```
+
+### リリース
+
+```bash
+mise run release -- patch   # バージョンバンプ（patch / minor / major）とタグ作成
+mise run tag-push           # タグをプッシュして CI リリースをトリガー
+```
