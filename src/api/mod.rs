@@ -274,7 +274,9 @@ impl BacklogClient {
     }
 
     /// Try to refresh an OAuth access token.  Returns `true` if the token was
-    /// refreshed successfully, `false` if auth is API-key-based or refresh failed.
+    /// refreshed successfully, `false` if auth is API-key-based.
+    /// Propagates refresh errors so callers receive an informative error
+    /// instead of silently falling back to a stale 401.
     fn try_refresh(&self) -> Result<bool> {
         let AuthMethod::Bearer {
             access_token,
@@ -294,15 +296,11 @@ impl BacklogClient {
             refresh_token: refresh_token.borrow().clone(),
         };
 
-        match crate::oauth::refresh_access_token(space_key, &current) {
-            Ok(new_tokens) => {
-                *access_token.borrow_mut() = new_tokens.access_token.clone();
-                *refresh_token.borrow_mut() = new_tokens.refresh_token.clone();
-                let _ = crate::secret::set_oauth_tokens(space_key, &new_tokens);
-                Ok(true)
-            }
-            Err(_) => Ok(false),
-        }
+        let new_tokens = crate::oauth::refresh_access_token(space_key, &current)?;
+        *access_token.borrow_mut() = new_tokens.access_token.clone();
+        *refresh_token.borrow_mut() = new_tokens.refresh_token.clone();
+        crate::secret::set_oauth_tokens(space_key, &new_tokens)?;
+        Ok(true)
     }
 
     /// Send a request (built by `factory`) and retry once on 401 by refreshing
