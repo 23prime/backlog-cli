@@ -7,7 +7,7 @@ An unofficial CLI tool for [Nulab's Backlog](https://backlog.com).
 - 🌐 **Cross-platform** — Runs on Linux, macOS, and Windows (x86\_64 / aarch64 / Apple Silicon)
 - 🔐 **Flexible authentication** — API key or browser-based OAuth 2.0; credentials stored in the system keyring (GNOME Keyring, macOS Keychain, or Windows Credential Manager) with a file fallback
 - 🏢 **Multi-space support** — Manage multiple Backlog spaces and switch between them with `bl auth use`
-- 🔧 **JSON output** — Every command supports `--json` for machine-readable output
+- 🔧 **JSON output** — All primary commands support `--json` for machine-readable output
 - 🤖 **CI/CD friendly** — Inject credentials via `BL_API_KEY` and `BL_SPACE` environment variables; no interactive prompts needed
 - 📦 **Single binary** — Just download and run; no extra setup required
 - ⚡ **Easy install** — Single-command installation via shell script or PowerShell
