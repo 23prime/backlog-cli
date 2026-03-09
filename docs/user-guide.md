@@ -190,6 +190,7 @@ This verifies your credentials against the Backlog API and shows:
 
 ```text
 Space: mycompany.backlog.com
+  - Auth method: API key
   - API key: abcd...
   - Stored in: System keyring
   - Logged in as Your Name (your-id)

@@ -250,6 +250,7 @@ pub fn status_with(
     println!("Space: {}.backlog.com", space_key);
     match auth {
         AuthDisplay::ApiKey { masked, backend } => {
+            println!("  - Auth method: API key");
             println!("  - API key: {}", masked);
             println!("  - Stored in: {}", backend);
         }
