@@ -2,7 +2,10 @@ use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
+use crate::oauth::OAuthTokens;
+
 const SERVICE: &str = "bl";
+const OAUTH_SERVICE: &str = "bl-oauth";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Backend {
@@ -170,6 +173,108 @@ pub fn remove_credentials_file() -> Result<()> {
             .with_context(|| format!("Failed to remove {}", store.path.display()))?;
     }
     Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// OAuth token storage
+//
+// Tokens are serialized as JSON and stored in the keyring under the service
+// name "bl-oauth" with the space key as the username.  A file fallback
+// (`oauth_tokens.toml`) is used when the keyring is unavailable.
+// ---------------------------------------------------------------------------
+
+pub fn get_oauth_tokens(space_key: &str) -> Result<OAuthTokens> {
+    // Keyring first
+    if let Ok(entry) = keyring::Entry::new(OAUTH_SERVICE, space_key)
+        && let Ok(json) = entry.get_password()
+    {
+        return serde_json::from_str(&json)
+            .context("Failed to deserialize OAuth tokens from keyring");
+    }
+    // File fallback
+    oauth_file_get(space_key)
+}
+
+pub fn set_oauth_tokens(space_key: &str, tokens: &OAuthTokens) -> Result<()> {
+    let json = serde_json::to_string(tokens).context("Failed to serialize OAuth tokens")?;
+    if let Ok(entry) = keyring::Entry::new(OAUTH_SERVICE, space_key)
+        && entry.set_password(&json).is_ok()
+    {
+        return Ok(());
+    }
+    oauth_file_set(space_key, tokens)
+}
+
+pub fn delete_oauth_tokens(space_key: &str) -> Result<()> {
+    if let Ok(entry) = keyring::Entry::new(OAUTH_SERVICE, space_key) {
+        let _ = entry.delete_credential();
+    }
+    oauth_file_delete(space_key)
+}
+
+// --- file fallback helpers --------------------------------------------------
+
+fn oauth_file_path() -> Result<PathBuf> {
+    let config_dir = dirs::config_dir().context("Could not determine config directory")?;
+    Ok(config_dir.join("bl").join("oauth_tokens.toml"))
+}
+
+#[derive(Debug, Serialize, Deserialize, Default)]
+struct OAuthFile {
+    #[serde(default)]
+    tokens: std::collections::HashMap<String, OAuthTokens>,
+}
+
+fn oauth_file_load() -> Result<OAuthFile> {
+    let path = oauth_file_path()?;
+    if !path.exists() {
+        return Ok(OAuthFile::default());
+    }
+    let contents = std::fs::read_to_string(&path)
+        .with_context(|| format!("Failed to read {}", path.display()))?;
+    toml::from_str(&contents).context("Failed to parse oauth_tokens.toml")
+}
+
+fn oauth_file_save(file: &OAuthFile) -> Result<()> {
+    let path = oauth_file_path()?;
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent)
+            .with_context(|| format!("Failed to create {}", parent.display()))?;
+    }
+    let contents = toml::to_string_pretty(file).context("Failed to serialize oauth_tokens.toml")?;
+    std::fs::write(&path, &contents)
+        .with_context(|| format!("Failed to write {}", path.display()))?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o600))
+            .context("Failed to set oauth_tokens.toml permissions")?;
+    }
+    Ok(())
+}
+
+fn oauth_file_get(space_key: &str) -> Result<OAuthTokens> {
+    let file = oauth_file_load()?;
+    file.tokens
+        .get(space_key)
+        .cloned()
+        .with_context(|| format!("OAuth tokens not found for space '{space_key}'"))
+}
+
+fn oauth_file_set(space_key: &str, tokens: &OAuthTokens) -> Result<()> {
+    let mut file = oauth_file_load().unwrap_or_default();
+    file.tokens.insert(space_key.to_string(), tokens.clone());
+    oauth_file_save(&file)
+}
+
+fn oauth_file_delete(space_key: &str) -> Result<()> {
+    let path = oauth_file_path()?;
+    if !path.exists() {
+        return Ok(());
+    }
+    let mut file = oauth_file_load()?;
+    file.tokens.remove(space_key);
+    oauth_file_save(&file)
 }
 
 fn set_impl(

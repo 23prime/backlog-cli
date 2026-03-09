@@ -1,6 +1,7 @@
 mod api;
 mod cmd;
 mod config;
+mod oauth;
 mod secret;
 
 use anyhow::Result;
@@ -528,6 +529,15 @@ enum AuthCommands {
         #[arg(long)]
         no_banner: bool,
     },
+    /// Login via OAuth 2.0 (browser-based)
+    LoginOauth {
+        /// Skip the banner
+        #[arg(long)]
+        no_banner: bool,
+        /// Local port for the OAuth callback server (must match the Redirect URI registered in Backlog)
+        #[arg(long, default_value_t = oauth::DEFAULT_OAUTH_PORT)]
+        port: u16,
+    },
     /// Show current auth status
     Status {
         /// Output as JSON
@@ -585,6 +595,7 @@ fn run() -> Result<()> {
     match command {
         Commands::Auth { action } => match action {
             AuthCommands::Login { no_banner } => cmd::auth::login(no_banner),
+            AuthCommands::LoginOauth { no_banner, port } => cmd::auth::login_oauth(no_banner, port),
             AuthCommands::Status { json } => cmd::auth::status(&AuthStatusArgs::new(json)),
             AuthCommands::Logout { space_key, all } => {
                 if all {
