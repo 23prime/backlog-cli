@@ -1,5 +1,16 @@
 // @ts-check
 
+const version = process.env.DOCS_VERSION || 'dev';
+
+/** @param {string} str */
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   // title: 'backlog-cli',
@@ -57,6 +68,11 @@ const config = {
           {
             type: 'localeDropdown',
             position: 'right',
+          },
+          {
+            type: 'html',
+            position: 'right',
+            value: `<span>${escapeHtml(version)}</span>`,
           },
           {
             href: 'https://github.com/23prime/backlog-cli',
