@@ -1,4 +1,6 @@
+use anstream::eprintln;
 use anyhow::{Context, Result};
+use owo_colors::OwoColorize;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
@@ -287,9 +289,19 @@ fn set_impl(
     api_key: &str,
     stores: &[Box<dyn CredentialStore>],
 ) -> Result<Backend> {
-    for store in stores {
-        if store.set(space_key, api_key).is_ok() {
-            return Ok(store.backend());
+    let mut stores = stores.iter().peekable();
+    while let Some(store) = stores.next() {
+        match store.set(space_key, api_key) {
+            Ok(()) => return Ok(store.backend()),
+            Err(e) if stores.peek().is_some() => {
+                eprintln!(
+                    "{}: {} unavailable ({}), falling back to next store.",
+                    "Warning".yellow(),
+                    store.backend(),
+                    e
+                );
+            }
+            Err(_) => {}
         }
     }
     anyhow::bail!("No credential store available")
