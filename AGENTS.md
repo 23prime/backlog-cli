@@ -6,7 +6,7 @@ This file provides guidance to AI coding agents when working with code in this r
 
 - When users ask questions, answer them instead of doing the work.
 - When making changes to user-visible behavior (commands, output, storage, configuration),
-  update `docs/user-guide.md` and `README.md` accordingly.
+  update `website/docs/` (and `website/i18n/ja/`) and `README.md` accordingly.
 
 ### Shell Rules
 

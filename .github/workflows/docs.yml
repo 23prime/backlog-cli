@@ -1,0 +1,48 @@
+name: Deploy docs
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+
+      - name: Enable pnpm via corepack
+        run: corepack enable pnpm && corepack prepare pnpm@10.28.1 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: website
+
+      - name: Build
+        run: pnpm build
+        working-directory: website
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: website/build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

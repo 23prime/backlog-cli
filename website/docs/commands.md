@@ -1,238 +1,23 @@
-# User Guide
+# Commands
 
-## Table of contents
+## Root options
 
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Uninstallation](#uninstallation)
-- [Authentication](#authentication)
-- [Commands](#commands)
-- [Command coverage](#command-coverage)
-- [Configuration](#configuration)
-- [Troubleshooting](#troubleshooting)
-
-## Prerequisites
-
-- A [Backlog](https://backlog.com) account with access to at least one space
-- A Backlog API key or OAuth 2.0 client credentials (see [Authentication](#authentication))
-
-## Installation
-
-### Supported platforms
-
-| OS | Architecture |
-| --- | --- |
-| Linux | x86\_64, aarch64 |
-| macOS | x86\_64 (Intel), arm64 (Apple Silicon) |
-| Windows | x86\_64 |
-
-### Using the install script (Linux, macOS)
-
-Requires `curl` and `tar`. The script auto-detects your OS and architecture, selects the matching binary,
-and verifies its SHA-256 checksum before installing.
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.sh | sh
-```
-
-The binary is installed to `~/.local/bin/bl` by default.
-To install to a different location, set the `INSTALL_DIR` environment variable:
-
-```bash
-INSTALL_DIR=/usr/local/bin curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.sh | sh
-```
-
-### Using the install script (Windows)
-
-Requires PowerShell 5.1 or later (built-in on Windows 10/11).
-
-```powershell
-irm https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.ps1 | iex
-```
-
-The binary is installed to `%USERPROFILE%\.local\bin\bl.exe` by default.
-To install to a different location:
-
-```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.ps1))) -InstallDir 'C:\Tools'
-```
-
-### Building from source
-
-```bash
-git clone https://github.com/23prime/backlog-cli.git
-cd backlog-cli
-cargo install --path .
-```
-
-## Uninstallation
-
-### Uninstall script (Linux, macOS)
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/uninstall.sh | sh
-```
-
-To also remove stored credentials and configuration files, pass `--purge`:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/uninstall.sh | sh -s -- --purge
-```
-
-### Uninstall script (Windows)
-
-```powershell
-irm https://raw.githubusercontent.com/23prime/backlog-cli/latest/uninstall.ps1 | iex
-```
-
-To also remove stored credentials and configuration files, pass `-Purge`:
-
-```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/23prime/backlog-cli/latest/uninstall.ps1))) -Purge
-```
-
-> **Note:** With `--purge` / `-Purge`, the uninstall script first runs `bl auth logout --all`,
-> which clears all API keys from the system keyring and removes all configuration files,
-> and then deletes the Backlog CLI configuration directory along with the binary.
-> Without this flag, only the binary is removed and credentials are left intact
-> (useful if you plan to reinstall later).
->
-> You can also clean up credentials manually at any time with `bl auth logout --all`.
-
-## Authentication
-
-### Issuing an API key
-
-1. Log in to your Backlog space
-2. Go to **Personal settings** → **API**
-3. Enter a memo and click **Submit**
-4. Copy the generated API key
-
-### Logging in with an API key
-
-```bash
-bl auth login
-```
-
-You will be prompted for:
-
-- **Space key** — the subdomain of your Backlog space.
-  For `mycompany.backlog.com`, enter `mycompany`.
-- **API key** — the key issued in the step above (input is hidden)
-
-Running `bl auth login` again with a different space key adds another space.
-The most recently logged-in space becomes the current (active) space.
-
-### Logging in with OAuth 2.0
-
-`bl` supports browser-based OAuth 2.0 login as an alternative to API keys.
-
-#### Step 1 — Register an OAuth application in Backlog
-
-1. Open <https://backlog.com/developer/applications/oauth2Clients/add>
-2. Create a new application:
-   - **Application type**: Confidential Client
-   - **Redirect URI**: `http://127.0.0.1:54321/callback`
-     (use `http://127.0.0.1:<port>/callback` if you will pass `--port <port>`)
-3. Note the **Client ID** and **Client Secret**
-
-#### Step 2 — Run the OAuth login command
-
-```bash
-bl auth login-oauth
-```
-
-You will be prompted for:
-
-- **Space key** — the subdomain of your Backlog space
-- **Client ID** — from the registered application
-- **Client Secret** — from the registered application (input is hidden)
-
-The command opens your browser to the Backlog authorization page.
-After you approve, the browser is redirected to `http://127.0.0.1:54321/callback`
-and the access token is stored automatically.
-
-To use a custom port (must match the Redirect URI registered in Backlog):
-
-```bash
-bl auth login-oauth --port 8080
-```
-
-### Managing multiple spaces
-
-```bash
-# List all configured spaces (* marks the current space)
-bl auth list
-
-# Switch the current space
-bl auth use another-company
-
-# Use a different space for a single command
-bl --space another-company project list
-
-# Or set the BL_SPACE environment variable
-export BL_SPACE=another-company
-bl project list
-
-# Inject credentials via environment variables (useful in CI/CD)
-export BL_SPACE=mycompany
-export BL_API_KEY=your-api-key
-bl project list
-```
-
-### Checking auth status
-
-```bash
-bl auth status
-```
-
-This verifies your credentials against the Backlog API and shows:
-
-```text
-Space: mycompany.backlog.com
-  - Auth method: API key
-  - API key: abcd...
-  - Stored in: System keyring
-  - Logged in as Your Name (your-id)
-```
-
-When authenticated via OAuth:
-
-```text
-Space: mycompany.backlog.com
-  - Auth method: OAuth 2.0
-  - Client ID: abc123
-  - Client Secret: abcd...
-  - Access token: abcd...
-  - Logged in as Your Name (your-id)
-```
-
-When `BL_API_KEY` is set, `Stored in` shows `Environment variable`.
-
-### Logging out
-
-```bash
-# Logout from the current space
-bl auth logout
-
-# Logout from a specific space
-bl auth logout another-company
-
-# Logout from all spaces and remove all config files (useful before uninstalling)
-bl auth logout --all
-```
-
-## Commands
-
-### Global options
+These options are only available on the root `bl` command, not on subcommands.
 
 | Option | Description |
 | --- | --- |
 | `--banner` | Print the Backlog CLI banner and exit |
+
+## Global options
+
+These options are available on all subcommands.
+
+| Option | Description |
+| --- | --- |
 | `--no-color` | Disable colored output |
 | `--space <SPACE_KEY>` | Override the active space for this command |
 
-### `bl auth`
+## `bl auth`
 
 | Command | Description |
 | --- | --- |
@@ -241,10 +26,11 @@ bl auth logout --all
 | `bl auth status` | Show current auth status and verify credentials |
 | `bl auth list` | List all configured spaces |
 | `bl auth use <space-key>` | Switch the current space |
+| `bl auth keyring` | Check if the system keyring is available |
 | `bl auth logout [<space-key>]` | Remove credentials for the current or specified space |
 | `bl auth logout --all` | Remove all spaces and delete all config files |
 
-### `bl space`
+## `bl space`
 
 Show information about your Backlog space.
 
@@ -264,7 +50,7 @@ Created:    2020-01-01T00:00:00Z
 Updated:    2024-06-01T00:00:00Z
 ```
 
-### `bl space activities`
+## `bl space activities`
 
 Show recent activities in your Backlog space.
 
@@ -280,7 +66,7 @@ Example output:
 [124] type=2 project=TEST user=Jane Smith created=2024-06-02T00:00:00Z
 ```
 
-### `bl space disk-usage`
+## `bl space disk-usage`
 
 Show disk usage of your Backlog space.
 Requires Space Administrator privileges. Non-admin users will receive `403 Forbidden`.
@@ -303,7 +89,7 @@ Git LFS:    128 bytes
 Details:    3 project(s) — use --json for breakdown
 ```
 
-### `bl space notification`
+## `bl space notification`
 
 Show the notification message set for your Backlog space.
 
@@ -328,7 +114,7 @@ Updated: (not set)
 (no notification set)
 ```
 
-### `bl project list`
+## `bl project list`
 
 List all projects you have access to.
 
@@ -344,7 +130,7 @@ Example output:
 [PROD] Production [archived]
 ```
 
-### `bl project show`
+## `bl project show`
 
 Show details of a specific project.
 
@@ -363,7 +149,7 @@ Formatting: markdown
 Archived:   false
 ```
 
-### `bl project activities`
+## `bl project activities`
 
 Show recent activities for a specific project.
 
@@ -378,7 +164,7 @@ Example output:
 [123] type=1 project=TEST user=John Doe created=2024-06-01T00:00:00Z
 ```
 
-### `bl project disk-usage`
+## `bl project disk-usage`
 
 Show disk usage for a specific project.
 Requires Space Administrator privileges. Non-admin users will receive `403 Forbidden`.
@@ -400,7 +186,7 @@ Git:        256 bytes
 Git LFS:    128 bytes
 ```
 
-### `bl project user list`
+## `bl project user list`
 
 List users who are members of a specific project.
 
@@ -416,7 +202,7 @@ Example output:
 [jane] Jane Smith
 ```
 
-### `bl project status list`
+## `bl project status list`
 
 List issue statuses defined for a specific project.
 
@@ -434,7 +220,7 @@ Example output:
 [4] Closed
 ```
 
-### `bl project issue-type list`
+## `bl project issue-type list`
 
 List issue types defined for a specific project.
 
@@ -451,7 +237,7 @@ Example output:
 [3] Feature Request
 ```
 
-### `bl project category list`
+## `bl project category list`
 
 List categories defined for a specific project.
 
@@ -467,7 +253,7 @@ Example output:
 [12] Design
 ```
 
-### `bl project version list`
+## `bl project version list`
 
 List versions (milestones) defined for a specific project.
 
@@ -483,7 +269,7 @@ Example output:
 [4] Version 0.2 [archived]
 ```
 
-### `bl issue list`
+## `bl issue list`
 
 List issues with optional filters.
 
@@ -504,7 +290,7 @@ Example output:
 [TEST-2] Add dark mode (In Progress, Normal, John Doe)
 ```
 
-### `bl issue count`
+## `bl issue count`
 
 Count issues with optional filters. Accepts the same filters as `bl issue list`.
 
@@ -519,7 +305,7 @@ Example output:
 42
 ```
 
-### `bl issue show`
+## `bl issue show`
 
 Show details of a specific issue.
 
@@ -540,7 +326,7 @@ TEST-1 Fix login issue
   Updated:    2024-06-01T00:00:00Z
 ```
 
-### `bl issue create`
+## `bl issue create`
 
 Create a new issue. Requires `--project-id`, `--summary`, `--issue-type-id`, and `--priority-id`.
 
@@ -552,7 +338,7 @@ bl issue create --project-id 1 --summary "Bug" --issue-type-id 1 --priority-id 2
 
 Priority IDs: `1` = High, `2` = Normal, `3` = Low.
 
-### `bl issue update`
+## `bl issue update`
 
 Update an existing issue. All fields are optional.
 
@@ -561,7 +347,7 @@ bl issue update TEST-1 --summary "Updated summary"
 bl issue update TEST-1 --status-id 2 --comment "Fixed in v1.2" --json
 ```
 
-### `bl issue delete`
+## `bl issue delete`
 
 Delete an issue.
 
@@ -576,7 +362,7 @@ Example output:
 Deleted: TEST-1
 ```
 
-### `bl issue comment list`
+## `bl issue comment list`
 
 List comments on an issue.
 
@@ -592,7 +378,7 @@ Example output:
 [2] Jane Smith (2024-01-02T00:00:00Z): Confirmed.
 ```
 
-### `bl issue comment add`
+## `bl issue comment add`
 
 Add a comment to an issue.
 
@@ -601,7 +387,7 @@ bl issue comment add TEST-1 --content "This is a comment"
 bl issue comment add TEST-1 --content "Done" --json
 ```
 
-### `bl issue comment update`
+## `bl issue comment update`
 
 Update an existing comment.
 
@@ -610,7 +396,7 @@ bl issue comment update TEST-1 42 --content "Updated comment"
 bl issue comment update TEST-1 42 --content "Fixed" --json
 ```
 
-### `bl issue comment delete`
+## `bl issue comment delete`
 
 Delete a comment.
 
@@ -619,7 +405,7 @@ bl issue comment delete TEST-1 42
 bl issue comment delete TEST-1 42 --json
 ```
 
-### `bl issue attachment list`
+## `bl issue attachment list`
 
 List attachments on an issue.
 
@@ -635,9 +421,7 @@ Example output:
 [2] log.txt (1024 bytes)
 ```
 
-## Wiki pages
-
-### `bl wiki list`
+## `bl wiki list`
 
 List wiki pages in a project.
 
@@ -655,7 +439,7 @@ Setup
 API Reference
 ```
 
-### `bl wiki show`
+## `bl wiki show`
 
 Show the content of a wiki page.
 
@@ -676,7 +460,7 @@ Home
 Welcome to the project wiki!
 ```
 
-### `bl wiki create`
+## `bl wiki create`
 
 Create a new wiki page.
 
@@ -685,7 +469,7 @@ bl wiki create --project-id 1 --name "Setup" --content "# Setup\nSee README."
 bl wiki create --project-id 1 --name "Setup" --content "# Setup" --mail-notify --json
 ```
 
-### `bl wiki update`
+## `bl wiki update`
 
 Update an existing wiki page. At least one of `--name` or `--content` is required.
 
@@ -695,7 +479,7 @@ bl wiki update 12345 --name "New Title" --content "New content" --mail-notify
 bl wiki update 12345 --name "Renamed" --json
 ```
 
-### `bl wiki delete`
+## `bl wiki delete`
 
 Delete a wiki page.
 
@@ -704,7 +488,7 @@ bl wiki delete 12345
 bl wiki delete 12345 --mail-notify --json
 ```
 
-### `bl wiki history`
+## `bl wiki history`
 
 Show the revision history of a wiki page.
 
@@ -721,7 +505,7 @@ v2 Home — 2024-03-15T00:00:00Z
 v1 Home — 2024-01-01T00:00:00Z
 ```
 
-### `bl wiki attachment list`
+## `bl wiki attachment list`
 
 List attachments of a wiki page.
 
@@ -740,7 +524,6 @@ Example output:
 ## Command coverage
 
 The table below maps Backlog API v2 endpoints to `bl` commands.
-Commands that target a specific project accept a `--project <key>` flag.
 
 ### Space
 
@@ -844,70 +627,3 @@ Commands that target a specific project accept a `--project <key>` flag.
 | --- | --- | --- |
 | `bl team list` | `GET /api/v2/teams` | Planned |
 | `bl team show <id>` | `GET /api/v2/teams/{teamId}` | Planned |
-
-## Configuration
-
-### Linux / macOS
-
-| Location | Contents |
-| --- | --- |
-| `~/.config/bl/config.toml` | Space key (non-sensitive metadata) |
-| System keyring | API key and OAuth tokens (primary; GNOME Keyring / Keychain) |
-| `~/.config/bl/credentials.toml` | API key fallback (mode 0600, used when keyring is unavailable) |
-| `~/.config/bl/oauth_tokens.toml` | OAuth token fallback (mode 0600, used when keyring is unavailable) |
-
-### Windows
-
-| Location | Contents |
-| --- | --- |
-| `%APPDATA%\bl\config.toml` | Space key (non-sensitive metadata) |
-| Windows Credential Manager | API key and OAuth tokens (primary) |
-| `%APPDATA%\bl\credentials.toml` | API key fallback (used when Credential Manager is unavailable) |
-| `%APPDATA%\bl\oauth_tokens.toml` | OAuth token fallback (used when Credential Manager is unavailable) |
-
-### Config file format
-
-```toml
-current_space = "mycompany"
-spaces = ["mycompany", "another-company"]
-```
-
-Old configs using the `[auth] space_key` format are migrated automatically on first run.
-
-## Troubleshooting
-
-### `API key not found. Run bl auth login to authenticate.`
-
-The API key is missing from the keyring. Run `bl auth login` again.
-
-### `API error (401 Unauthorized): Authentication failure`
-
-The space key or API key is incorrect. Check:
-
-- The space key matches your Backlog URL (e.g. `mycompany` for `mycompany.backlog.com`)
-- The API key is still valid in Backlog personal settings
-
-Run `bl auth login` to re-enter your credentials.
-
-### Keyring is unavailable
-
-On Linux, the keyring requires a running Secret Service daemon (GNOME Keyring or KWallet).
-If no daemon is available (e.g. headless or SSH environments), `bl` automatically falls back
-to storing the API key in `~/.config/bl/credentials.toml` and OAuth tokens in
-`~/.config/bl/oauth_tokens.toml`, both with mode 0600.
-
-On macOS, the system Keychain is used. On Windows, the Windows Credential Manager is used.
-If the Credential Manager is unavailable, `bl` falls back to `%APPDATA%\bl\credentials.toml`
-(API key) and `%APPDATA%\bl\oauth_tokens.toml` (OAuth tokens).
-
-The `bl auth status` output shows which backend is in use:
-
-```text
-  - Stored in: System keyring
-```
-
-or
-
-```text
-  - Stored in: Credentials file
-```

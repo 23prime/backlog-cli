@@ -17,6 +17,9 @@ markdownlint-cli2 = "latest"
 actionlint = "latest"
 shellcheck = "latest"
 
+# Docs
+node = "lts"
+
 # Other tools
 lefthook = "latest"
 cspell = "latest"
@@ -30,7 +33,12 @@ cspell = "latest"
 # Global
 [tasks.setup]
 description = "Setup tools"
-run = ["mise trust -yq", "mise install", "lefthook install", "cargo install cargo-edit"]
+run = [
+  "mise trust -yq",
+  "mise install",
+  "lefthook install",
+  "cargo install cargo-edit",
+]
 alias = "s"
 
 [tasks.fix]
@@ -114,3 +122,20 @@ run = "cargo clean"
 [tasks.tag-push]
 description = "Push release tags to remote"
 run = "git push --follow-tags"
+
+# Docs
+[tasks.docs-install]
+description = "Install docs dependencies"
+run = ["corepack enable pnpm", "pnpm install"]
+dir = "website"
+
+[tasks.docs-serve]
+description = "Build and serve docs locally (all locales)"
+run = ["pnpm build", "pnpm serve"]
+dir = "website"
+alias = "ds"
+
+[tasks.docs-build]
+description = "Build docs static site"
+run = "pnpm build"
+dir = "website"

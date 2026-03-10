@@ -1,4 +1,4 @@
-# backlog-cli
+# Backlog CLI
 
 An unofficial CLI tool for [Nulab's Backlog](https://backlog.com).
 
@@ -26,7 +26,7 @@ curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.
 irm https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.ps1 | iex
 ```
 
-For other installation methods (building from source, etc.), see the [User Guide](docs/user-guide.md#installation).
+For other installation methods (building from source, etc.), see the [Documentation](https://23prime.github.io/backlog-cli/installation).
 
 ## Usage
 
@@ -44,7 +44,7 @@ For other installation methods (building from source, etc.), see the [User Guide
     bl space
     ```
 
-See the [User Guide](docs/user-guide.md) for full documentation.
+See the [Documentation](https://23prime.github.io/backlog-cli/) for full documentation.
 
 ## Development
 
