@@ -1,5 +1,7 @@
 // @ts-check
 
+const version = process.env.DOCS_VERSION || 'dev';
+
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   // title: 'backlog-cli',
@@ -57,6 +59,11 @@ const config = {
           {
             type: 'localeDropdown',
             position: 'right',
+          },
+          {
+            type: 'html',
+            position: 'right',
+            value: `<span>${version}</span>`,
           },
           {
             href: 'https://github.com/23prime/backlog-cli',
