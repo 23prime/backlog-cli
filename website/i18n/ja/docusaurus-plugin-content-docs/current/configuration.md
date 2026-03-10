@@ -33,4 +33,4 @@ spaces = ["mycompany", "another-company"]
 | --- | --- |
 | `BL_SPACE` | 対象スペースを上書き（`--space` と同等） |
 | `BL_API_KEY` | 保存済み API キーを上書き |
-| `BL_VERBOSE` | `0` または `false` 以外の値を設定するとverboseモードを有効化（`--verbose` と同等） |
+| `BL_VERBOSE` | `0`、`false`、`no`、`off`、空文字以外の値を設定すると verbose モードを有効化（`--verbose` と同等） |
