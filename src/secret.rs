@@ -289,22 +289,24 @@ fn set_impl(
     api_key: &str,
     stores: &[Box<dyn CredentialStore>],
 ) -> Result<Backend> {
-    let mut stores = stores.iter().peekable();
-    while let Some(store) = stores.next() {
+    let mut stores_iter = stores.iter().peekable();
+    let mut last_err = anyhow::anyhow!("No credential store available");
+    while let Some(store) = stores_iter.next() {
         match store.set(space_key, api_key) {
             Ok(()) => return Ok(store.backend()),
-            Err(e) if stores.peek().is_some() => {
+            Err(e) if stores_iter.peek().is_some() => {
                 eprintln!(
                     "{}: {} unavailable ({}), falling back to next store.",
                     "WARNING".yellow(),
                     store.backend(),
                     e
                 );
+                last_err = e;
             }
-            Err(_) => {}
+            Err(e) => last_err = e,
         }
     }
-    anyhow::bail!("No credential store available")
+    Err(last_err)
 }
 
 fn get_impl(space_key: &str, stores: &[Box<dyn CredentialStore>]) -> Result<(String, Backend)> {
@@ -405,5 +407,43 @@ mod tests {
         assert_eq!(Backend::Keyring.to_string(), "System keyring");
         assert_eq!(Backend::File.to_string(), "Credentials file");
         assert_eq!(Backend::Env.to_string(), "Environment variable");
+    }
+
+    struct FailingStore;
+
+    impl CredentialStore for FailingStore {
+        fn backend(&self) -> Backend {
+            Backend::Keyring
+        }
+
+        fn set(&self, _: &str, _: &str) -> Result<()> {
+            anyhow::bail!("keyring unavailable")
+        }
+
+        fn get(&self, _: &str) -> Result<String> {
+            anyhow::bail!("keyring unavailable")
+        }
+
+        fn delete(&self, _: &str) -> Result<()> {
+            anyhow::bail!("keyring unavailable")
+        }
+    }
+
+    #[test]
+    fn set_falls_back_to_second_store_when_first_fails() {
+        let dir = TempDir::new().unwrap();
+        let stores: Vec<Box<dyn CredentialStore>> = vec![Box::new(FailingStore), file_store(&dir)];
+        let backend = set_impl("mycompany", "my-api-key", &stores).unwrap();
+        assert_eq!(backend, Backend::File);
+        assert_eq!(
+            get_impl("mycompany", &[file_store(&dir)]).unwrap().0,
+            "my-api-key"
+        );
+    }
+
+    #[test]
+    fn set_returns_error_when_all_stores_fail() {
+        let stores: Vec<Box<dyn CredentialStore>> = vec![Box::new(FailingStore)];
+        assert!(set_impl("mycompany", "my-api-key", &stores).is_err());
     }
 }
