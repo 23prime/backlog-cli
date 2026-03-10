@@ -104,10 +104,11 @@ Space: mycompany.backlog.com
   - Client ID: abc123
   - Client Secret: abcd...
   - Access token: abcd...
+  - Stored in: System keyring
   - Logged in as Your Name (your-id)
 ```
 
-`BL_API_KEY` が設定されている場合、`Stored in` は `Environment variable` と表示されます。
+API キー認証で `BL_API_KEY` が設定されている場合、`Stored in` は `Environment variable` と表示されます。
 
 ## ログアウト
 

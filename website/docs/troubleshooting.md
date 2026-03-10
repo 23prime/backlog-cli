@@ -2,7 +2,7 @@
 
 ## `API key not found. Run bl auth login to authenticate.`
 
-The API key is missing from the keyring. Run `bl auth login` again.
+No stored credentials found. Run `bl auth login` to authenticate.
 
 ## `API error (401 Unauthorized): Authentication failure`
 

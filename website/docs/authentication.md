@@ -105,10 +105,11 @@ Space: mycompany.backlog.com
   - Client ID: abc123
   - Client Secret: abcd...
   - Access token: abcd...
+  - Stored in: System keyring
   - Logged in as Your Name (your-id)
 ```
 
-When `BL_API_KEY` is set, `Stored in` shows `Environment variable`.
+When using API key auth with `BL_API_KEY` set, `Stored in` shows `Environment variable` instead.
 
 ## Logging out
 

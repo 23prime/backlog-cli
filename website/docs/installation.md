@@ -26,7 +26,7 @@ The binary is installed to `~/.local/bin/bl` by default.
 To install to a different location, set the `INSTALL_DIR` environment variable:
 
 ```bash
-INSTALL_DIR=/usr/local/bin curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.sh | INSTALL_DIR=/usr/local/bin sh
 ```
 
 ## Using the install script (Windows)

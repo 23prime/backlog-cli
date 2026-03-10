@@ -25,7 +25,7 @@ curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.
 別の場所にインストールするには `INSTALL_DIR` 環境変数を設定します。
 
 ```bash
-INSTALL_DIR=/usr/local/bin curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.sh | INSTALL_DIR=/usr/local/bin sh
 ```
 
 ## インストールスクリプト（Windows）

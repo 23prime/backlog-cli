@@ -1,10 +1,19 @@
 # Commands
 
-## Global options
+## Root options
+
+These options are only available on the root `bl` command, not on subcommands.
 
 | Option | Description |
 | --- | --- |
 | `--banner` | Print the Backlog CLI banner and exit |
+
+## Global options
+
+These options are available on all subcommands.
+
+| Option | Description |
+| --- | --- |
 | `--no-color` | Disable colored output |
 | `--space <SPACE_KEY>` | Override the active space for this command |
 
@@ -17,6 +26,7 @@
 | `bl auth status` | Show current auth status and verify credentials |
 | `bl auth list` | List all configured spaces |
 | `bl auth use <space-key>` | Switch the current space |
+| `bl auth keyring` | Check if the system keyring is available |
 | `bl auth logout [<space-key>]` | Remove credentials for the current or specified space |
 | `bl auth logout --all` | Remove all spaces and delete all config files |
 

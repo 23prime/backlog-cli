@@ -2,7 +2,7 @@
 
 ## `API key not found. Run bl auth login to authenticate.`
 
-キーリングに API キーが存在しません。`bl auth login` を再実行してください。
+認証情報が見つかりません。`bl auth login` を再実行してください。
 
 ## `API error (401 Unauthorized): Authentication failure`
 
