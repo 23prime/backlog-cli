@@ -16,6 +16,7 @@ These options are available on all subcommands.
 | --- | --- |
 | `--no-color` | Disable colored output |
 | `--space <SPACE_KEY>` | Override the active space for this command |
+| `--verbose` / `-v` | Print verbose logs to stderr |
 
 ## `bl auth`
 
