@@ -26,3 +26,11 @@ spaces = ["mycompany", "another-company"]
 ```
 
 Old configs using the `[auth] space_key` format are migrated automatically on first run.
+
+## Environment variables
+
+| Variable | Description |
+| --- | --- |
+| `BL_SPACE` | Override the active space (same as `--space`) |
+| `BL_API_KEY` | Override the stored API key |
+| `BL_VERBOSE` | Enable verbose output when set to any value other than `0`, `false`, `no`, `off`, or empty (same as `--verbose`) |

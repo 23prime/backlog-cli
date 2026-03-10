@@ -1,6 +1,7 @@
 mod api;
 mod cmd;
 mod config;
+mod logger;
 mod oauth;
 mod secret;
 
@@ -34,6 +35,9 @@ struct Cli {
     /// Disable colored output
     #[arg(long, global = true)]
     no_color: bool,
+    /// Enable verbose output (show HTTP requests and responses)
+    #[arg(long, short, global = true)]
+    verbose: bool,
     /// Override the active space for this command (or set BL_SPACE env var)
     #[arg(long, global = true, value_name = "SPACE_KEY")]
     space: Option<String>,
@@ -577,6 +581,10 @@ fn run() -> Result<()> {
     if cli.no_color {
         // SAFETY: called before any threads are spawned
         unsafe { std::env::set_var("NO_COLOR", "1") };
+    }
+    if cli.verbose {
+        // SAFETY: called before any threads are spawned
+        unsafe { std::env::set_var("BL_VERBOSE", "1") };
     }
     if let Some(ref space) = cli.space {
         // SAFETY: called before any threads are spawned

@@ -234,7 +234,8 @@ impl BacklogClient {
         let base_url = format!("https://{space_key}.backlog.com/api/v2");
 
         // OAuth tokens take priority over API key.
-        if let Ok((tokens, _backend)) = crate::secret::get_oauth_tokens(&space_key) {
+        if let Ok((tokens, backend)) = crate::secret::get_oauth_tokens(&space_key) {
+            crate::logger::verbose(&format!("Authenticated via OAuth (Bearer) [{backend}]"));
             return Ok(Self {
                 client,
                 base_url,
@@ -248,7 +249,8 @@ impl BacklogClient {
             });
         }
 
-        let (api_key, _) = crate::secret::current_api_key(&space_key)?;
+        let (api_key, backend) = crate::secret::current_api_key(&space_key)?;
+        crate::logger::verbose(&format!("Authenticated via API key [{backend}]"));
         Ok(Self {
             client,
             base_url,
@@ -272,6 +274,7 @@ impl BacklogClient {
     /// Parse a successful or error response body.
     fn finish_response(&self, response: reqwest::blocking::Response) -> Result<serde_json::Value> {
         let status = response.status();
+        crate::logger::verbose(&format!("← {status}"));
         let body: serde_json::Value = response.json().context("Failed to parse JSON response")?;
         if !status.is_success() {
             anyhow::bail!("API error ({}): {}", status, extract_error_message(&body));
@@ -325,6 +328,7 @@ impl BacklogClient {
     pub fn get(&self, path: &str) -> Result<serde_json::Value> {
         let url = format!("{}{}", self.base_url, path);
         self.execute(|| {
+            crate::logger::verbose(&format!("→ GET {url}"));
             self.apply_auth(self.client.get(&url))
                 .send()
                 .with_context(|| format!("Failed to GET {url}"))
@@ -342,6 +346,7 @@ impl BacklogClient {
             .map(|(k, v)| (k.as_str(), v.as_str()))
             .collect();
         self.execute(|| {
+            crate::logger::verbose(&format!("→ GET {url}"));
             self.apply_auth(self.client.get(&url))
                 .query(&extra)
                 .send()
@@ -352,6 +357,7 @@ impl BacklogClient {
     pub fn post_form(&self, path: &str, params: &[(String, String)]) -> Result<serde_json::Value> {
         let url = format!("{}{}", self.base_url, path);
         self.execute(|| {
+            crate::logger::verbose(&format!("→ POST {url}"));
             self.apply_auth(self.client.post(&url))
                 .form(params)
                 .send()
@@ -362,6 +368,7 @@ impl BacklogClient {
     pub fn patch_form(&self, path: &str, params: &[(String, String)]) -> Result<serde_json::Value> {
         let url = format!("{}{}", self.base_url, path);
         self.execute(|| {
+            crate::logger::verbose(&format!("→ PATCH {url}"));
             self.apply_auth(self.client.patch(&url))
                 .form(params)
                 .send()
@@ -376,6 +383,7 @@ impl BacklogClient {
     ) -> Result<serde_json::Value> {
         let url = format!("{}{}", self.base_url, path);
         self.execute(|| {
+            crate::logger::verbose(&format!("→ DELETE {url}"));
             self.apply_auth(self.client.delete(&url))
                 .form(params)
                 .send()
@@ -386,6 +394,7 @@ impl BacklogClient {
     pub fn delete_req(&self, path: &str) -> Result<serde_json::Value> {
         let url = format!("{}{}", self.base_url, path);
         self.execute(|| {
+            crate::logger::verbose(&format!("→ DELETE {url}"));
             self.apply_auth(self.client.delete(&url))
                 .send()
                 .with_context(|| format!("Failed to DELETE {url}"))

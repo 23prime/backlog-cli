@@ -26,3 +26,11 @@ spaces = ["mycompany", "another-company"]
 ```
 
 旧形式（`[auth] space_key`）の設定ファイルは、初回実行時に自動的に移行されます。
+
+## 環境変数
+
+| 変数 | 説明 |
+| --- | --- |
+| `BL_SPACE` | 対象スペースを上書き（`--space` と同等） |
+| `BL_API_KEY` | 保存済み API キーを上書き |
+| `BL_VERBOSE` | `0`、`false`、`no`、`off`、空文字以外の値を設定すると verbose モードを有効化（`--verbose` と同等） |
