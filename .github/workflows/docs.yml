@@ -22,7 +22,7 @@ jobs:
           node-version: lts/*
 
       - name: Enable pnpm via corepack
-        run: corepack enable pnpm
+        run: corepack enable pnpm && corepack prepare pnpm@10.28.1 --activate
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
