@@ -3,3 +3,4 @@ cooldown
 lefthook
 shellcheck
 coderabbit
+peekable
