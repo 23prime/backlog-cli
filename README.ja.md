@@ -26,7 +26,7 @@ curl -fsSL https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.
 irm https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.ps1 | iex
 ```
 
-その他のインストール方法（ソースからのビルドなど）は [ユーザーガイド](docs/user-guide.ja.md#インストール) を参照してください。
+その他のインストール方法（ソースからのビルドなど）は[ドキュメント](https://23prime.github.io/backlog-cli/ja/installation)を参照してください。
 
 ## 使い方
 
@@ -44,7 +44,7 @@ irm https://raw.githubusercontent.com/23prime/backlog-cli/latest/install.ps1 | i
     bl space
     ```
 
-詳細は [ユーザーガイド](docs/user-guide.ja.md) を参照してください。
+詳細は[ドキュメント](https://23prime.github.io/backlog-cli/ja/)を参照してください。
 
 ## 開発
 
