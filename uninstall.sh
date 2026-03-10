@@ -24,10 +24,10 @@ if [ "$PURGE" = "1" ]; then
 
   if [ -x "$BL_BIN" ]; then
     printf "Removing credentials...\n"
-    "$BL_BIN" auth logout 2>/dev/null || true
+    "$BL_BIN" auth logout --all 2>/dev/null || true
   else
     printf "[WARNING] bl binary not found at %s; credentials were not removed automatically.\n" "$BL_BIN" >&2
-    printf "Run 'bl auth logout' from the original install location to clear credentials.\n" >&2
+    printf "Run 'bl auth logout --all' from the original install location to clear credentials.\n" >&2
   fi
 
   if [ -d "$CONFIG_DIR" ]; then
