@@ -8,5 +8,11 @@ pub fn verbose(msg: &str) {
 }
 
 fn is_verbose() -> bool {
-    std::env::var("BL_VERBOSE").is_ok_and(|v| v != "0" && v != "false")
+    match std::env::var("BL_VERBOSE") {
+        Err(_) => false,
+        Ok(val) => !matches!(
+            val.trim().to_ascii_lowercase().as_str(),
+            "" | "0" | "false" | "no" | "off"
+        ),
+    }
 }
