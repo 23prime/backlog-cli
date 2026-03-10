@@ -296,7 +296,7 @@ fn set_impl(
             Err(e) if stores.peek().is_some() => {
                 eprintln!(
                     "{}: {} unavailable ({}), falling back to next store.",
-                    "Warning".yellow(),
+                    "WARNING".yellow(),
                     store.backend(),
                     e
                 );
