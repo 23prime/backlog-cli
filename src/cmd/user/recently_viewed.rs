@@ -305,6 +305,7 @@ mod tests {
         RecentlyViewedIssue {
             issue: sample_issue(),
             updated: "2024-06-01T00:00:00Z".to_string(),
+            extra: BTreeMap::new(),
         }
     }
 

@@ -6,6 +6,15 @@ use super::BacklogClient;
 use crate::api::activity::Activity;
 use crate::api::issue::Issue;
 
+fn deserialize<T: serde::de::DeserializeOwned>(value: serde_json::Value, ctx: &str) -> Result<T> {
+    serde_json::from_value(value.clone()).map_err(|e| {
+        anyhow::anyhow!(
+            "Failed to deserialize {ctx}: {e}\nRaw JSON:\n{}",
+            serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+        )
+    })
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct User {
@@ -29,47 +38,34 @@ pub struct User {
 pub struct RecentlyViewedIssue {
     pub issue: Issue,
     pub updated: String,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, serde_json::Value>,
 }
 
 impl BacklogClient {
     pub fn get_myself(&self) -> Result<User> {
         let value = self.get("/users/myself")?;
-        serde_json::from_value(value)
-            .map_err(|e| anyhow::anyhow!("Failed to deserialize user response: {}", e))
+        deserialize(value, "user response")
     }
 
     pub fn get_users(&self) -> Result<Vec<User>> {
         let value = self.get("/users")?;
-        serde_json::from_value(value)
-            .map_err(|e| anyhow::anyhow!("Failed to deserialize users response: {}", e))
+        deserialize(value, "users response")
     }
 
     pub fn get_user(&self, user_id: u64) -> Result<User> {
         let value = self.get(&format!("/users/{user_id}"))?;
-        serde_json::from_value(value)
-            .map_err(|e| anyhow::anyhow!("Failed to deserialize user response: {}", e))
+        deserialize(value, "user response")
     }
 
     pub fn get_user_activities(&self, user_id: u64) -> Result<Vec<Activity>> {
         let value = self.get(&format!("/users/{user_id}/activities"))?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize user activities response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value, "user activities response")
     }
 
     pub fn get_recently_viewed_issues(&self) -> Result<Vec<RecentlyViewedIssue>> {
         let value = self.get("/users/myself/recentlyViewedIssues")?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize recently viewed issues response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value, "recently viewed issues response")
     }
 }
 
