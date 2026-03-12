@@ -522,6 +522,45 @@ bl wiki attachment list 12345 --json
 [2] notes.txt (1024 bytes)
 ```
 
+## `bl user list`
+
+スペース内のユーザーを一覧表示します。
+Space Administrator 権限が必要です。権限がない場合は `403 Forbidden` が返ります。
+
+```bash
+bl user list
+bl user list --json
+```
+
+出力例:
+
+```text
+[john] John Doe
+[jane] Jane Smith
+[12345] Bot User
+```
+
+## `bl user show`
+
+数値 ID でユーザーの詳細を表示します。
+
+```bash
+bl user show <id>
+bl user show <id> --json
+```
+
+出力例:
+
+```text
+ID:           123
+User ID:      john
+Name:         John Doe
+Mail:         john@example.com
+Role:         1
+Lang:         ja
+Last login:   2024-06-01T00:00:00Z
+```
+
 ## コマンドカバレッジ
 
 Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
@@ -601,8 +640,8 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | コマンド | API エンドポイント | 状態 |
 | --- | --- | --- |
 | `bl auth status` | `GET /api/v2/users/myself` | ✅ 実装済み（内部） |
-| `bl user list` | `GET /api/v2/users` | 計画中 |
-| `bl user show <id>` | `GET /api/v2/users/{userId}` | 計画中 |
+| `bl user list` | `GET /api/v2/users` | ✅ 実装済み |
+| `bl user show <id>` | `GET /api/v2/users/{userId}` | ✅ 実装済み |
 | `bl user activities <id>` | `GET /api/v2/users/{userId}/activities` | 計画中 |
 | `bl user recently-viewed <id>` | `GET /api/v2/users/{userId}/recentlyViewedIssues` | 計画中 |
 

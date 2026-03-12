@@ -522,6 +522,45 @@ Example output:
 [2] notes.txt (1024 bytes)
 ```
 
+## `bl user list`
+
+List all users in the space.
+Requires Space Administrator privileges. Non-admin users will receive `403 Forbidden`.
+
+```bash
+bl user list
+bl user list --json
+```
+
+Example output:
+
+```text
+[john] John Doe
+[jane] Jane Smith
+[12345] Bot User
+```
+
+## `bl user show`
+
+Show details of a specific user by numeric ID.
+
+```bash
+bl user show <id>
+bl user show <id> --json
+```
+
+Example output:
+
+```text
+ID:           123
+User ID:      john
+Name:         John Doe
+Mail:         john@example.com
+Role:         1
+Lang:         ja
+Last login:   2024-06-01T00:00:00Z
+```
+
 ## Command coverage
 
 The table below maps Backlog API v2 endpoints to `bl` commands.
@@ -601,8 +640,8 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | Command | API endpoint | Status |
 | --- | --- | --- |
 | `bl auth status` | `GET /api/v2/users/myself` | ✅ Implemented (internal) |
-| `bl user list` | `GET /api/v2/users` | Planned |
-| `bl user show <id>` | `GET /api/v2/users/{userId}` | Planned |
+| `bl user list` | `GET /api/v2/users` | ✅ Implemented |
+| `bl user show <id>` | `GET /api/v2/users/{userId}` | ✅ Implemented |
 | `bl user activities <id>` | `GET /api/v2/users/{userId}/activities` | Planned |
 | `bl user recently-viewed <id>` | `GET /api/v2/users/{userId}/recentlyViewedIssues` | Planned |
 
