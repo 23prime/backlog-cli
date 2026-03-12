@@ -8,8 +8,10 @@ use super::BacklogClient;
 #[serde(rename_all = "camelCase")]
 pub struct User {
     pub id: u64,
+    /// `null` for bot accounts (e.g. automation bots have no userId in Backlog API).
     pub user_id: Option<String>,
     pub name: String,
+    /// `null` for bot accounts.
     pub mail_address: Option<String>,
     pub role_type: u8,
     #[serde(default)]
