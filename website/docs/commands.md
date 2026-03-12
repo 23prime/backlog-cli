@@ -541,6 +541,7 @@ Example output:
 ## `bl team show`
 
 Show details of a specific team.
+Depending on the Backlog space configuration, this command may return `403 Forbidden`.
 
 ```bash
 bl team show <id>

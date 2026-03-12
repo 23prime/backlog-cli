@@ -541,6 +541,7 @@ bl team list --json
 ## `bl team show`
 
 特定のチームの詳細を表示します。
+スペースの設定によっては `403 Forbidden` が返ることがあります。
 
 ```bash
 bl team show <id>
