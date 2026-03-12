@@ -2,103 +2,76 @@ use anstream::println;
 use anyhow::{Context, Result};
 use owo_colors::OwoColorize;
 
-use crate::api::{BacklogApi, BacklogClient, issue::IssueComment};
+use crate::api::{BacklogApi, BacklogClient, user::User};
 
-pub struct IssueCommentListArgs {
-    key: String,
+pub struct UserShowArgs {
+    id: u64,
     json: bool,
 }
 
-impl IssueCommentListArgs {
-    pub fn new(key: String, json: bool) -> Self {
-        Self { key, json }
+impl UserShowArgs {
+    pub fn new(id: u64, json: bool) -> Self {
+        Self { id, json }
     }
 }
 
-pub fn list(args: &IssueCommentListArgs) -> Result<()> {
+pub fn show(args: &UserShowArgs) -> Result<()> {
     let client = BacklogClient::from_config()?;
-    list_with(args, &client)
+    show_with(args, &client)
 }
 
-pub fn list_with(args: &IssueCommentListArgs, api: &dyn BacklogApi) -> Result<()> {
-    let comments = api.get_issue_comments(&args.key)?;
+pub fn show_with(args: &UserShowArgs, api: &dyn BacklogApi) -> Result<()> {
+    let user = api.get_user(args.id)?;
     if args.json {
         println!(
             "{}",
-            serde_json::to_string_pretty(&comments).context("Failed to serialize JSON")?
+            serde_json::to_string_pretty(&user).context("Failed to serialize JSON")?
         );
     } else {
-        for c in &comments {
-            println!("{}", format_comment_row(c));
-        }
+        println!("{}", format_user_text(&user));
     }
     Ok(())
 }
 
-pub fn format_comment_row(c: &IssueComment) -> String {
-    let content = c.content.as_deref().unwrap_or("(no content)");
+fn format_user_text(u: &User) -> String {
+    let user_id = u.user_id.as_deref().unwrap_or("-");
+    let mail = u.mail_address.as_deref().unwrap_or("-");
+    let lang = u.lang.as_deref().unwrap_or("-");
+    let last_login = u.last_login_time.as_deref().unwrap_or("-");
     format!(
-        "[{}] {} ({}): {}",
-        c.id.to_string().cyan().bold(),
-        c.created_user.name,
-        c.created,
-        content
+        "ID:           {}\nUser ID:      {}\nName:         {}\nMail:         {}\nRole:         {}\nLang:         {}\nLast login:   {}",
+        u.id.to_string().bold(),
+        user_id,
+        u.name,
+        mail,
+        u.role_type,
+        lang,
+        last_login,
     )
-}
-
-#[cfg(test)]
-use crate::api::issue::IssueUser;
-#[cfg(test)]
-use std::collections::BTreeMap;
-
-#[cfg(test)]
-fn sample_user() -> IssueUser {
-    IssueUser {
-        id: 1,
-        user_id: Some("john".to_string()),
-        name: "John Doe".to_string(),
-        role_type: 1,
-        lang: None,
-        mail_address: None,
-        extra: BTreeMap::new(),
-    }
-}
-
-#[cfg(test)]
-pub(crate) fn sample_comment() -> crate::api::issue::IssueComment {
-    use crate::api::issue::IssueComment;
-    IssueComment {
-        id: 1,
-        content: Some("A comment".to_string()),
-        created_user: sample_user(),
-        created: "2024-01-01T00:00:00Z".to_string(),
-        updated: "2024-01-01T00:00:00Z".to_string(),
-        extra: BTreeMap::new(),
-    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::issue::{Issue, IssueAttachment, IssueComment, IssueCount};
     use anyhow::anyhow;
+    use std::collections::BTreeMap;
 
     struct MockApi {
-        comments: Option<Vec<IssueComment>>,
+        user: Option<User>,
     }
 
     impl crate::api::BacklogApi for MockApi {
         fn get_space(&self) -> anyhow::Result<crate::api::space::Space> {
             unimplemented!()
         }
-        fn get_myself(&self) -> anyhow::Result<crate::api::user::User> {
+        fn get_myself(&self) -> anyhow::Result<User> {
             unimplemented!()
         }
-        fn get_users(&self) -> anyhow::Result<Vec<crate::api::user::User>> {
+        fn get_users(&self) -> anyhow::Result<Vec<User>> {
             unimplemented!()
         }
-        fn get_user(&self, _user_id: u64) -> anyhow::Result<crate::api::user::User> {
-            unimplemented!()
+        fn get_user(&self, _user_id: u64) -> anyhow::Result<User> {
+            self.user.clone().ok_or_else(|| anyhow!("no user"))
         }
         fn get_space_activities(&self) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
             unimplemented!()
@@ -159,32 +132,48 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::project::ProjectVersion>> {
             unimplemented!()
         }
-        fn get_issues(&self, _params: &[(String, String)]) -> anyhow::Result<Vec<Issue>> {
+        fn get_issues(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::issue::Issue>> {
             unimplemented!()
         }
-        fn count_issues(&self, _params: &[(String, String)]) -> anyhow::Result<IssueCount> {
+        fn count_issues(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::IssueCount> {
             unimplemented!()
         }
-        fn get_issue(&self, _key: &str) -> anyhow::Result<Issue> {
+        fn get_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
             unimplemented!()
         }
-        fn create_issue(&self, _params: &[(String, String)]) -> anyhow::Result<Issue> {
+        fn create_issue(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::Issue> {
             unimplemented!()
         }
-        fn update_issue(&self, _key: &str, _params: &[(String, String)]) -> anyhow::Result<Issue> {
+        fn update_issue(
+            &self,
+            _key: &str,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::Issue> {
             unimplemented!()
         }
-        fn delete_issue(&self, _key: &str) -> anyhow::Result<Issue> {
+        fn delete_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
             unimplemented!()
         }
-        fn get_issue_comments(&self, _key: &str) -> anyhow::Result<Vec<IssueComment>> {
-            self.comments.clone().ok_or_else(|| anyhow!("no comments"))
+        fn get_issue_comments(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueComment>> {
+            unimplemented!()
         }
         fn add_issue_comment(
             &self,
             _key: &str,
             _params: &[(String, String)],
-        ) -> anyhow::Result<IssueComment> {
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
             unimplemented!()
         }
         fn update_issue_comment(
@@ -192,17 +181,20 @@ mod tests {
             _key: &str,
             _comment_id: u64,
             _params: &[(String, String)],
-        ) -> anyhow::Result<IssueComment> {
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
             unimplemented!()
         }
         fn delete_issue_comment(
             &self,
             _key: &str,
             _comment_id: u64,
-        ) -> anyhow::Result<IssueComment> {
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
             unimplemented!()
         }
-        fn get_issue_attachments(&self, _key: &str) -> anyhow::Result<Vec<IssueAttachment>> {
+        fn get_issue_attachments(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueAttachment>> {
             unimplemented!()
         }
         fn get_wikis(
@@ -248,46 +240,65 @@ mod tests {
         }
     }
 
-    fn args(json: bool) -> IssueCommentListArgs {
-        IssueCommentListArgs::new("TEST-1".to_string(), json)
+    fn sample_user() -> User {
+        User {
+            id: 123,
+            user_id: Some("john".to_string()),
+            name: "John Doe".to_string(),
+            mail_address: Some("john@example.com".to_string()),
+            role_type: 1,
+            lang: Some("ja".to_string()),
+            last_login_time: Some("2024-01-01T00:00:00Z".to_string()),
+            extra: BTreeMap::new(),
+        }
     }
 
     #[test]
-    fn list_with_text_output_succeeds() {
+    fn show_with_text_output_succeeds() {
         let api = MockApi {
-            comments: Some(vec![sample_comment()]),
+            user: Some(sample_user()),
         };
-        assert!(list_with(&args(false), &api).is_ok());
+        assert!(show_with(&UserShowArgs::new(123, false), &api).is_ok());
     }
 
     #[test]
-    fn list_with_json_output_succeeds() {
+    fn show_with_json_output_succeeds() {
         let api = MockApi {
-            comments: Some(vec![sample_comment()]),
+            user: Some(sample_user()),
         };
-        assert!(list_with(&args(true), &api).is_ok());
+        assert!(show_with(&UserShowArgs::new(123, true), &api).is_ok());
     }
 
     #[test]
-    fn list_with_propagates_api_error() {
-        let api = MockApi { comments: None };
-        let err = list_with(&args(false), &api).unwrap_err();
-        assert!(err.to_string().contains("no comments"));
+    fn show_with_propagates_api_error() {
+        let api = MockApi { user: None };
+        let err = show_with(&UserShowArgs::new(999, false), &api).unwrap_err();
+        assert!(err.to_string().contains("no user"));
     }
 
     #[test]
-    fn format_comment_row_with_content() {
-        let row = format_comment_row(&sample_comment());
-        assert!(row.contains('1'));
-        assert!(row.contains("John Doe"));
-        assert!(row.contains("A comment"));
+    fn format_user_text_contains_fields() {
+        let text = format_user_text(&sample_user());
+        assert!(text.contains("123"));
+        assert!(text.contains("john"));
+        assert!(text.contains("John Doe"));
+        assert!(text.contains("john@example.com"));
     }
 
     #[test]
-    fn format_comment_row_null_content() {
-        let mut c = sample_comment();
-        c.content = None;
-        let row = format_comment_row(&c);
-        assert!(row.contains("(no content)"));
+    fn format_user_text_handles_nulls() {
+        let user = User {
+            id: 1,
+            user_id: None,
+            name: "Bot".to_string(),
+            mail_address: None,
+            role_type: 2,
+            lang: None,
+            last_login_time: None,
+            extra: BTreeMap::new(),
+        };
+        let text = format_user_text(&user);
+        assert!(text.contains("Bot"));
+        assert!(text.contains('-'));
     }
 }

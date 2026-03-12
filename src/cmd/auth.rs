@@ -276,7 +276,11 @@ pub fn status_with(
     }
 
     match api.get_myself() {
-        Ok(user) => println!("  - Logged in as {} ({})", user.name.green(), user.user_id),
+        Ok(user) => println!(
+            "  - Logged in as {} ({})",
+            user.name.green(),
+            user.user_id.as_deref().unwrap_or("-")
+        ),
         Err(e) => println!("  {} Token invalid: {}", "!".red(), e),
     }
 
@@ -374,6 +378,14 @@ mod tests {
             self.user
                 .clone()
                 .ok_or_else(|| anyhow!("invalid credentials"))
+        }
+
+        fn get_users(&self) -> anyhow::Result<Vec<User>> {
+            unimplemented!()
+        }
+
+        fn get_user(&self, _user_id: u64) -> anyhow::Result<User> {
+            unimplemented!()
         }
 
         fn get_space_activities(&self) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
@@ -550,10 +562,13 @@ mod tests {
     fn sample_user() -> User {
         User {
             id: 1,
-            user_id: "john".to_string(),
+            user_id: Some("john".to_string()),
             name: "John Doe".to_string(),
-            mail_address: "john@example.com".to_string(),
+            mail_address: Some("john@example.com".to_string()),
             role_type: 1,
+            lang: None,
+            last_login_time: None,
+            extra: std::collections::BTreeMap::new(),
         }
     }
 

@@ -30,6 +30,8 @@ use wiki::{Wiki, WikiAttachment, WikiHistory, WikiListItem};
 pub trait BacklogApi {
     fn get_space(&self) -> Result<Space>;
     fn get_myself(&self) -> Result<User>;
+    fn get_users(&self) -> Result<Vec<User>>;
+    fn get_user(&self, user_id: u64) -> Result<User>;
     fn get_space_activities(&self) -> Result<Vec<Activity>>;
     fn get_space_disk_usage(&self) -> Result<DiskUsage>;
     fn get_space_notification(&self) -> Result<SpaceNotification>;
@@ -74,6 +76,14 @@ impl BacklogApi for BacklogClient {
 
     fn get_myself(&self) -> Result<User> {
         self.get_myself()
+    }
+
+    fn get_users(&self) -> Result<Vec<User>> {
+        self.get_users()
+    }
+
+    fn get_user(&self, user_id: u64) -> Result<User> {
+        self.get_user(user_id)
     }
 
     fn get_space_activities(&self) -> Result<Vec<Activity>> {
