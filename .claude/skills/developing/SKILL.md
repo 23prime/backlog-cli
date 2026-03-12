@@ -30,10 +30,10 @@ git switch -c feature/<name>
 
 ## Step 3 — Pick a feature (feature tasks only)
 
-Read `docs/user-guide.md` and pick the first "Planned" entry from the command coverage table.
+Read `website/docs/commands.md` and pick the first "Planned" entry from the command coverage table.
 Confirm the selection with the user before proceeding.
 
-For feature tasks, also read `references/patterns.md` for code patterns and known gotchas, and check the official API docs before writing structs:
+For feature tasks, check the official API docs before writing structs:
 
 - **API docs**: <https://developer.nulab.com/docs/backlog/>
 - **Official SDK**: <https://github.com/nulab/backlog-js/> (ground truth for field names and types)
@@ -47,7 +47,7 @@ Follow `AGENTS.md` conventions. For feature tasks, the typical file order is:
 3. `src/cmd/<resource>/<subcommand>.rs` — `<cmd>()` + `<cmd>_with()` + tests
 4. `src/cmd/<resource>/mod.rs` — re-export
 5. `src/main.rs` — clap wiring
-6. `docs/user-guide.md` — mark as implemented
+6. `website/docs/commands.md` and `website/i18n/ja/docusaurus-plugin-content-docs/current/commands.md` — add command docs and mark as implemented in the coverage table
 
 ## Step 5 — Auto-fix and check
 
