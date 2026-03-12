@@ -24,6 +24,7 @@ use cmd::project::user::ProjectUserListArgs;
 use cmd::project::version::ProjectVersionListArgs;
 use cmd::project::{ProjectActivitiesArgs, ProjectDiskUsageArgs, ProjectListArgs, ProjectShowArgs};
 use cmd::space::{SpaceActivitiesArgs, SpaceDiskUsageArgs, SpaceNotificationArgs, SpaceShowArgs};
+use cmd::user::{UserListArgs, UserShowArgs};
 use cmd::wiki::attachment::WikiAttachmentListArgs;
 use cmd::wiki::{
     WikiCreateArgs, WikiDeleteArgs, WikiHistoryArgs, WikiListArgs, WikiShowArgs, WikiUpdateArgs,
@@ -77,6 +78,11 @@ enum Commands {
     Wiki {
         #[command(subcommand)]
         action: WikiCommands,
+    },
+    /// Manage users
+    User {
+        #[command(subcommand)]
+        action: UserCommands,
     },
 }
 
@@ -526,6 +532,24 @@ enum WikiAttachmentCommands {
 }
 
 #[derive(Subcommand)]
+enum UserCommands {
+    /// List users in the space
+    List {
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Show a user
+    Show {
+        /// User numeric ID
+        id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
 enum AuthCommands {
     /// Login with your API key
     Login {
@@ -825,6 +849,10 @@ fn run() -> Result<()> {
                     cmd::wiki::attachment::list(&WikiAttachmentListArgs::new(wiki_id, json))
                 }
             },
+        },
+        Commands::User { action } => match action {
+            UserCommands::List { json } => cmd::user::list(&UserListArgs::new(json)),
+            UserCommands::Show { id, json } => cmd::user::show(&UserShowArgs::new(id, json)),
         },
         Commands::Space { action, json } => match action {
             None => cmd::space::show(&SpaceShowArgs::new(json)),

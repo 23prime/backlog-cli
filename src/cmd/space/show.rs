@@ -60,6 +60,12 @@ mod tests {
         fn get_myself(&self) -> Result<crate::api::user::User> {
             unimplemented!()
         }
+        fn get_users(&self) -> anyhow::Result<Vec<crate::api::user::User>> {
+            unimplemented!()
+        }
+        fn get_user(&self, _user_id: u64) -> anyhow::Result<crate::api::user::User> {
+            unimplemented!()
+        }
         fn get_space_activities(&self) -> Result<Vec<crate::api::activity::Activity>> {
             unimplemented!()
         }
