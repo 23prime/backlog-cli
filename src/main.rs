@@ -24,6 +24,7 @@ use cmd::project::user::ProjectUserListArgs;
 use cmd::project::version::ProjectVersionListArgs;
 use cmd::project::{ProjectActivitiesArgs, ProjectDiskUsageArgs, ProjectListArgs, ProjectShowArgs};
 use cmd::space::{SpaceActivitiesArgs, SpaceDiskUsageArgs, SpaceNotificationArgs, SpaceShowArgs};
+use cmd::team::{TeamListArgs, TeamShowArgs};
 use cmd::user::{UserListArgs, UserShowArgs};
 use cmd::wiki::attachment::WikiAttachmentListArgs;
 use cmd::wiki::{
@@ -83,6 +84,11 @@ enum Commands {
     User {
         #[command(subcommand)]
         action: UserCommands,
+    },
+    /// Manage teams
+    Team {
+        #[command(subcommand)]
+        action: TeamCommands,
     },
 }
 
@@ -550,6 +556,24 @@ enum UserCommands {
 }
 
 #[derive(Subcommand)]
+enum TeamCommands {
+    /// List all teams in the space
+    List {
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Show details of a specific team
+    Show {
+        /// Team numeric ID
+        id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
 enum AuthCommands {
     /// Login with your API key
     Login {
@@ -853,6 +877,10 @@ fn run() -> Result<()> {
         Commands::User { action } => match action {
             UserCommands::List { json } => cmd::user::list(&UserListArgs::new(json)),
             UserCommands::Show { id, json } => cmd::user::show(&UserShowArgs::new(id, json)),
+        },
+        Commands::Team { action } => match action {
+            TeamCommands::List { json } => cmd::team::list(&TeamListArgs::new(json)),
+            TeamCommands::Show { id, json } => cmd::team::show(&TeamShowArgs::new(id, json)),
         },
         Commands::Space { action, json } => match action {
             None => cmd::space::show(&SpaceShowArgs::new(json)),

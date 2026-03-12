@@ -233,6 +233,12 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::wiki::WikiAttachment>> {
             unimplemented!()
         }
+        fn get_teams(&self) -> anyhow::Result<Vec<crate::api::team::Team>> {
+            unimplemented!()
+        }
+        fn get_team(&self, _team_id: u64) -> anyhow::Result<crate::api::team::Team> {
+            unimplemented!()
+        }
     }
 
     fn sample_project() -> Project {

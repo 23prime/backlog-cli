@@ -213,6 +213,12 @@ mod tests {
         fn get_wiki_attachments(&self, _wiki_id: u64) -> anyhow::Result<Vec<WikiAttachment>> {
             unimplemented!()
         }
+        fn get_teams(&self) -> anyhow::Result<Vec<crate::api::team::Team>> {
+            unimplemented!()
+        }
+        fn get_team(&self, _team_id: u64) -> anyhow::Result<crate::api::team::Team> {
+            unimplemented!()
+        }
     }
 
     fn sample_history(user: WikiUser) -> WikiHistory {

@@ -522,6 +522,44 @@ bl wiki attachment list 12345 --json
 [2] notes.txt (1024 bytes)
 ```
 
+## `bl team list`
+
+スペース内のチームを一覧表示します。
+
+```bash
+bl team list
+bl team list --json
+```
+
+出力例:
+
+```text
+[1] dev-team (3 members)
+[2] design-team (2 members)
+```
+
+## `bl team show`
+
+特定のチームの詳細を表示します。
+スペースの設定によっては `403 Forbidden` が返ることがあります。
+
+```bash
+bl team show <id>
+bl team show <id> --json
+```
+
+出力例:
+
+```text
+ID:      1
+Name:    dev-team
+Created: 2024-01-01T00:00:00Z
+Updated: 2024-06-01T00:00:00Z
+Members:
+    [2] Developer
+    [3] Engineer
+```
+
 ## `bl user list`
 
 スペース内のユーザーを一覧表示します。
@@ -665,5 +703,5 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 
 | コマンド | API エンドポイント | 状態 |
 | --- | --- | --- |
-| `bl team list` | `GET /api/v2/teams` | 計画中 |
-| `bl team show <id>` | `GET /api/v2/teams/{teamId}` | 計画中 |
+| `bl team list` | `GET /api/v2/teams` | ✅ 実装済み |
+| `bl team show <id>` | `GET /api/v2/teams/{teamId}` | ✅ 実装済み |

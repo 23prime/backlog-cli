@@ -1,50 +1,52 @@
 use anstream::println;
 use anyhow::{Context, Result};
 
-use crate::api::{BacklogApi, BacklogClient, project::ProjectStatus};
+use crate::api::{BacklogApi, BacklogClient, team::Team};
 
-pub struct ProjectStatusListArgs {
-    key: String,
+pub struct TeamListArgs {
     json: bool,
 }
 
-impl ProjectStatusListArgs {
-    pub fn new(key: String, json: bool) -> Self {
-        Self { key, json }
+impl TeamListArgs {
+    pub fn new(json: bool) -> Self {
+        Self { json }
     }
 }
 
-pub fn list(args: &ProjectStatusListArgs) -> Result<()> {
+pub fn list(args: &TeamListArgs) -> Result<()> {
     let client = BacklogClient::from_config()?;
     list_with(args, &client)
 }
 
-pub fn list_with(args: &ProjectStatusListArgs, api: &dyn BacklogApi) -> Result<()> {
-    let statuses = api.get_project_statuses(&args.key)?;
+pub fn list_with(args: &TeamListArgs, api: &dyn BacklogApi) -> Result<()> {
+    let teams = api.get_teams()?;
     if args.json {
         println!(
             "{}",
-            serde_json::to_string_pretty(&statuses).context("Failed to serialize JSON")?
+            serde_json::to_string_pretty(&teams).context("Failed to serialize JSON")?
         );
     } else {
-        for s in &statuses {
-            println!("{}", format_status_row(s));
+        for t in &teams {
+            println!("{}", format_team_row(t));
         }
     }
     Ok(())
 }
 
-fn format_status_row(s: &ProjectStatus) -> String {
-    format!("[{}] {}", s.id, s.name)
+fn format_team_row(t: &Team) -> String {
+    format!("[{}] {} ({} members)", t.id, t.name, t.members.len())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use anyhow::anyhow;
+    use std::collections::BTreeMap;
+
+    use crate::api::team::{Team, TeamMember};
 
     struct MockApi {
-        statuses: Option<Vec<ProjectStatus>>,
+        teams: Option<Vec<Team>>,
     }
 
     impl crate::api::BacklogApi for MockApi {
@@ -95,8 +97,11 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::project::ProjectUser>> {
             unimplemented!()
         }
-        fn get_project_statuses(&self, _key: &str) -> anyhow::Result<Vec<ProjectStatus>> {
-            self.statuses.clone().ok_or_else(|| anyhow!("no statuses"))
+        fn get_project_statuses(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::project::ProjectStatus>> {
+            unimplemented!()
         }
         fn get_project_issue_types(
             &self,
@@ -222,52 +227,67 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::wiki::WikiAttachment>> {
             unimplemented!()
         }
-        fn get_teams(&self) -> anyhow::Result<Vec<crate::api::team::Team>> {
-            unimplemented!()
+        fn get_teams(&self) -> anyhow::Result<Vec<Team>> {
+            self.teams.clone().ok_or_else(|| anyhow!("no teams"))
         }
-        fn get_team(&self, _team_id: u64) -> anyhow::Result<crate::api::team::Team> {
+        fn get_team(&self, _team_id: u64) -> anyhow::Result<Team> {
             unimplemented!()
         }
     }
 
-    fn sample_status() -> ProjectStatus {
-        ProjectStatus {
+    fn sample_member() -> TeamMember {
+        TeamMember {
+            id: 2,
+            user_id: Some("dev".to_string()),
+            name: "Developer".to_string(),
+            role_type: 2,
+            lang: None,
+            mail_address: Some("dev@example.com".to_string()),
+            last_login_time: None,
+            extra: BTreeMap::new(),
+        }
+    }
+
+    fn sample_team() -> Team {
+        Team {
             id: 1,
-            project_id: 10,
-            name: "Open".to_string(),
-            color: "#ed8077".to_string(),
-            display_order: 1000,
+            name: "dev-team".to_string(),
+            members: vec![sample_member()],
+            display_order: None,
+            created: "2024-01-01T00:00:00Z".to_string(),
+            updated: "2024-06-01T00:00:00Z".to_string(),
+            extra: BTreeMap::new(),
         }
     }
 
     #[test]
-    fn format_status_row_contains_fields() {
-        let text = format_status_row(&sample_status());
+    fn format_team_row_shows_id_name_member_count() {
+        let text = format_team_row(&sample_team());
         assert!(text.contains("[1]"));
-        assert!(text.contains("Open"));
+        assert!(text.contains("dev-team"));
+        assert!(text.contains("1 members"));
     }
 
     #[test]
     fn list_with_text_output_succeeds() {
         let api = MockApi {
-            statuses: Some(vec![sample_status()]),
+            teams: Some(vec![sample_team()]),
         };
-        assert!(list_with(&ProjectStatusListArgs::new("TEST".to_string(), false), &api).is_ok());
+        assert!(list_with(&TeamListArgs::new(false), &api).is_ok());
     }
 
     #[test]
     fn list_with_json_output_succeeds() {
         let api = MockApi {
-            statuses: Some(vec![sample_status()]),
+            teams: Some(vec![sample_team()]),
         };
-        assert!(list_with(&ProjectStatusListArgs::new("TEST".to_string(), true), &api).is_ok());
+        assert!(list_with(&TeamListArgs::new(true), &api).is_ok());
     }
 
     #[test]
     fn list_with_propagates_api_error() {
-        let api = MockApi { statuses: None };
-        let err =
-            list_with(&ProjectStatusListArgs::new("TEST".to_string(), false), &api).unwrap_err();
-        assert!(err.to_string().contains("no statuses"));
+        let api = MockApi { teams: None };
+        let err = list_with(&TeamListArgs::new(false), &api).unwrap_err();
+        assert!(err.to_string().contains("no teams"));
     }
 }
