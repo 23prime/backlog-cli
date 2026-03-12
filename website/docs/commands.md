@@ -522,6 +522,43 @@ Example output:
 [2] notes.txt (1024 bytes)
 ```
 
+## `bl team list`
+
+List all teams in the space.
+
+```bash
+bl team list
+bl team list --json
+```
+
+Example output:
+
+```text
+[1] dev-team (3 members)
+[2] design-team (2 members)
+```
+
+## `bl team show`
+
+Show details of a specific team.
+
+```bash
+bl team show <id>
+bl team show <id> --json
+```
+
+Example output:
+
+```text
+ID:      1
+Name:    dev-team
+Created: 2024-01-01T00:00:00Z
+Updated: 2024-06-01T00:00:00Z
+Members:
+    [2] Developer
+    [3] Engineer
+```
+
 ## `bl user list`
 
 List all users in the space.
@@ -665,5 +702,5 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 
 | Command | API endpoint | Status |
 | --- | --- | --- |
-| `bl team list` | `GET /api/v2/teams` | Planned |
-| `bl team show <id>` | `GET /api/v2/teams/{teamId}` | Planned |
+| `bl team list` | `GET /api/v2/teams` | ✅ Implemented |
+| `bl team show <id>` | `GET /api/v2/teams/{teamId}` | ✅ Implemented |

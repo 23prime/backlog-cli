@@ -215,6 +215,12 @@ mod tests {
                 .clone()
                 .ok_or_else(|| anyhow!("no attachments"))
         }
+        fn get_teams(&self) -> anyhow::Result<Vec<crate::api::team::Team>> {
+            unimplemented!()
+        }
+        fn get_team(&self, _team_id: u64) -> anyhow::Result<crate::api::team::Team> {
+            unimplemented!()
+        }
     }
 
     fn sample_attachment() -> WikiAttachment {

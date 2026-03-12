@@ -12,6 +12,7 @@ pub mod issue;
 pub mod project;
 pub mod space;
 pub mod space_notification;
+pub mod team;
 pub mod user;
 pub mod wiki;
 
@@ -24,6 +25,7 @@ use project::{
 };
 use space::Space;
 use space_notification::SpaceNotification;
+use team::Team;
 use user::User;
 use wiki::{Wiki, WikiAttachment, WikiHistory, WikiListItem};
 
@@ -67,6 +69,8 @@ pub trait BacklogApi {
     fn delete_wiki(&self, wiki_id: u64, params: &[(String, String)]) -> Result<Wiki>;
     fn get_wiki_history(&self, wiki_id: u64) -> Result<Vec<WikiHistory>>;
     fn get_wiki_attachments(&self, wiki_id: u64) -> Result<Vec<WikiAttachment>>;
+    fn get_teams(&self) -> Result<Vec<Team>>;
+    fn get_team(&self, team_id: u64) -> Result<Team>;
 }
 
 impl BacklogApi for BacklogClient {
@@ -209,6 +213,14 @@ impl BacklogApi for BacklogClient {
 
     fn get_wiki_attachments(&self, wiki_id: u64) -> Result<Vec<WikiAttachment>> {
         self.get_wiki_attachments(wiki_id)
+    }
+
+    fn get_teams(&self) -> Result<Vec<Team>> {
+        self.get_teams()
+    }
+
+    fn get_team(&self, team_id: u64) -> Result<Team> {
+        self.get_team(team_id)
     }
 }
 
