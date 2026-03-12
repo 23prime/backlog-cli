@@ -26,7 +26,7 @@ use project::{
 use space::Space;
 use space_notification::SpaceNotification;
 use team::Team;
-use user::User;
+use user::{RecentlyViewedIssue, User};
 use wiki::{Wiki, WikiAttachment, WikiHistory, WikiListItem};
 
 pub trait BacklogApi {
@@ -71,6 +71,8 @@ pub trait BacklogApi {
     fn get_wiki_attachments(&self, wiki_id: u64) -> Result<Vec<WikiAttachment>>;
     fn get_teams(&self) -> Result<Vec<Team>>;
     fn get_team(&self, team_id: u64) -> Result<Team>;
+    fn get_user_activities(&self, user_id: u64) -> Result<Vec<Activity>>;
+    fn get_recently_viewed_issues(&self) -> Result<Vec<RecentlyViewedIssue>>;
 }
 
 impl BacklogApi for BacklogClient {
@@ -221,6 +223,14 @@ impl BacklogApi for BacklogClient {
 
     fn get_team(&self, team_id: u64) -> Result<Team> {
         self.get_team(team_id)
+    }
+
+    fn get_user_activities(&self, user_id: u64) -> Result<Vec<Activity>> {
+        self.get_user_activities(user_id)
+    }
+
+    fn get_recently_viewed_issues(&self) -> Result<Vec<RecentlyViewedIssue>> {
+        self.get_recently_viewed_issues()
     }
 }
 

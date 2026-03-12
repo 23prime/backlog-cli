@@ -25,7 +25,7 @@ use cmd::project::version::ProjectVersionListArgs;
 use cmd::project::{ProjectActivitiesArgs, ProjectDiskUsageArgs, ProjectListArgs, ProjectShowArgs};
 use cmd::space::{SpaceActivitiesArgs, SpaceDiskUsageArgs, SpaceNotificationArgs, SpaceShowArgs};
 use cmd::team::{TeamListArgs, TeamShowArgs};
-use cmd::user::{UserListArgs, UserShowArgs};
+use cmd::user::{UserActivitiesArgs, UserListArgs, UserRecentlyViewedArgs, UserShowArgs};
 use cmd::wiki::attachment::WikiAttachmentListArgs;
 use cmd::wiki::{
     WikiCreateArgs, WikiDeleteArgs, WikiHistoryArgs, WikiListArgs, WikiShowArgs, WikiUpdateArgs,
@@ -553,6 +553,20 @@ enum UserCommands {
         #[arg(long)]
         json: bool,
     },
+    /// Show recent activities of a user
+    Activities {
+        /// User numeric ID
+        id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Show recently viewed issues (for the authenticated user)
+    RecentlyViewed {
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -877,6 +891,12 @@ fn run() -> Result<()> {
         Commands::User { action } => match action {
             UserCommands::List { json } => cmd::user::list(&UserListArgs::new(json)),
             UserCommands::Show { id, json } => cmd::user::show(&UserShowArgs::new(id, json)),
+            UserCommands::Activities { id, json } => {
+                cmd::user::activities(&UserActivitiesArgs::new(id, json))
+            }
+            UserCommands::RecentlyViewed { json } => {
+                cmd::user::recently_viewed(&UserRecentlyViewedArgs::new(json))
+            }
         },
         Commands::Team { action } => match action {
             TeamCommands::List { json } => cmd::team::list(&TeamListArgs::new(json)),

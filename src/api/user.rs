@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 use super::BacklogClient;
+use crate::api::activity::Activity;
+use crate::api::issue::Issue;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -22,6 +24,13 @@ pub struct User {
     pub extra: BTreeMap<String, serde_json::Value>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RecentlyViewedIssue {
+    pub issue: Issue,
+    pub updated: String,
+}
+
 impl BacklogClient {
     pub fn get_myself(&self) -> Result<User> {
         let value = self.get("/users/myself")?;
@@ -39,6 +48,28 @@ impl BacklogClient {
         let value = self.get(&format!("/users/{user_id}"))?;
         serde_json::from_value(value)
             .map_err(|e| anyhow::anyhow!("Failed to deserialize user response: {}", e))
+    }
+
+    pub fn get_user_activities(&self, user_id: u64) -> Result<Vec<Activity>> {
+        let value = self.get(&format!("/users/{user_id}/activities"))?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize user activities response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn get_recently_viewed_issues(&self) -> Result<Vec<RecentlyViewedIssue>> {
+        let value = self.get("/users/myself/recentlyViewedIssues")?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize recently viewed issues response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
     }
 }
 
@@ -154,6 +185,90 @@ mod tests {
         assert_eq!(user.name, "John Doe");
         assert_eq!(user.mail_address.as_deref(), Some("john@example.com"));
         assert_eq!(user.role_type, 1);
+    }
+
+    #[test]
+    fn get_user_activities_returns_list() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/users/123/activities");
+            then.status(200).json_body(json!([{
+                "id": 1,
+                "type": 2,
+                "content": {},
+                "createdUser": {"id": 123, "userId": "john", "name": "John Doe"},
+                "created": "2024-01-01T00:00:00Z"
+            }]));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let activities = client.get_user_activities(123).unwrap();
+        assert_eq!(activities.len(), 1);
+        assert_eq!(activities[0].id, 1);
+    }
+
+    #[test]
+    fn get_user_activities_returns_error_on_api_failure() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/users/123/activities");
+            then.status(404)
+                .json_body(json!({"errors": [{"message": "No user"}]}));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let err = client.get_user_activities(123).unwrap_err();
+        assert!(err.to_string().contains("No user"));
+    }
+
+    #[test]
+    fn get_recently_viewed_issues_returns_list() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/users/myself/recentlyViewedIssues");
+            then.status(200).json_body(json!([{
+                "issue": {
+                    "id": 1,
+                    "projectId": 1,
+                    "issueKey": "BLG-1",
+                    "keyId": 1,
+                    "summary": "first issue",
+                    "description": "",
+                    "priority": {"id": 3, "name": "Normal"},
+                    "status": {"id": 1, "projectId": 1, "name": "Open", "color": "#ed8077", "displayOrder": 1000},
+                    "issueType": {"id": 2, "projectId": 1, "name": "Task", "color": "#7ea800", "displayOrder": 0},
+                    "assignee": null,
+                    "category": [],
+                    "versions": [],
+                    "milestone": [],
+                    "created": "2024-01-01T00:00:00Z",
+                    "updated": "2024-06-01T00:00:00Z",
+                    "createdUser": {"id": 1, "userId": "admin", "name": "admin", "roleType": 1},
+                    "updatedUser": {"id": 1, "userId": "admin", "name": "admin", "roleType": 1}
+                },
+                "updated": "2024-06-01T00:00:00Z"
+            }]));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let items = client.get_recently_viewed_issues().unwrap();
+        assert_eq!(items.len(), 1);
+        assert_eq!(items[0].issue.issue_key, "BLG-1");
+        assert_eq!(items[0].updated, "2024-06-01T00:00:00Z");
+    }
+
+    #[test]
+    fn get_recently_viewed_issues_returns_error_on_api_failure() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/users/myself/recentlyViewedIssues");
+            then.status(401)
+                .json_body(json!({"errors": [{"message": "Authentication failure"}]}));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let err = client.get_recently_viewed_issues().unwrap_err();
+        assert!(err.to_string().contains("Authentication failure"));
     }
 
     #[test]

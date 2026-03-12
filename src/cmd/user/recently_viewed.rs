@@ -1,52 +1,62 @@
 use anstream::println;
 use anyhow::{Context, Result};
 
-use crate::api::{BacklogApi, BacklogClient, team::Team};
+use crate::api::{BacklogApi, BacklogClient, user::RecentlyViewedIssue};
 
-pub struct TeamListArgs {
+pub struct UserRecentlyViewedArgs {
     json: bool,
 }
 
-impl TeamListArgs {
+impl UserRecentlyViewedArgs {
     pub fn new(json: bool) -> Self {
         Self { json }
     }
 }
 
-pub fn list(args: &TeamListArgs) -> Result<()> {
+pub fn recently_viewed(args: &UserRecentlyViewedArgs) -> Result<()> {
     let client = BacklogClient::from_config()?;
-    list_with(args, &client)
+    recently_viewed_with(args, &client)
 }
 
-pub fn list_with(args: &TeamListArgs, api: &dyn BacklogApi) -> Result<()> {
-    let teams = api.get_teams()?;
+pub fn recently_viewed_with(args: &UserRecentlyViewedArgs, api: &dyn BacklogApi) -> Result<()> {
+    let items = api.get_recently_viewed_issues()?;
     if args.json {
         println!(
             "{}",
-            serde_json::to_string_pretty(&teams).context("Failed to serialize JSON")?
+            serde_json::to_string_pretty(&items).context("Failed to serialize JSON")?
         );
     } else {
-        for t in &teams {
-            println!("{}", format_team_row(t));
+        for item in &items {
+            println!("{}", format_row(item));
         }
     }
     Ok(())
 }
 
-fn format_team_row(t: &Team) -> String {
-    format!("[{}] {} ({} members)", t.id, t.name, t.members.len())
+fn format_row(item: &RecentlyViewedIssue) -> String {
+    let status = &item.issue.status.name;
+    let assignee = item
+        .issue
+        .assignee
+        .as_ref()
+        .map(|a| a.name.as_str())
+        .unwrap_or("-");
+    format!(
+        "[{}] {} ({}, {})",
+        item.issue.issue_key, item.issue.summary, status, assignee,
+    )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::api::activity::Activity;
+    use crate::api::issue::{Issue, IssuePriority, IssueStatus, IssueType, IssueUser};
     use anyhow::anyhow;
     use std::collections::BTreeMap;
 
-    use crate::api::team::{Team, TeamMember};
-
     struct MockApi {
-        teams: Option<Vec<Team>>,
+        items: Option<Vec<RecentlyViewedIssue>>,
     }
 
     impl crate::api::BacklogApi for MockApi {
@@ -62,7 +72,7 @@ mod tests {
         fn get_user(&self, _user_id: u64) -> anyhow::Result<crate::api::user::User> {
             unimplemented!()
         }
-        fn get_space_activities(&self) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
+        fn get_space_activities(&self) -> anyhow::Result<Vec<Activity>> {
             unimplemented!()
         }
         fn get_space_disk_usage(&self) -> anyhow::Result<crate::api::disk_usage::DiskUsage> {
@@ -79,10 +89,7 @@ mod tests {
         fn get_project(&self, _key: &str) -> anyhow::Result<crate::api::project::Project> {
             unimplemented!()
         }
-        fn get_project_activities(
-            &self,
-            _key: &str,
-        ) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
+        fn get_project_activities(&self, _key: &str) -> anyhow::Result<Vec<Activity>> {
             unimplemented!()
         }
         fn get_project_disk_usage(
@@ -227,78 +234,109 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::wiki::WikiAttachment>> {
             unimplemented!()
         }
-        fn get_teams(&self) -> anyhow::Result<Vec<Team>> {
-            self.teams.clone().ok_or_else(|| anyhow!("no teams"))
-        }
-        fn get_team(&self, _team_id: u64) -> anyhow::Result<Team> {
+        fn get_teams(&self) -> anyhow::Result<Vec<crate::api::team::Team>> {
             unimplemented!()
         }
-        fn get_user_activities(
-            &self,
-            _user_id: u64,
-        ) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
+        fn get_team(&self, _team_id: u64) -> anyhow::Result<crate::api::team::Team> {
             unimplemented!()
         }
-        fn get_recently_viewed_issues(
-            &self,
-        ) -> anyhow::Result<Vec<crate::api::user::RecentlyViewedIssue>> {
+        fn get_user_activities(&self, _user_id: u64) -> anyhow::Result<Vec<Activity>> {
             unimplemented!()
+        }
+        fn get_recently_viewed_issues(&self) -> anyhow::Result<Vec<RecentlyViewedIssue>> {
+            self.items.clone().ok_or_else(|| anyhow!("no items"))
         }
     }
 
-    fn sample_member() -> TeamMember {
-        TeamMember {
-            id: 2,
-            user_id: Some("dev".to_string()),
-            name: "Developer".to_string(),
-            role_type: 2,
+    fn sample_issue_user() -> IssueUser {
+        IssueUser {
+            id: 1,
+            user_id: Some("admin".to_string()),
+            name: "admin".to_string(),
+            role_type: 1,
             lang: None,
-            mail_address: Some("dev@example.com".to_string()),
-            last_login_time: None,
+            mail_address: None,
             extra: BTreeMap::new(),
         }
     }
 
-    fn sample_team() -> Team {
-        Team {
+    fn sample_issue() -> Issue {
+        Issue {
             id: 1,
-            name: "dev-team".to_string(),
-            members: vec![sample_member()],
-            display_order: None,
+            project_id: 1,
+            issue_key: "BLG-1".to_string(),
+            key_id: 1,
+            summary: "Fix login".to_string(),
+            description: None,
+            resolution: None,
+            status: IssueStatus {
+                id: 1,
+                project_id: 1,
+                name: "Open".to_string(),
+                color: "#ed8077".to_string(),
+                display_order: 1000,
+            },
+            priority: IssuePriority {
+                id: 2,
+                name: "Normal".to_string(),
+            },
+            issue_type: IssueType {
+                id: 1,
+                project_id: 1,
+                name: "Bug".to_string(),
+                color: "#990000".to_string(),
+                display_order: 0,
+            },
+            assignee: None,
+            start_date: None,
+            due_date: None,
+            estimated_hours: None,
+            actual_hours: None,
+            parent_issue_id: None,
+            created_user: sample_issue_user(),
             created: "2024-01-01T00:00:00Z".to_string(),
+            updated_user: sample_issue_user(),
             updated: "2024-06-01T00:00:00Z".to_string(),
             extra: BTreeMap::new(),
         }
     }
 
-    #[test]
-    fn format_team_row_shows_id_name_member_count() {
-        let text = format_team_row(&sample_team());
-        assert!(text.contains("[1]"));
-        assert!(text.contains("dev-team"));
-        assert!(text.contains("1 members"));
+    fn sample_item() -> RecentlyViewedIssue {
+        RecentlyViewedIssue {
+            issue: sample_issue(),
+            updated: "2024-06-01T00:00:00Z".to_string(),
+        }
     }
 
     #[test]
-    fn list_with_text_output_succeeds() {
+    fn format_row_contains_fields() {
+        let text = format_row(&sample_item());
+        assert!(text.contains("[BLG-1]"));
+        assert!(text.contains("Fix login"));
+        assert!(text.contains("Open"));
+        assert!(text.contains('-'));
+    }
+
+    #[test]
+    fn recently_viewed_with_text_output_succeeds() {
         let api = MockApi {
-            teams: Some(vec![sample_team()]),
+            items: Some(vec![sample_item()]),
         };
-        assert!(list_with(&TeamListArgs::new(false), &api).is_ok());
+        assert!(recently_viewed_with(&UserRecentlyViewedArgs::new(false), &api).is_ok());
     }
 
     #[test]
-    fn list_with_json_output_succeeds() {
+    fn recently_viewed_with_json_output_succeeds() {
         let api = MockApi {
-            teams: Some(vec![sample_team()]),
+            items: Some(vec![sample_item()]),
         };
-        assert!(list_with(&TeamListArgs::new(true), &api).is_ok());
+        assert!(recently_viewed_with(&UserRecentlyViewedArgs::new(true), &api).is_ok());
     }
 
     #[test]
-    fn list_with_propagates_api_error() {
-        let api = MockApi { teams: None };
-        let err = list_with(&TeamListArgs::new(false), &api).unwrap_err();
-        assert!(err.to_string().contains("no teams"));
+    fn recently_viewed_with_propagates_api_error() {
+        let api = MockApi { items: None };
+        let err = recently_viewed_with(&UserRecentlyViewedArgs::new(false), &api).unwrap_err();
+        assert!(err.to_string().contains("no items"));
     }
 }
