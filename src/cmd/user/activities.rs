@@ -1,52 +1,59 @@
 use anstream::println;
 use anyhow::{Context, Result};
 
-use crate::api::{BacklogApi, BacklogClient, team::Team};
+use crate::api::{BacklogApi, BacklogClient, activity::Activity};
 
-pub struct TeamListArgs {
+pub struct UserActivitiesArgs {
+    user_id: u64,
     json: bool,
 }
 
-impl TeamListArgs {
-    pub fn new(json: bool) -> Self {
-        Self { json }
+impl UserActivitiesArgs {
+    pub fn new(user_id: u64, json: bool) -> Self {
+        Self { user_id, json }
     }
 }
 
-pub fn list(args: &TeamListArgs) -> Result<()> {
+pub fn activities(args: &UserActivitiesArgs) -> Result<()> {
     let client = BacklogClient::from_config()?;
-    list_with(args, &client)
+    activities_with(args, &client)
 }
 
-pub fn list_with(args: &TeamListArgs, api: &dyn BacklogApi) -> Result<()> {
-    let teams = api.get_teams()?;
+pub fn activities_with(args: &UserActivitiesArgs, api: &dyn BacklogApi) -> Result<()> {
+    let activities = api.get_user_activities(args.user_id)?;
     if args.json {
         println!(
             "{}",
-            serde_json::to_string_pretty(&teams).context("Failed to serialize JSON")?
+            serde_json::to_string_pretty(&activities).context("Failed to serialize JSON")?
         );
     } else {
-        for t in &teams {
-            println!("{}", format_team_row(t));
+        for a in &activities {
+            println!("{}", format_activity_row(a));
         }
     }
     Ok(())
 }
 
-fn format_team_row(t: &Team) -> String {
-    format!("[{}] {} ({} members)", t.id, t.name, t.members.len())
+fn format_activity_row(a: &Activity) -> String {
+    let project = a
+        .project
+        .as_ref()
+        .map(|p| p.project_key.as_str())
+        .unwrap_or("-");
+    format!(
+        "[{}] type={} project={} user={} created={}",
+        a.id, a.activity_type, project, a.created_user.name, a.created,
+    )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::api::activity::ActivityUser;
     use anyhow::anyhow;
-    use std::collections::BTreeMap;
-
-    use crate::api::team::{Team, TeamMember};
 
     struct MockApi {
-        teams: Option<Vec<Team>>,
+        activities: Option<Vec<Activity>>,
     }
 
     impl crate::api::BacklogApi for MockApi {
@@ -62,7 +69,7 @@ mod tests {
         fn get_user(&self, _user_id: u64) -> anyhow::Result<crate::api::user::User> {
             unimplemented!()
         }
-        fn get_space_activities(&self) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
+        fn get_space_activities(&self) -> anyhow::Result<Vec<Activity>> {
             unimplemented!()
         }
         fn get_space_disk_usage(&self) -> anyhow::Result<crate::api::disk_usage::DiskUsage> {
@@ -79,10 +86,7 @@ mod tests {
         fn get_project(&self, _key: &str) -> anyhow::Result<crate::api::project::Project> {
             unimplemented!()
         }
-        fn get_project_activities(
-            &self,
-            _key: &str,
-        ) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
+        fn get_project_activities(&self, _key: &str) -> anyhow::Result<Vec<Activity>> {
             unimplemented!()
         }
         fn get_project_disk_usage(
@@ -227,17 +231,16 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::wiki::WikiAttachment>> {
             unimplemented!()
         }
-        fn get_teams(&self) -> anyhow::Result<Vec<Team>> {
-            self.teams.clone().ok_or_else(|| anyhow!("no teams"))
-        }
-        fn get_team(&self, _team_id: u64) -> anyhow::Result<Team> {
+        fn get_teams(&self) -> anyhow::Result<Vec<crate::api::team::Team>> {
             unimplemented!()
         }
-        fn get_user_activities(
-            &self,
-            _user_id: u64,
-        ) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
+        fn get_team(&self, _team_id: u64) -> anyhow::Result<crate::api::team::Team> {
             unimplemented!()
+        }
+        fn get_user_activities(&self, _user_id: u64) -> anyhow::Result<Vec<Activity>> {
+            self.activities
+                .clone()
+                .ok_or_else(|| anyhow!("no activities"))
         }
         fn get_recently_viewed_issues(
             &self,
@@ -246,59 +249,53 @@ mod tests {
         }
     }
 
-    fn sample_member() -> TeamMember {
-        TeamMember {
-            id: 2,
-            user_id: Some("dev".to_string()),
-            name: "Developer".to_string(),
-            role_type: 2,
-            lang: None,
-            mail_address: Some("dev@example.com".to_string()),
-            last_login_time: None,
-            extra: BTreeMap::new(),
-        }
-    }
-
-    fn sample_team() -> Team {
-        Team {
-            id: 1,
-            name: "dev-team".to_string(),
-            members: vec![sample_member()],
-            display_order: None,
-            created: "2024-01-01T00:00:00Z".to_string(),
-            updated: "2024-06-01T00:00:00Z".to_string(),
-            extra: BTreeMap::new(),
+    fn sample_activity() -> Activity {
+        Activity {
+            id: 10,
+            project: None,
+            activity_type: 2,
+            content: serde_json::Value::Null,
+            created_user: ActivityUser {
+                id: 1,
+                user_id: Some("john".to_string()),
+                name: "John Doe".to_string(),
+                extra: Default::default(),
+            },
+            created: "2024-06-01T00:00:00Z".to_string(),
+            extra: Default::default(),
         }
     }
 
     #[test]
-    fn format_team_row_shows_id_name_member_count() {
-        let text = format_team_row(&sample_team());
-        assert!(text.contains("[1]"));
-        assert!(text.contains("dev-team"));
-        assert!(text.contains("1 members"));
+    fn format_activity_row_contains_fields() {
+        let text = format_activity_row(&sample_activity());
+        assert!(text.contains("[10]"));
+        assert!(text.contains("type=2"));
+        assert!(text.contains("project=-"));
+        assert!(text.contains("John Doe"));
+        assert!(text.contains("2024-06-01T00:00:00Z"));
     }
 
     #[test]
-    fn list_with_text_output_succeeds() {
+    fn activities_with_text_output_succeeds() {
         let api = MockApi {
-            teams: Some(vec![sample_team()]),
+            activities: Some(vec![sample_activity()]),
         };
-        assert!(list_with(&TeamListArgs::new(false), &api).is_ok());
+        assert!(activities_with(&UserActivitiesArgs::new(1, false), &api).is_ok());
     }
 
     #[test]
-    fn list_with_json_output_succeeds() {
+    fn activities_with_json_output_succeeds() {
         let api = MockApi {
-            teams: Some(vec![sample_team()]),
+            activities: Some(vec![sample_activity()]),
         };
-        assert!(list_with(&TeamListArgs::new(true), &api).is_ok());
+        assert!(activities_with(&UserActivitiesArgs::new(1, true), &api).is_ok());
     }
 
     #[test]
-    fn list_with_propagates_api_error() {
-        let api = MockApi { teams: None };
-        let err = list_with(&TeamListArgs::new(false), &api).unwrap_err();
-        assert!(err.to_string().contains("no teams"));
+    fn activities_with_propagates_api_error() {
+        let api = MockApi { activities: None };
+        let err = activities_with(&UserActivitiesArgs::new(1, false), &api).unwrap_err();
+        assert!(err.to_string().contains("no activities"));
     }
 }

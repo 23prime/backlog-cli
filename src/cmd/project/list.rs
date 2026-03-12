@@ -239,6 +239,17 @@ mod tests {
         fn get_team(&self, _team_id: u64) -> anyhow::Result<crate::api::team::Team> {
             unimplemented!()
         }
+        fn get_user_activities(
+            &self,
+            _user_id: u64,
+        ) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
+            unimplemented!()
+        }
+        fn get_recently_viewed_issues(
+            &self,
+        ) -> anyhow::Result<Vec<crate::api::user::RecentlyViewedIssue>> {
+            unimplemented!()
+        }
     }
 
     fn sample_project() -> Project {

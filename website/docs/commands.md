@@ -560,6 +560,37 @@ Members:
     [3] Engineer
 ```
 
+## `bl user activities`
+
+Show recent activities of a specific user.
+
+```bash
+bl user activities <id>
+bl user activities <id> --json
+```
+
+Example output:
+
+```text
+[3153] type=2 project=SUB user=admin created=2024-06-01T00:00:00Z
+```
+
+## `bl user recently-viewed`
+
+Show issues recently viewed by the authenticated user.
+
+```bash
+bl user recently-viewed
+bl user recently-viewed --json
+```
+
+Example output:
+
+```text
+[BLG-1] Fix login (Open, -)
+[BLG-2] Add dark mode (In Progress, John Doe)
+```
+
 ## `bl user list`
 
 List all users in the space.
@@ -680,8 +711,8 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | `bl auth status` | `GET /api/v2/users/myself` | ✅ Implemented (internal) |
 | `bl user list` | `GET /api/v2/users` | ✅ Implemented |
 | `bl user show <id>` | `GET /api/v2/users/{userId}` | ✅ Implemented |
-| `bl user activities <id>` | `GET /api/v2/users/{userId}/activities` | Planned |
-| `bl user recently-viewed <id>` | `GET /api/v2/users/{userId}/recentlyViewedIssues` | Planned |
+| `bl user activities <id>` | `GET /api/v2/users/{userId}/activities` | ✅ Implemented |
+| `bl user recently-viewed` | `GET /api/v2/users/myself/recentlyViewedIssues` | ✅ Implemented |
 
 ### Notifications
 

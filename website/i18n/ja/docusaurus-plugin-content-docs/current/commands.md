@@ -560,6 +560,37 @@ Members:
     [3] Engineer
 ```
 
+## `bl user activities`
+
+特定のユーザーの最近のアクティビティを表示します。
+
+```bash
+bl user activities <id>
+bl user activities <id> --json
+```
+
+出力例:
+
+```text
+[3153] type=2 project=SUB user=admin created=2024-06-01T00:00:00Z
+```
+
+## `bl user recently-viewed`
+
+認証ユーザーが最近閲覧した課題を表示します。
+
+```bash
+bl user recently-viewed
+bl user recently-viewed --json
+```
+
+出力例:
+
+```text
+[BLG-1] Fix login (Open, -)
+[BLG-2] Add dark mode (In Progress, John Doe)
+```
+
 ## `bl user list`
 
 スペース内のユーザーを一覧表示します。
@@ -680,8 +711,8 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl auth status` | `GET /api/v2/users/myself` | ✅ 実装済み（内部） |
 | `bl user list` | `GET /api/v2/users` | ✅ 実装済み |
 | `bl user show <id>` | `GET /api/v2/users/{userId}` | ✅ 実装済み |
-| `bl user activities <id>` | `GET /api/v2/users/{userId}/activities` | 計画中 |
-| `bl user recently-viewed <id>` | `GET /api/v2/users/{userId}/recentlyViewedIssues` | 計画中 |
+| `bl user activities <id>` | `GET /api/v2/users/{userId}/activities` | ✅ 実装済み |
+| `bl user recently-viewed` | `GET /api/v2/users/myself/recentlyViewedIssues` | ✅ 実装済み |
 
 ### Notifications
 
