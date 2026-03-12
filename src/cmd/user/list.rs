@@ -35,7 +35,7 @@ pub fn list_with(args: &UserListArgs, api: &dyn BacklogApi) -> Result<()> {
 
 fn format_user_row(u: &User) -> String {
     match u.user_id.as_deref() {
-        Some(user_id) if !user_id.is_empty() => format!("[{}] {}", user_id, u.name),
+        Some(user_id) if !user_id.is_empty() => format!("[{}] {} ({})", u.id, u.name, user_id),
         _ => format!("[{}] {}", u.id, u.name),
     }
 }
@@ -246,8 +246,9 @@ mod tests {
     #[test]
     fn format_user_row_with_user_id() {
         let text = format_user_row(&sample_user());
-        assert!(text.contains("[john]"));
+        assert!(text.contains("[1]"));
         assert!(text.contains("John Doe"));
+        assert!(text.contains("(john)"));
     }
 
     #[test]
