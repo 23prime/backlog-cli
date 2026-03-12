@@ -313,8 +313,7 @@ mod tests {
         let text = format_row(&sample_item());
         assert!(text.contains("[BLG-1]"));
         assert!(text.contains("Fix login"));
-        assert!(text.contains("Open"));
-        assert!(text.contains('-'));
+        assert!(text.contains("(Open, -)"));
     }
 
     #[test]
