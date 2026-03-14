@@ -772,10 +772,10 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 
 | コマンド | API エンドポイント | 状態 |
 | --- | --- | --- |
-| `bl notification list` | `GET /api/v2/notifications` | 計画中 |
-| `bl notification count` | `GET /api/v2/notifications/count` | 計画中 |
-| `bl notification read <id>` | `POST /api/v2/notifications/{notificationId}/markAsRead` | 計画中 |
-| `bl notification reset-unread` | `POST /api/v2/notifications/markAsRead` | 計画中 |
+| `bl notification list` | `GET /api/v2/notifications` | ✅ 実装済み |
+| `bl notification count` | `GET /api/v2/notifications/count` | ✅ 実装済み |
+| `bl notification read <id>` | `POST /api/v2/notifications/{notificationId}/markAsRead` | ✅ 実装済み |
+| `bl notification reset-unread` | `POST /api/v2/notifications/markAsRead` | ✅ 実装済み |
 
 ### Watching
 

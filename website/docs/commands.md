@@ -772,10 +772,10 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 
 | Command | API endpoint | Status |
 | --- | --- | --- |
-| `bl notification list` | `GET /api/v2/notifications` | Planned |
-| `bl notification count` | `GET /api/v2/notifications/count` | Planned |
-| `bl notification read <id>` | `POST /api/v2/notifications/{notificationId}/markAsRead` | Planned |
-| `bl notification reset-unread` | `POST /api/v2/notifications/markAsRead` | Planned |
+| `bl notification list` | `GET /api/v2/notifications` | ✅ Implemented |
+| `bl notification count` | `GET /api/v2/notifications/count` | ✅ Implemented |
+| `bl notification read <id>` | `POST /api/v2/notifications/{notificationId}/markAsRead` | ✅ Implemented |
+| `bl notification reset-unread` | `POST /api/v2/notifications/markAsRead` | ✅ Implemented |
 
 ### Watching
 
