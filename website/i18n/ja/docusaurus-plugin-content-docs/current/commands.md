@@ -630,6 +630,60 @@ Lang:         ja
 Last login:   2024-06-01T00:00:00Z
 ```
 
+## `bl notification list`
+
+認証ユーザーの通知一覧を表示します。
+
+```bash
+bl notification list
+bl notification list --json
+```
+
+出力例:
+
+```text
+[101] reason=2 project=TEST issue=TEST-1 read=false created=2024-06-01T00:00:00Z
+[102] reason=6 project=TEST issue=TEST-2 read=true  created=2024-06-02T00:00:00Z
+```
+
+## `bl notification count`
+
+認証ユーザーの未読通知数を表示します。
+
+```bash
+bl notification count
+bl notification count --json
+```
+
+出力例:
+
+```text
+3
+```
+
+## `bl notification read <id>`
+
+指定した通知を既読にします。
+
+```bash
+bl notification read <id>
+```
+
+## `bl notification reset-unread`
+
+未読通知数をリセットします。
+個々の通知が既読になるわけではなく、未読カウンターがリセットされます。
+
+```bash
+bl notification reset-unread
+```
+
+出力例:
+
+```text
+Unread count reset.
+```
+
 ## コマンドカバレッジ
 
 Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
@@ -718,9 +772,10 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 
 | コマンド | API エンドポイント | 状態 |
 | --- | --- | --- |
-| `bl notification list` | `GET /api/v2/notifications` | 計画中 |
-| `bl notification read <id>` | `PUT /api/v2/notifications/{notificationId}` | 計画中 |
-| `bl notification read-all` | `DELETE /api/v2/notifications/unread` | 計画中 |
+| `bl notification list` | `GET /api/v2/notifications` | ✅ 実装済み |
+| `bl notification count` | `GET /api/v2/notifications/count` | ✅ 実装済み |
+| `bl notification read <id>` | `POST /api/v2/notifications/{notificationId}/markAsRead` | ✅ 実装済み |
+| `bl notification reset-unread` | `POST /api/v2/notifications/markAsRead` | ✅ 実装済み |
 
 ### Watching
 

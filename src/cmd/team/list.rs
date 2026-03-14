@@ -244,6 +244,22 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::user::RecentlyViewedIssue>> {
             unimplemented!()
         }
+        fn get_notifications(&self) -> anyhow::Result<Vec<crate::api::notification::Notification>> {
+            unimplemented!()
+        }
+        fn count_notifications(
+            &self,
+        ) -> anyhow::Result<crate::api::notification::NotificationCount> {
+            unimplemented!()
+        }
+        fn read_notification(&self, _: u64) -> anyhow::Result<()> {
+            unimplemented!()
+        }
+        fn reset_unread_notifications(
+            &self,
+        ) -> anyhow::Result<crate::api::notification::NotificationCount> {
+            unimplemented!()
+        }
     }
 
     fn sample_member() -> TeamMember {
