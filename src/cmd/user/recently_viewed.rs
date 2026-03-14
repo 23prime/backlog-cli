@@ -17,7 +17,7 @@ impl UserRecentlyViewedArgs {
         offset: u64,
         order: Option<String>,
     ) -> anyhow::Result<Self> {
-        if count > 100 {
+        if !(1..=100).contains(&count) {
             anyhow::bail!("count must be between 1 and 100");
         }
         Ok(Self {
@@ -411,6 +411,11 @@ mod tests {
     #[test]
     fn try_new_rejects_count_over_100() {
         assert!(UserRecentlyViewedArgs::try_new(false, 101, 0, None).is_err());
+    }
+
+    #[test]
+    fn try_new_rejects_count_zero() {
+        assert!(UserRecentlyViewedArgs::try_new(false, 0, 0, None).is_err());
     }
 
     struct MockApiCapture {

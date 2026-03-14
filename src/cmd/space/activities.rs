@@ -21,7 +21,7 @@ impl SpaceActivitiesArgs {
         count: u32,
         order: Option<String>,
     ) -> anyhow::Result<Self> {
-        if count > 100 {
+        if !(1..=100).contains(&count) {
             anyhow::bail!("count must be between 1 and 100");
         }
         if let (Some(min), Some(max)) = (min_id, max_id)
@@ -383,6 +383,11 @@ mod tests {
     #[test]
     fn try_new_rejects_count_over_100() {
         assert!(SpaceActivitiesArgs::try_new(false, vec![], None, None, 101, None).is_err());
+    }
+
+    #[test]
+    fn try_new_rejects_count_zero() {
+        assert!(SpaceActivitiesArgs::try_new(false, vec![], None, None, 0, None).is_err());
     }
 
     #[test]

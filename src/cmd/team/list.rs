@@ -17,7 +17,7 @@ impl TeamListArgs {
         order: Option<String>,
         offset: u64,
     ) -> anyhow::Result<Self> {
-        if count > 100 {
+        if !(1..=100).contains(&count) {
             anyhow::bail!("count must be between 1 and 100");
         }
         Ok(Self {
@@ -353,6 +353,11 @@ mod tests {
     #[test]
     fn try_new_rejects_count_over_100() {
         assert!(TeamListArgs::try_new(false, 101, None, 0).is_err());
+    }
+
+    #[test]
+    fn try_new_rejects_count_zero() {
+        assert!(TeamListArgs::try_new(false, 0, None, 0).is_err());
     }
 
     struct MockApiCapture {

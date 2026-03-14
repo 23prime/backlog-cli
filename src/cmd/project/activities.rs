@@ -23,7 +23,7 @@ impl ProjectActivitiesArgs {
         count: u32,
         order: Option<String>,
     ) -> anyhow::Result<Self> {
-        if count > 100 {
+        if !(1..=100).contains(&count) {
             anyhow::bail!("count must be between 1 and 100");
         }
         if let (Some(min), Some(max)) = (min_id, max_id)
@@ -427,6 +427,14 @@ mod tests {
                 None
             )
             .is_err()
+        );
+    }
+
+    #[test]
+    fn try_new_rejects_count_zero() {
+        assert!(
+            ProjectActivitiesArgs::try_new("TEST".to_string(), false, vec![], None, None, 0, None)
+                .is_err()
         );
     }
 
