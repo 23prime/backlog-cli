@@ -5,11 +5,30 @@ use crate::api::{BacklogApi, BacklogClient, activity::Activity};
 
 pub struct SpaceActivitiesArgs {
     json: bool,
+    pub activity_type_ids: Vec<u32>,
+    pub min_id: Option<u64>,
+    pub max_id: Option<u64>,
+    pub count: u32,
+    pub order: Option<String>,
 }
 
 impl SpaceActivitiesArgs {
-    pub fn new(json: bool) -> Self {
-        Self { json }
+    pub fn new(
+        json: bool,
+        activity_type_ids: Vec<u32>,
+        min_id: Option<u64>,
+        max_id: Option<u64>,
+        count: u32,
+        order: Option<String>,
+    ) -> Self {
+        Self {
+            json,
+            activity_type_ids,
+            min_id,
+            max_id,
+            count,
+            order,
+        }
     }
 }
 
@@ -19,7 +38,21 @@ pub fn activities(args: &SpaceActivitiesArgs) -> Result<()> {
 }
 
 pub fn activities_with(args: &SpaceActivitiesArgs, api: &dyn BacklogApi) -> Result<()> {
-    let activities = api.get_space_activities()?;
+    let mut params: Vec<(String, String)> = Vec::new();
+    for id in &args.activity_type_ids {
+        params.push(("activityTypeId[]".to_string(), id.to_string()));
+    }
+    if let Some(min) = args.min_id {
+        params.push(("minId".to_string(), min.to_string()));
+    }
+    if let Some(max) = args.max_id {
+        params.push(("maxId".to_string(), max.to_string()));
+    }
+    params.push(("count".to_string(), args.count.to_string()));
+    if let Some(ref order) = args.order {
+        params.push(("order".to_string(), order.clone()));
+    }
+    let activities = api.get_space_activities(&params)?;
     if args.json {
         println!(
             "{}",
@@ -68,7 +101,7 @@ mod tests {
         fn get_user(&self, _user_id: u64) -> anyhow::Result<crate::api::user::User> {
             unimplemented!()
         }
-        fn get_space_activities(&self) -> Result<Vec<Activity>> {
+        fn get_space_activities(&self, _: &[(String, String)]) -> Result<Vec<Activity>> {
             self.activities
                 .clone()
                 .ok_or_else(|| anyhow!("no activities"))
@@ -90,6 +123,7 @@ mod tests {
         fn get_project_activities(
             &self,
             _key: &str,
+            _: &[(String, String)],
         ) -> Result<Vec<crate::api::activity::Activity>> {
             unimplemented!()
         }
@@ -232,7 +266,7 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::wiki::WikiAttachment>> {
             unimplemented!()
         }
-        fn get_teams(&self) -> anyhow::Result<Vec<crate::api::team::Team>> {
+        fn get_teams(&self, _: &[(String, String)]) -> anyhow::Result<Vec<crate::api::team::Team>> {
             unimplemented!()
         }
         fn get_team(&self, _team_id: u64) -> anyhow::Result<crate::api::team::Team> {
@@ -241,15 +275,20 @@ mod tests {
         fn get_user_activities(
             &self,
             _user_id: u64,
+            _: &[(String, String)],
         ) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
             unimplemented!()
         }
         fn get_recently_viewed_issues(
             &self,
+            _: &[(String, String)],
         ) -> anyhow::Result<Vec<crate::api::user::RecentlyViewedIssue>> {
             unimplemented!()
         }
-        fn get_notifications(&self) -> anyhow::Result<Vec<crate::api::notification::Notification>> {
+        fn get_notifications(
+            &self,
+            _: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::notification::Notification>> {
             unimplemented!()
         }
         fn count_notifications(
@@ -299,7 +338,13 @@ mod tests {
         let api = MockApi {
             activities: Some(vec![sample_activity()]),
         };
-        assert!(activities_with(&SpaceActivitiesArgs::new(false), &api).is_ok());
+        assert!(
+            activities_with(
+                &SpaceActivitiesArgs::new(false, vec![], None, None, 20, None),
+                &api
+            )
+            .is_ok()
+        );
     }
 
     #[test]
@@ -307,13 +352,23 @@ mod tests {
         let api = MockApi {
             activities: Some(vec![sample_activity()]),
         };
-        assert!(activities_with(&SpaceActivitiesArgs::new(true), &api).is_ok());
+        assert!(
+            activities_with(
+                &SpaceActivitiesArgs::new(true, vec![], None, None, 20, None),
+                &api
+            )
+            .is_ok()
+        );
     }
 
     #[test]
     fn activities_with_propagates_api_error() {
         let api = MockApi { activities: None };
-        let err = activities_with(&SpaceActivitiesArgs::new(false), &api).unwrap_err();
+        let err = activities_with(
+            &SpaceActivitiesArgs::new(false, vec![], None, None, 20, None),
+            &api,
+        )
+        .unwrap_err();
         assert!(err.to_string().contains("no activities"));
     }
 }

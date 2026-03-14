@@ -5,11 +5,30 @@ use crate::api::{BacklogApi, BacklogClient};
 
 pub struct NotificationListArgs {
     pub json: bool,
+    pub min_id: Option<u64>,
+    pub max_id: Option<u64>,
+    pub count: u32,
+    pub order: Option<String>,
+    pub sender_id: Option<u64>,
 }
 
 impl NotificationListArgs {
-    pub fn new(json: bool) -> Self {
-        Self { json }
+    pub fn new(
+        json: bool,
+        min_id: Option<u64>,
+        max_id: Option<u64>,
+        count: u32,
+        order: Option<String>,
+        sender_id: Option<u64>,
+    ) -> Self {
+        Self {
+            json,
+            min_id,
+            max_id,
+            count,
+            order,
+            sender_id,
+        }
     }
 }
 
@@ -19,7 +38,21 @@ pub fn list(args: &NotificationListArgs) -> Result<()> {
 }
 
 pub fn list_with(args: &NotificationListArgs, api: &dyn BacklogApi) -> Result<()> {
-    let notifications = api.get_notifications()?;
+    let mut params: Vec<(String, String)> = Vec::new();
+    if let Some(min) = args.min_id {
+        params.push(("minId".to_string(), min.to_string()));
+    }
+    if let Some(max) = args.max_id {
+        params.push(("maxId".to_string(), max.to_string()));
+    }
+    params.push(("count".to_string(), args.count.to_string()));
+    if let Some(ref order) = args.order {
+        params.push(("order".to_string(), order.clone()));
+    }
+    if let Some(sid) = args.sender_id {
+        params.push(("senderId".to_string(), sid.to_string()));
+    }
+    let notifications = api.get_notifications(&params)?;
     if args.json {
         anstream::println!(
             "{}",
@@ -81,7 +114,7 @@ mod tests {
         fn get_user(&self, _: u64) -> Result<User> {
             unimplemented!()
         }
-        fn get_space_activities(&self) -> Result<Vec<Activity>> {
+        fn get_space_activities(&self, _: &[(String, String)]) -> Result<Vec<Activity>> {
             unimplemented!()
         }
         fn get_space_disk_usage(&self) -> Result<DiskUsage> {
@@ -96,7 +129,7 @@ mod tests {
         fn get_project(&self, _: &str) -> Result<Project> {
             unimplemented!()
         }
-        fn get_project_activities(&self, _: &str) -> Result<Vec<Activity>> {
+        fn get_project_activities(&self, _: &str, _: &[(String, String)]) -> Result<Vec<Activity>> {
             unimplemented!()
         }
         fn get_project_disk_usage(&self, _: &str) -> Result<ProjectDiskUsage> {
@@ -176,19 +209,22 @@ mod tests {
         fn get_wiki_attachments(&self, _: u64) -> Result<Vec<WikiAttachment>> {
             unimplemented!()
         }
-        fn get_teams(&self) -> Result<Vec<Team>> {
+        fn get_teams(&self, _: &[(String, String)]) -> Result<Vec<Team>> {
             unimplemented!()
         }
         fn get_team(&self, _: u64) -> Result<Team> {
             unimplemented!()
         }
-        fn get_user_activities(&self, _: u64) -> Result<Vec<Activity>> {
+        fn get_user_activities(&self, _: u64, _: &[(String, String)]) -> Result<Vec<Activity>> {
             unimplemented!()
         }
-        fn get_recently_viewed_issues(&self) -> Result<Vec<RecentlyViewedIssue>> {
+        fn get_recently_viewed_issues(
+            &self,
+            _: &[(String, String)],
+        ) -> Result<Vec<RecentlyViewedIssue>> {
             unimplemented!()
         }
-        fn get_notifications(&self) -> Result<Vec<Notification>> {
+        fn get_notifications(&self, _: &[(String, String)]) -> Result<Vec<Notification>> {
             Ok(self.notifications.clone())
         }
         fn count_notifications(&self) -> Result<NotificationCount> {
@@ -296,7 +332,11 @@ mod tests {
             notifications: vec![make_notification(101, false, Some("TEST-1"))],
         };
         // smoke test: should not panic
-        list_with(&NotificationListArgs::new(false), &api).unwrap();
+        list_with(
+            &NotificationListArgs::new(false, None, None, 20, None, None),
+            &api,
+        )
+        .unwrap();
     }
 
     #[test]

@@ -40,8 +40,8 @@ pub struct ActivityUser {
 }
 
 impl BacklogClient {
-    pub fn get_space_activities(&self) -> Result<Vec<Activity>> {
-        let value = self.get("/space/activities")?;
+    pub fn get_space_activities(&self, params: &[(String, String)]) -> Result<Vec<Activity>> {
+        let value = self.get_with_query("/space/activities", params)?;
         serde_json::from_value(value.clone()).map_err(|e| {
             anyhow::anyhow!(
                 "Failed to deserialize activities response: {}\nRaw JSON:\n{}",
@@ -86,7 +86,7 @@ mod tests {
         });
 
         let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
-        let activities = client.get_space_activities().unwrap();
+        let activities = client.get_space_activities(&[]).unwrap();
         assert_eq!(activities.len(), 1);
         assert_eq!(activities[0].id, 1);
         assert_eq!(activities[0].activity_type, 1);
@@ -103,7 +103,7 @@ mod tests {
         });
 
         let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
-        let err = client.get_space_activities().unwrap_err();
+        let err = client.get_space_activities(&[]).unwrap_err();
         assert!(err.to_string().contains("Authentication failure"));
     }
 

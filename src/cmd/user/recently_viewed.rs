@@ -5,11 +5,19 @@ use crate::api::{BacklogApi, BacklogClient, user::RecentlyViewedIssue};
 
 pub struct UserRecentlyViewedArgs {
     json: bool,
+    pub count: u32,
+    pub offset: u64,
+    pub order: Option<String>,
 }
 
 impl UserRecentlyViewedArgs {
-    pub fn new(json: bool) -> Self {
-        Self { json }
+    pub fn new(json: bool, count: u32, offset: u64, order: Option<String>) -> Self {
+        Self {
+            json,
+            count,
+            offset,
+            order,
+        }
     }
 }
 
@@ -19,7 +27,13 @@ pub fn recently_viewed(args: &UserRecentlyViewedArgs) -> Result<()> {
 }
 
 pub fn recently_viewed_with(args: &UserRecentlyViewedArgs, api: &dyn BacklogApi) -> Result<()> {
-    let items = api.get_recently_viewed_issues()?;
+    let mut params: Vec<(String, String)> = Vec::new();
+    params.push(("count".to_string(), args.count.to_string()));
+    params.push(("offset".to_string(), args.offset.to_string()));
+    if let Some(ref order) = args.order {
+        params.push(("order".to_string(), order.clone()));
+    }
+    let items = api.get_recently_viewed_issues(&params)?;
     if args.json {
         println!(
             "{}",
@@ -72,7 +86,7 @@ mod tests {
         fn get_user(&self, _user_id: u64) -> anyhow::Result<crate::api::user::User> {
             unimplemented!()
         }
-        fn get_space_activities(&self) -> anyhow::Result<Vec<Activity>> {
+        fn get_space_activities(&self, _: &[(String, String)]) -> anyhow::Result<Vec<Activity>> {
             unimplemented!()
         }
         fn get_space_disk_usage(&self) -> anyhow::Result<crate::api::disk_usage::DiskUsage> {
@@ -89,7 +103,11 @@ mod tests {
         fn get_project(&self, _key: &str) -> anyhow::Result<crate::api::project::Project> {
             unimplemented!()
         }
-        fn get_project_activities(&self, _key: &str) -> anyhow::Result<Vec<Activity>> {
+        fn get_project_activities(
+            &self,
+            _key: &str,
+            _: &[(String, String)],
+        ) -> anyhow::Result<Vec<Activity>> {
             unimplemented!()
         }
         fn get_project_disk_usage(
@@ -234,19 +252,29 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::wiki::WikiAttachment>> {
             unimplemented!()
         }
-        fn get_teams(&self) -> anyhow::Result<Vec<crate::api::team::Team>> {
+        fn get_teams(&self, _: &[(String, String)]) -> anyhow::Result<Vec<crate::api::team::Team>> {
             unimplemented!()
         }
         fn get_team(&self, _team_id: u64) -> anyhow::Result<crate::api::team::Team> {
             unimplemented!()
         }
-        fn get_user_activities(&self, _user_id: u64) -> anyhow::Result<Vec<Activity>> {
+        fn get_user_activities(
+            &self,
+            _user_id: u64,
+            _: &[(String, String)],
+        ) -> anyhow::Result<Vec<Activity>> {
             unimplemented!()
         }
-        fn get_recently_viewed_issues(&self) -> anyhow::Result<Vec<RecentlyViewedIssue>> {
+        fn get_recently_viewed_issues(
+            &self,
+            _: &[(String, String)],
+        ) -> anyhow::Result<Vec<RecentlyViewedIssue>> {
             self.items.clone().ok_or_else(|| anyhow!("no items"))
         }
-        fn get_notifications(&self) -> anyhow::Result<Vec<crate::api::notification::Notification>> {
+        fn get_notifications(
+            &self,
+            _: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::notification::Notification>> {
             unimplemented!()
         }
         fn count_notifications(
@@ -338,7 +366,9 @@ mod tests {
         let api = MockApi {
             items: Some(vec![sample_item()]),
         };
-        assert!(recently_viewed_with(&UserRecentlyViewedArgs::new(false), &api).is_ok());
+        assert!(
+            recently_viewed_with(&UserRecentlyViewedArgs::new(false, 20, 0, None), &api).is_ok()
+        );
     }
 
     #[test]
@@ -346,13 +376,16 @@ mod tests {
         let api = MockApi {
             items: Some(vec![sample_item()]),
         };
-        assert!(recently_viewed_with(&UserRecentlyViewedArgs::new(true), &api).is_ok());
+        assert!(
+            recently_viewed_with(&UserRecentlyViewedArgs::new(true, 20, 0, None), &api).is_ok()
+        );
     }
 
     #[test]
     fn recently_viewed_with_propagates_api_error() {
         let api = MockApi { items: None };
-        let err = recently_viewed_with(&UserRecentlyViewedArgs::new(false), &api).unwrap_err();
+        let err = recently_viewed_with(&UserRecentlyViewedArgs::new(false, 20, 0, None), &api)
+            .unwrap_err();
         assert!(err.to_string().contains("no items"));
     }
 }

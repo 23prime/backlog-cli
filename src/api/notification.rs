@@ -40,8 +40,8 @@ pub struct NotificationCount {
 }
 
 impl BacklogClient {
-    pub fn get_notifications(&self) -> Result<Vec<Notification>> {
-        let value = self.get("/notifications")?;
+    pub fn get_notifications(&self, params: &[(String, String)]) -> Result<Vec<Notification>> {
+        let value = self.get_with_query("/notifications", params)?;
         deserialize(value)
     }
 

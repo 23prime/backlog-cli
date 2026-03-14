@@ -58,7 +58,7 @@ mod tests {
         fn get_user(&self, _: u64) -> Result<User> {
             unimplemented!()
         }
-        fn get_space_activities(&self) -> Result<Vec<Activity>> {
+        fn get_space_activities(&self, _: &[(String, String)]) -> Result<Vec<Activity>> {
             unimplemented!()
         }
         fn get_space_disk_usage(&self) -> Result<DiskUsage> {
@@ -73,7 +73,7 @@ mod tests {
         fn get_project(&self, _: &str) -> Result<Project> {
             unimplemented!()
         }
-        fn get_project_activities(&self, _: &str) -> Result<Vec<Activity>> {
+        fn get_project_activities(&self, _: &str, _: &[(String, String)]) -> Result<Vec<Activity>> {
             unimplemented!()
         }
         fn get_project_disk_usage(&self, _: &str) -> Result<ProjectDiskUsage> {
@@ -153,19 +153,22 @@ mod tests {
         fn get_wiki_attachments(&self, _: u64) -> Result<Vec<WikiAttachment>> {
             unimplemented!()
         }
-        fn get_teams(&self) -> Result<Vec<Team>> {
+        fn get_teams(&self, _: &[(String, String)]) -> Result<Vec<Team>> {
             unimplemented!()
         }
         fn get_team(&self, _: u64) -> Result<Team> {
             unimplemented!()
         }
-        fn get_user_activities(&self, _: u64) -> Result<Vec<Activity>> {
+        fn get_user_activities(&self, _: u64, _: &[(String, String)]) -> Result<Vec<Activity>> {
             unimplemented!()
         }
-        fn get_recently_viewed_issues(&self) -> Result<Vec<RecentlyViewedIssue>> {
+        fn get_recently_viewed_issues(
+            &self,
+            _: &[(String, String)],
+        ) -> Result<Vec<RecentlyViewedIssue>> {
             unimplemented!()
         }
-        fn get_notifications(&self) -> Result<Vec<Notification>> {
+        fn get_notifications(&self, _: &[(String, String)]) -> Result<Vec<Notification>> {
             unimplemented!()
         }
         fn count_notifications(&self) -> Result<NotificationCount> {

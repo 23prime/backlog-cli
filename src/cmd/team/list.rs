@@ -5,11 +5,17 @@ use crate::api::{BacklogApi, BacklogClient, team::Team};
 
 pub struct TeamListArgs {
     json: bool,
+    pub count: u32,
+    pub offset: u64,
 }
 
 impl TeamListArgs {
-    pub fn new(json: bool) -> Self {
-        Self { json }
+    pub fn new(json: bool, count: u32, offset: u64) -> Self {
+        Self {
+            json,
+            count,
+            offset,
+        }
     }
 }
 
@@ -19,7 +25,11 @@ pub fn list(args: &TeamListArgs) -> Result<()> {
 }
 
 pub fn list_with(args: &TeamListArgs, api: &dyn BacklogApi) -> Result<()> {
-    let teams = api.get_teams()?;
+    let params: Vec<(String, String)> = vec![
+        ("count".to_string(), args.count.to_string()),
+        ("offset".to_string(), args.offset.to_string()),
+    ];
+    let teams = api.get_teams(&params)?;
     if args.json {
         println!(
             "{}",
@@ -62,7 +72,10 @@ mod tests {
         fn get_user(&self, _user_id: u64) -> anyhow::Result<crate::api::user::User> {
             unimplemented!()
         }
-        fn get_space_activities(&self) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
+        fn get_space_activities(
+            &self,
+            _: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
             unimplemented!()
         }
         fn get_space_disk_usage(&self) -> anyhow::Result<crate::api::disk_usage::DiskUsage> {
@@ -82,6 +95,7 @@ mod tests {
         fn get_project_activities(
             &self,
             _key: &str,
+            _: &[(String, String)],
         ) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
             unimplemented!()
         }
@@ -227,7 +241,7 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::wiki::WikiAttachment>> {
             unimplemented!()
         }
-        fn get_teams(&self) -> anyhow::Result<Vec<Team>> {
+        fn get_teams(&self, _: &[(String, String)]) -> anyhow::Result<Vec<Team>> {
             self.teams.clone().ok_or_else(|| anyhow!("no teams"))
         }
         fn get_team(&self, _team_id: u64) -> anyhow::Result<Team> {
@@ -236,15 +250,20 @@ mod tests {
         fn get_user_activities(
             &self,
             _user_id: u64,
+            _: &[(String, String)],
         ) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
             unimplemented!()
         }
         fn get_recently_viewed_issues(
             &self,
+            _: &[(String, String)],
         ) -> anyhow::Result<Vec<crate::api::user::RecentlyViewedIssue>> {
             unimplemented!()
         }
-        fn get_notifications(&self) -> anyhow::Result<Vec<crate::api::notification::Notification>> {
+        fn get_notifications(
+            &self,
+            _: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::notification::Notification>> {
             unimplemented!()
         }
         fn count_notifications(
@@ -300,7 +319,7 @@ mod tests {
         let api = MockApi {
             teams: Some(vec![sample_team()]),
         };
-        assert!(list_with(&TeamListArgs::new(false), &api).is_ok());
+        assert!(list_with(&TeamListArgs::new(false, 20, 0), &api).is_ok());
     }
 
     #[test]
@@ -308,13 +327,13 @@ mod tests {
         let api = MockApi {
             teams: Some(vec![sample_team()]),
         };
-        assert!(list_with(&TeamListArgs::new(true), &api).is_ok());
+        assert!(list_with(&TeamListArgs::new(true, 20, 0), &api).is_ok());
     }
 
     #[test]
     fn list_with_propagates_api_error() {
         let api = MockApi { teams: None };
-        let err = list_with(&TeamListArgs::new(false), &api).unwrap_err();
+        let err = list_with(&TeamListArgs::new(false, 20, 0), &api).unwrap_err();
         assert!(err.to_string().contains("no teams"));
     }
 }

@@ -6,11 +6,32 @@ use crate::api::{BacklogApi, BacklogClient, activity::Activity};
 pub struct ProjectActivitiesArgs {
     key: String,
     json: bool,
+    pub activity_type_ids: Vec<u32>,
+    pub min_id: Option<u64>,
+    pub max_id: Option<u64>,
+    pub count: u32,
+    pub order: Option<String>,
 }
 
 impl ProjectActivitiesArgs {
-    pub fn new(key: String, json: bool) -> Self {
-        Self { key, json }
+    pub fn new(
+        key: String,
+        json: bool,
+        activity_type_ids: Vec<u32>,
+        min_id: Option<u64>,
+        max_id: Option<u64>,
+        count: u32,
+        order: Option<String>,
+    ) -> Self {
+        Self {
+            key,
+            json,
+            activity_type_ids,
+            min_id,
+            max_id,
+            count,
+            order,
+        }
     }
 }
 
@@ -20,7 +41,21 @@ pub fn activities(args: &ProjectActivitiesArgs) -> Result<()> {
 }
 
 pub fn activities_with(args: &ProjectActivitiesArgs, api: &dyn BacklogApi) -> Result<()> {
-    let activities = api.get_project_activities(&args.key)?;
+    let mut params: Vec<(String, String)> = Vec::new();
+    for id in &args.activity_type_ids {
+        params.push(("activityTypeId[]".to_string(), id.to_string()));
+    }
+    if let Some(min) = args.min_id {
+        params.push(("minId".to_string(), min.to_string()));
+    }
+    if let Some(max) = args.max_id {
+        params.push(("maxId".to_string(), max.to_string()));
+    }
+    params.push(("count".to_string(), args.count.to_string()));
+    if let Some(ref order) = args.order {
+        params.push(("order".to_string(), order.clone()));
+    }
+    let activities = api.get_project_activities(&args.key, &params)?;
     if args.json {
         println!(
             "{}",
@@ -69,7 +104,7 @@ mod tests {
         fn get_user(&self, _user_id: u64) -> anyhow::Result<crate::api::user::User> {
             unimplemented!()
         }
-        fn get_space_activities(&self) -> anyhow::Result<Vec<Activity>> {
+        fn get_space_activities(&self, _: &[(String, String)]) -> anyhow::Result<Vec<Activity>> {
             unimplemented!()
         }
         fn get_space_disk_usage(&self) -> anyhow::Result<crate::api::disk_usage::DiskUsage> {
@@ -86,7 +121,11 @@ mod tests {
         fn get_project(&self, _key: &str) -> anyhow::Result<crate::api::project::Project> {
             unimplemented!()
         }
-        fn get_project_activities(&self, key: &str) -> anyhow::Result<Vec<Activity>> {
+        fn get_project_activities(
+            &self,
+            key: &str,
+            _: &[(String, String)],
+        ) -> anyhow::Result<Vec<Activity>> {
             assert_eq!(key, "TEST");
             self.activities
                 .clone()
@@ -234,7 +273,7 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::wiki::WikiAttachment>> {
             unimplemented!()
         }
-        fn get_teams(&self) -> anyhow::Result<Vec<crate::api::team::Team>> {
+        fn get_teams(&self, _: &[(String, String)]) -> anyhow::Result<Vec<crate::api::team::Team>> {
             unimplemented!()
         }
         fn get_team(&self, _team_id: u64) -> anyhow::Result<crate::api::team::Team> {
@@ -243,15 +282,20 @@ mod tests {
         fn get_user_activities(
             &self,
             _user_id: u64,
+            _: &[(String, String)],
         ) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
             unimplemented!()
         }
         fn get_recently_viewed_issues(
             &self,
+            _: &[(String, String)],
         ) -> anyhow::Result<Vec<crate::api::user::RecentlyViewedIssue>> {
             unimplemented!()
         }
-        fn get_notifications(&self) -> anyhow::Result<Vec<crate::api::notification::Notification>> {
+        fn get_notifications(
+            &self,
+            _: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::notification::Notification>> {
             unimplemented!()
         }
         fn count_notifications(
@@ -302,7 +346,19 @@ mod tests {
             activities: Some(vec![sample_activity()]),
         };
         assert!(
-            activities_with(&ProjectActivitiesArgs::new("TEST".to_string(), false), &api).is_ok()
+            activities_with(
+                &ProjectActivitiesArgs::new(
+                    "TEST".to_string(),
+                    false,
+                    vec![],
+                    None,
+                    None,
+                    20,
+                    None
+                ),
+                &api
+            )
+            .is_ok()
         );
     }
 
@@ -312,15 +368,22 @@ mod tests {
             activities: Some(vec![sample_activity()]),
         };
         assert!(
-            activities_with(&ProjectActivitiesArgs::new("TEST".to_string(), true), &api).is_ok()
+            activities_with(
+                &ProjectActivitiesArgs::new("TEST".to_string(), true, vec![], None, None, 20, None),
+                &api
+            )
+            .is_ok()
         );
     }
 
     #[test]
     fn activities_with_propagates_api_error() {
         let api = MockApi { activities: None };
-        let err = activities_with(&ProjectActivitiesArgs::new("TEST".to_string(), false), &api)
-            .unwrap_err();
+        let err = activities_with(
+            &ProjectActivitiesArgs::new("TEST".to_string(), false, vec![], None, None, 20, None),
+            &api,
+        )
+        .unwrap_err();
         assert!(err.to_string().contains("no activities"));
     }
 }

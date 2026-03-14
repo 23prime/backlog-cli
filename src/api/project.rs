@@ -114,8 +114,12 @@ impl BacklogClient {
         })
     }
 
-    pub fn get_project_activities(&self, key: &str) -> Result<Vec<Activity>> {
-        let value = self.get(&format!("/projects/{}/activities", key))?;
+    pub fn get_project_activities(
+        &self,
+        key: &str,
+        params: &[(String, String)],
+    ) -> Result<Vec<Activity>> {
+        let value = self.get_with_query(&format!("/projects/{}/activities", key), params)?;
         serde_json::from_value(value.clone()).map_err(|e| {
             anyhow::anyhow!(
                 "Failed to deserialize project activities response: {}\nRaw JSON:\n{}",
@@ -286,7 +290,7 @@ mod tests {
         });
 
         let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
-        let acts = client.get_project_activities("TEST").unwrap();
+        let acts = client.get_project_activities("TEST", &[]).unwrap();
         assert_eq!(acts.len(), 1);
         assert_eq!(acts[0].id, 1);
     }
@@ -301,7 +305,7 @@ mod tests {
         });
 
         let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
-        let err = client.get_project_activities("TEST").unwrap_err();
+        let err = client.get_project_activities("TEST", &[]).unwrap_err();
         assert!(err.to_string().contains("Forbidden"));
     }
 
