@@ -15,9 +15,9 @@ pub fn print_banner() {
     for (i, line) in LOGO.iter().enumerate() {
         if i == last {
             anstream::println!(
-                "{}  v{}",
+                "{}  {}",
                 line.truecolor(76, 188, 154),
-                env!("CARGO_PKG_VERSION").dimmed()
+                format!("v{}", env!("CARGO_PKG_VERSION")).dimmed()
             );
         } else {
             anstream::println!("{}", line.truecolor(76, 188, 154));
