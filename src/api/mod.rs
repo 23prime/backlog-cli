@@ -9,6 +9,7 @@ const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 pub mod activity;
 pub mod disk_usage;
 pub mod issue;
+pub mod notification;
 pub mod project;
 pub mod space;
 pub mod space_notification;
@@ -19,6 +20,7 @@ pub mod wiki;
 use activity::Activity;
 use disk_usage::DiskUsage;
 use issue::{Issue, IssueAttachment, IssueComment, IssueCount};
+use notification::{Notification, NotificationCount};
 use project::{
     Project, ProjectCategory, ProjectDiskUsage, ProjectIssueType, ProjectStatus, ProjectUser,
     ProjectVersion,
@@ -73,6 +75,10 @@ pub trait BacklogApi {
     fn get_team(&self, team_id: u64) -> Result<Team>;
     fn get_user_activities(&self, user_id: u64) -> Result<Vec<Activity>>;
     fn get_recently_viewed_issues(&self) -> Result<Vec<RecentlyViewedIssue>>;
+    fn get_notifications(&self) -> Result<Vec<Notification>>;
+    fn count_notifications(&self) -> Result<NotificationCount>;
+    fn read_notification(&self, id: u64) -> Result<()>;
+    fn read_all_notifications(&self) -> Result<NotificationCount>;
 }
 
 impl BacklogApi for BacklogClient {
@@ -232,6 +238,22 @@ impl BacklogApi for BacklogClient {
     fn get_recently_viewed_issues(&self) -> Result<Vec<RecentlyViewedIssue>> {
         self.get_recently_viewed_issues()
     }
+
+    fn get_notifications(&self) -> Result<Vec<Notification>> {
+        self.get_notifications()
+    }
+
+    fn count_notifications(&self) -> Result<NotificationCount> {
+        self.count_notifications()
+    }
+
+    fn read_notification(&self, id: u64) -> Result<()> {
+        self.read_notification(id)
+    }
+
+    fn read_all_notifications(&self) -> Result<NotificationCount> {
+        self.read_all_notifications()
+    }
 }
 
 /// How the client authenticates with Backlog.
@@ -307,6 +329,9 @@ impl BacklogClient {
     fn finish_response(&self, response: reqwest::blocking::Response) -> Result<serde_json::Value> {
         let status = response.status();
         crate::logger::verbose(&format!("← {status}"));
+        if status == reqwest::StatusCode::NO_CONTENT {
+            return Ok(serde_json::Value::Null);
+        }
         let body: serde_json::Value = response.json().context("Failed to parse JSON response")?;
         if !status.is_success() {
             anyhow::bail!("API error ({}): {}", status, extract_error_message(&body));

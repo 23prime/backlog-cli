@@ -246,6 +246,22 @@ mod tests {
         fn get_recently_viewed_issues(&self) -> anyhow::Result<Vec<RecentlyViewedIssue>> {
             self.items.clone().ok_or_else(|| anyhow!("no items"))
         }
+        fn get_notifications(&self) -> anyhow::Result<Vec<crate::api::notification::Notification>> {
+            unimplemented!()
+        }
+        fn count_notifications(
+            &self,
+        ) -> anyhow::Result<crate::api::notification::NotificationCount> {
+            unimplemented!()
+        }
+        fn read_notification(&self, _: u64) -> anyhow::Result<()> {
+            unimplemented!()
+        }
+        fn read_all_notifications(
+            &self,
+        ) -> anyhow::Result<crate::api::notification::NotificationCount> {
+            unimplemented!()
+        }
     }
 
     fn sample_issue_user() -> IssueUser {

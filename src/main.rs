@@ -17,6 +17,7 @@ use cmd::issue::{
     IssueCountArgs, IssueCreateArgs, IssueDeleteArgs, IssueListArgs, IssueShowArgs,
     IssueUpdateArgs, ParentChild,
 };
+use cmd::notification::{NotificationCountArgs, NotificationListArgs, NotificationReadArgs};
 use cmd::project::category::ProjectCategoryListArgs;
 use cmd::project::issue_type::ProjectIssueTypeListArgs;
 use cmd::project::status::ProjectStatusListArgs;
@@ -89,6 +90,11 @@ enum Commands {
     Team {
         #[command(subcommand)]
         action: TeamCommands,
+    },
+    /// Manage notifications
+    Notification {
+        #[command(subcommand)]
+        action: NotificationCommands,
     },
 }
 
@@ -588,6 +594,29 @@ enum TeamCommands {
 }
 
 #[derive(Subcommand)]
+enum NotificationCommands {
+    /// List notifications
+    List {
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Count unread notifications
+    Count {
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Mark a notification as read
+    Read {
+        /// Notification ID
+        id: u64,
+    },
+    /// Reset the unread notification count
+    ResetUnread,
+}
+
+#[derive(Subcommand)]
 enum AuthCommands {
     /// Login with your API key
     Login {
@@ -902,6 +931,18 @@ fn run() -> Result<()> {
         Commands::Team { action } => match action {
             TeamCommands::List { json } => cmd::team::list(&TeamListArgs::new(json)),
             TeamCommands::Show { id, json } => cmd::team::show(&TeamShowArgs::new(id, json)),
+        },
+        Commands::Notification { action } => match action {
+            NotificationCommands::List { json } => {
+                cmd::notification::list(&NotificationListArgs::new(json))
+            }
+            NotificationCommands::Count { json } => {
+                cmd::notification::count(&NotificationCountArgs::new(json))
+            }
+            NotificationCommands::Read { id } => {
+                cmd::notification::read(&NotificationReadArgs::new(id))
+            }
+            NotificationCommands::ResetUnread => cmd::notification::reset_unread(),
         },
         Commands::Space { action, json } => match action {
             None => cmd::space::show(&SpaceShowArgs::new(json)),

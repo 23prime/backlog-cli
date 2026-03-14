@@ -630,6 +630,60 @@ Lang:         ja
 Last login:   2024-06-01T00:00:00Z
 ```
 
+## `bl notification list`
+
+List notifications for the authenticated user.
+
+```bash
+bl notification list
+bl notification list --json
+```
+
+Example output:
+
+```text
+[101] reason=2 project=TEST issue=TEST-1 read=false created=2024-06-01T00:00:00Z
+[102] reason=6 project=TEST issue=TEST-2 read=true  created=2024-06-02T00:00:00Z
+```
+
+## `bl notification count`
+
+Count unread notifications for the authenticated user.
+
+```bash
+bl notification count
+bl notification count --json
+```
+
+Example output:
+
+```text
+3
+```
+
+## `bl notification read <id>`
+
+Mark a specific notification as read.
+
+```bash
+bl notification read <id>
+```
+
+## `bl notification reset-unread`
+
+Reset the unread notification count.
+Note: this resets the counter, but does not mark individual notifications as read.
+
+```bash
+bl notification reset-unread
+```
+
+Example output:
+
+```text
+Unread count reset.
+```
+
 ## Command coverage
 
 The table below maps Backlog API v2 endpoints to `bl` commands.
@@ -719,8 +773,9 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | Command | API endpoint | Status |
 | --- | --- | --- |
 | `bl notification list` | `GET /api/v2/notifications` | Planned |
-| `bl notification read <id>` | `PUT /api/v2/notifications/{notificationId}` | Planned |
-| `bl notification read-all` | `DELETE /api/v2/notifications/unread` | Planned |
+| `bl notification count` | `GET /api/v2/notifications/count` | Planned |
+| `bl notification read <id>` | `POST /api/v2/notifications/{notificationId}/markAsRead` | Planned |
+| `bl notification reset-unread` | `POST /api/v2/notifications/markAsRead` | Planned |
 
 ### Watching
 
