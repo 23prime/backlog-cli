@@ -175,7 +175,7 @@ mod tests {
             self.called_with.set(Some(id));
             Ok(())
         }
-        fn read_all_notifications(&self) -> Result<NotificationCount> {
+        fn reset_unread_notifications(&self) -> Result<NotificationCount> {
             unimplemented!()
         }
     }

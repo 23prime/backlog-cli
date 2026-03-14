@@ -55,7 +55,7 @@ impl BacklogClient {
         Ok(())
     }
 
-    pub fn read_all_notifications(&self) -> Result<NotificationCount> {
+    pub fn reset_unread_notifications(&self) -> Result<NotificationCount> {
         let value = self.post_form("/notifications/markAsRead", &[])?;
         deserialize(value)
     }

@@ -78,7 +78,7 @@ pub trait BacklogApi {
     fn get_notifications(&self) -> Result<Vec<Notification>>;
     fn count_notifications(&self) -> Result<NotificationCount>;
     fn read_notification(&self, id: u64) -> Result<()>;
-    fn read_all_notifications(&self) -> Result<NotificationCount>;
+    fn reset_unread_notifications(&self) -> Result<NotificationCount>;
 }
 
 impl BacklogApi for BacklogClient {
@@ -251,8 +251,8 @@ impl BacklogApi for BacklogClient {
         self.read_notification(id)
     }
 
-    fn read_all_notifications(&self) -> Result<NotificationCount> {
-        self.read_all_notifications()
+    fn reset_unread_notifications(&self) -> Result<NotificationCount> {
+        self.reset_unread_notifications()
     }
 }
 

@@ -8,7 +8,7 @@ pub fn reset_unread() -> Result<()> {
 }
 
 pub fn reset_unread_with(api: &dyn BacklogApi) -> Result<()> {
-    api.read_all_notifications()?;
+    api.reset_unread_notifications()?;
     anstream::println!("Unread count reset.");
     Ok(())
 }
@@ -162,7 +162,7 @@ mod tests {
         fn read_notification(&self, _: u64) -> Result<()> {
             unimplemented!()
         }
-        fn read_all_notifications(&self) -> Result<NotificationCount> {
+        fn reset_unread_notifications(&self) -> Result<NotificationCount> {
             Ok(NotificationCount { count: 0 })
         }
     }

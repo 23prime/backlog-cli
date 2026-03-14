@@ -197,7 +197,7 @@ mod tests {
         fn read_notification(&self, _: u64) -> Result<()> {
             unimplemented!()
         }
-        fn read_all_notifications(&self) -> Result<NotificationCount> {
+        fn reset_unread_notifications(&self) -> Result<NotificationCount> {
             unimplemented!()
         }
     }

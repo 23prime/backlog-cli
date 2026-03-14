@@ -254,7 +254,7 @@ mod tests {
         fn read_notification(&self, _: u64) -> anyhow::Result<()> {
             unimplemented!()
         }
-        fn read_all_notifications(
+        fn reset_unread_notifications(
             &self,
         ) -> anyhow::Result<crate::api::notification::NotificationCount> {
             unimplemented!()
