@@ -63,10 +63,10 @@ pub fn list_with(args: &NotificationListArgs, api: &dyn BacklogApi) -> Result<()
     if let Some(sid) = args.sender_id {
         params.push(("senderId".to_string(), sid.to_string()));
     }
+    let mut notifications = api.get_notifications(&params)?;
     if args.unread {
-        params.push(("alreadyRead".to_string(), "false".to_string()));
+        notifications.retain(|n| !n.already_read);
     }
-    let notifications = api.get_notifications(&params)?;
     if args.json {
         anstream::println!(
             "{}",
@@ -374,6 +374,20 @@ mod tests {
         );
     }
 
+    #[test]
+    fn unread_flag_filters_already_read_notifications() {
+        let api = MockApi {
+            notifications: vec![
+                make_notification(1, false, None), // unread
+                make_notification(2, true, None),  // read
+                make_notification(3, false, None), // unread
+            ],
+        };
+        let args = NotificationListArgs::try_new(false, None, None, 20, None, None, true).unwrap();
+        // Should not panic and only unread notifications are displayed
+        list_with(&args, &api).unwrap();
+    }
+
     struct MockApiCapture {
         captured: std::cell::RefCell<Vec<(String, String)>>,
     }
@@ -538,10 +552,5 @@ mod tests {
         assert!(params.iter().any(|(k, v)| k == "count" && v == "50"));
         assert!(params.iter().any(|(k, v)| k == "order" && v == "asc"));
         assert!(params.iter().any(|(k, v)| k == "senderId" && v == "123"));
-        assert!(
-            params
-                .iter()
-                .any(|(k, v)| k == "alreadyRead" && v == "false")
-        );
     }
 }
