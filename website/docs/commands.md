@@ -59,6 +59,7 @@ Show recent activities in your Backlog space.
 bl space activities
 bl space activities --count 50 --order asc
 bl space activities --activity-type-id 1 --activity-type-id 2 --min-id 100 --json
+bl space activities --max-id 500 --json
 ```
 
 Example output:
@@ -159,6 +160,7 @@ Show recent activities for a specific project.
 bl project activities <id-or-key>
 bl project activities <id-or-key> --count 50 --order asc
 bl project activities <id-or-key> --activity-type-id 1 --min-id 100 --json
+bl project activities <id-or-key> --max-id 200 --json
 ```
 
 Example output:
@@ -571,6 +573,7 @@ Show recent activities of a specific user.
 bl user activities <id>
 bl user activities <id> --count 50 --order asc
 bl user activities <id> --activity-type-id 1 --min-id 100 --json
+bl user activities <id> --max-id 200 --json
 ```
 
 Example output:
@@ -643,6 +646,7 @@ List notifications for the authenticated user.
 bl notification list
 bl notification list --count 50 --order asc
 bl notification list --min-id 100 --sender-id 123 --json
+bl notification list --unread --json
 ```
 
 Example output:

@@ -98,6 +98,21 @@ enum Commands {
     },
 }
 
+#[derive(clap::ValueEnum, Clone)]
+enum Order {
+    Asc,
+    Desc,
+}
+
+impl Order {
+    fn as_str(&self) -> &'static str {
+        match self {
+            Order::Asc => "asc",
+            Order::Desc => "desc",
+        }
+    }
+}
+
 #[derive(Subcommand)]
 enum SpaceCommands {
     /// Show recent space activities
@@ -114,9 +129,9 @@ enum SpaceCommands {
         /// Number of activities to retrieve
         #[arg(long, default_value = "20")]
         count: u32,
-        /// Sort order ("asc" or "desc")
+        /// Sort order
         #[arg(long)]
-        order: Option<String>,
+        order: Option<Order>,
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -167,9 +182,9 @@ enum ProjectCommands {
         /// Number of activities to retrieve
         #[arg(long, default_value = "20")]
         count: u32,
-        /// Sort order ("asc" or "desc")
+        /// Sort order
         #[arg(long)]
-        order: Option<String>,
+        order: Option<Order>,
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -605,9 +620,9 @@ enum UserCommands {
         /// Number of activities to retrieve
         #[arg(long, default_value = "20")]
         count: u32,
-        /// Sort order ("asc" or "desc")
+        /// Sort order
         #[arg(long)]
-        order: Option<String>,
+        order: Option<Order>,
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -620,9 +635,9 @@ enum UserCommands {
         /// Offset for pagination
         #[arg(long, default_value = "0")]
         offset: u64,
-        /// Sort order ("asc" or "desc")
+        /// Sort order
         #[arg(long)]
-        order: Option<String>,
+        order: Option<Order>,
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -639,6 +654,9 @@ enum TeamCommands {
         /// Offset for pagination
         #[arg(long, default_value = "0")]
         offset: u64,
+        /// Sort order
+        #[arg(long)]
+        order: Option<Order>,
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -666,12 +684,15 @@ enum NotificationCommands {
         /// Number of notifications to retrieve
         #[arg(long, default_value = "20")]
         count: u32,
-        /// Sort order ("asc" or "desc")
+        /// Sort order
         #[arg(long)]
-        order: Option<String>,
+        order: Option<Order>,
         /// Filter by sender user ID
         #[arg(long)]
         sender_id: Option<u64>,
+        /// Show only unread notifications
+        #[arg(long)]
+        unread: bool,
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -796,15 +817,15 @@ fn run() -> Result<()> {
                 count,
                 order,
                 json,
-            } => cmd::project::activities(&ProjectActivitiesArgs::new(
+            } => cmd::project::activities(&ProjectActivitiesArgs::try_new(
                 id_or_key,
                 json,
                 activity_type_ids,
                 min_id,
                 max_id,
                 count,
-                order,
-            )),
+                order.map(|o| o.as_str().to_string()),
+            )?),
             ProjectCommands::DiskUsage { id_or_key, json } => {
                 cmd::project::disk_usage(&ProjectDiskUsageArgs::new(id_or_key, json))
             }
@@ -1018,30 +1039,39 @@ fn run() -> Result<()> {
                 count,
                 order,
                 json,
-            } => cmd::user::activities(&UserActivitiesArgs::new(
+            } => cmd::user::activities(&UserActivitiesArgs::try_new(
                 id,
                 json,
                 activity_type_ids,
                 min_id,
                 max_id,
                 count,
-                order,
-            )),
+                order.map(|o| o.as_str().to_string()),
+            )?),
             UserCommands::RecentlyViewed {
                 count,
                 offset,
                 order,
                 json,
-            } => {
-                cmd::user::recently_viewed(&UserRecentlyViewedArgs::new(json, count, offset, order))
-            }
+            } => cmd::user::recently_viewed(&UserRecentlyViewedArgs::try_new(
+                json,
+                count,
+                offset,
+                order.map(|o| o.as_str().to_string()),
+            )?),
         },
         Commands::Team { action } => match action {
             TeamCommands::List {
                 count,
                 offset,
+                order,
                 json,
-            } => cmd::team::list(&TeamListArgs::new(json, count, offset)),
+            } => cmd::team::list(&TeamListArgs::try_new(
+                json,
+                count,
+                order.map(|o| o.as_str().to_string()),
+                offset,
+            )?),
             TeamCommands::Show { id, json } => cmd::team::show(&TeamShowArgs::new(id, json)),
         },
         Commands::Notification { action } => match action {
@@ -1051,10 +1081,17 @@ fn run() -> Result<()> {
                 count,
                 order,
                 sender_id,
+                unread,
                 json,
-            } => cmd::notification::list(&NotificationListArgs::new(
-                json, min_id, max_id, count, order, sender_id,
-            )),
+            } => cmd::notification::list(&NotificationListArgs::try_new(
+                json,
+                min_id,
+                max_id,
+                count,
+                order.map(|o| o.as_str().to_string()),
+                sender_id,
+                unread,
+            )?),
             NotificationCommands::Count { json } => {
                 cmd::notification::count(&NotificationCountArgs::new(json))
             }
@@ -1072,14 +1109,14 @@ fn run() -> Result<()> {
                 count,
                 order,
                 json: sub_json,
-            }) => cmd::space::activities(&SpaceActivitiesArgs::new(
+            }) => cmd::space::activities(&SpaceActivitiesArgs::try_new(
                 json || sub_json,
                 activity_type_ids,
                 min_id,
                 max_id,
                 count,
-                order,
-            )),
+                order.map(|o| o.as_str().to_string()),
+            )?),
             Some(SpaceCommands::DiskUsage { json: sub_json }) => {
                 cmd::space::disk_usage(&SpaceDiskUsageArgs::new(json || sub_json))
             }
