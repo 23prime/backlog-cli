@@ -550,4 +550,21 @@ mod tests {
         let body = json!({"errors": []});
         assert_eq!(extract_error_message(&body), "Unknown error");
     }
+
+    #[test]
+    fn post_form_returns_null_on_204_no_content() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST)
+                .path("/notifications/123/markAsRead")
+                .query_param("apiKey", TEST_KEY);
+            then.status(204);
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let body = client
+            .post_form("/notifications/123/markAsRead", &[])
+            .unwrap();
+        assert_eq!(body, serde_json::Value::Null);
+    }
 }
