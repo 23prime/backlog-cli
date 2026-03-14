@@ -36,8 +36,8 @@ pub struct Team {
 }
 
 impl BacklogClient {
-    pub fn get_teams(&self) -> Result<Vec<Team>> {
-        let value = self.get("/teams")?;
+    pub fn get_teams(&self, params: &[(String, String)]) -> Result<Vec<Team>> {
+        let value = self.get_with_query("/teams", params)?;
         serde_json::from_value(value.clone()).map_err(|e| {
             anyhow::anyhow!(
                 "Failed to deserialize teams response: {}\nRaw JSON:\n{}",
@@ -95,7 +95,7 @@ mod tests {
         });
 
         let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
-        let teams = client.get_teams().unwrap();
+        let teams = client.get_teams(&[]).unwrap();
         assert_eq!(teams.len(), 1);
         assert_eq!(teams[0].id, 1);
         assert_eq!(teams[0].name, "dev-team");
@@ -111,7 +111,7 @@ mod tests {
         });
 
         let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
-        let err = client.get_teams().unwrap_err();
+        let err = client.get_teams(&[]).unwrap_err();
         assert!(err.to_string().contains("Forbidden"));
     }
 

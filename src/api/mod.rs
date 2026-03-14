@@ -36,12 +36,16 @@ pub trait BacklogApi {
     fn get_myself(&self) -> Result<User>;
     fn get_users(&self) -> Result<Vec<User>>;
     fn get_user(&self, user_id: u64) -> Result<User>;
-    fn get_space_activities(&self) -> Result<Vec<Activity>>;
+    fn get_space_activities(&self, params: &[(String, String)]) -> Result<Vec<Activity>>;
     fn get_space_disk_usage(&self) -> Result<DiskUsage>;
     fn get_space_notification(&self) -> Result<SpaceNotification>;
     fn get_projects(&self) -> Result<Vec<Project>>;
     fn get_project(&self, key: &str) -> Result<Project>;
-    fn get_project_activities(&self, key: &str) -> Result<Vec<Activity>>;
+    fn get_project_activities(
+        &self,
+        key: &str,
+        params: &[(String, String)],
+    ) -> Result<Vec<Activity>>;
     fn get_project_disk_usage(&self, key: &str) -> Result<ProjectDiskUsage>;
     fn get_project_users(&self, key: &str) -> Result<Vec<ProjectUser>>;
     fn get_project_statuses(&self, key: &str) -> Result<Vec<ProjectStatus>>;
@@ -71,11 +75,18 @@ pub trait BacklogApi {
     fn delete_wiki(&self, wiki_id: u64, params: &[(String, String)]) -> Result<Wiki>;
     fn get_wiki_history(&self, wiki_id: u64) -> Result<Vec<WikiHistory>>;
     fn get_wiki_attachments(&self, wiki_id: u64) -> Result<Vec<WikiAttachment>>;
-    fn get_teams(&self) -> Result<Vec<Team>>;
+    fn get_teams(&self, params: &[(String, String)]) -> Result<Vec<Team>>;
     fn get_team(&self, team_id: u64) -> Result<Team>;
-    fn get_user_activities(&self, user_id: u64) -> Result<Vec<Activity>>;
-    fn get_recently_viewed_issues(&self) -> Result<Vec<RecentlyViewedIssue>>;
-    fn get_notifications(&self) -> Result<Vec<Notification>>;
+    fn get_user_activities(
+        &self,
+        user_id: u64,
+        params: &[(String, String)],
+    ) -> Result<Vec<Activity>>;
+    fn get_recently_viewed_issues(
+        &self,
+        params: &[(String, String)],
+    ) -> Result<Vec<RecentlyViewedIssue>>;
+    fn get_notifications(&self, params: &[(String, String)]) -> Result<Vec<Notification>>;
     fn count_notifications(&self) -> Result<NotificationCount>;
     fn read_notification(&self, id: u64) -> Result<()>;
     fn reset_unread_notifications(&self) -> Result<NotificationCount>;
@@ -98,8 +109,8 @@ impl BacklogApi for BacklogClient {
         self.get_user(user_id)
     }
 
-    fn get_space_activities(&self) -> Result<Vec<Activity>> {
-        self.get_space_activities()
+    fn get_space_activities(&self, params: &[(String, String)]) -> Result<Vec<Activity>> {
+        self.get_space_activities(params)
     }
 
     fn get_space_disk_usage(&self) -> Result<DiskUsage> {
@@ -118,8 +129,12 @@ impl BacklogApi for BacklogClient {
         self.get_project(key)
     }
 
-    fn get_project_activities(&self, key: &str) -> Result<Vec<Activity>> {
-        self.get_project_activities(key)
+    fn get_project_activities(
+        &self,
+        key: &str,
+        params: &[(String, String)],
+    ) -> Result<Vec<Activity>> {
+        self.get_project_activities(key, params)
     }
 
     fn get_project_disk_usage(&self, key: &str) -> Result<ProjectDiskUsage> {
@@ -223,24 +238,31 @@ impl BacklogApi for BacklogClient {
         self.get_wiki_attachments(wiki_id)
     }
 
-    fn get_teams(&self) -> Result<Vec<Team>> {
-        self.get_teams()
+    fn get_teams(&self, params: &[(String, String)]) -> Result<Vec<Team>> {
+        self.get_teams(params)
     }
 
     fn get_team(&self, team_id: u64) -> Result<Team> {
         self.get_team(team_id)
     }
 
-    fn get_user_activities(&self, user_id: u64) -> Result<Vec<Activity>> {
-        self.get_user_activities(user_id)
+    fn get_user_activities(
+        &self,
+        user_id: u64,
+        params: &[(String, String)],
+    ) -> Result<Vec<Activity>> {
+        self.get_user_activities(user_id, params)
     }
 
-    fn get_recently_viewed_issues(&self) -> Result<Vec<RecentlyViewedIssue>> {
-        self.get_recently_viewed_issues()
+    fn get_recently_viewed_issues(
+        &self,
+        params: &[(String, String)],
+    ) -> Result<Vec<RecentlyViewedIssue>> {
+        self.get_recently_viewed_issues(params)
     }
 
-    fn get_notifications(&self) -> Result<Vec<Notification>> {
-        self.get_notifications()
+    fn get_notifications(&self, params: &[(String, String)]) -> Result<Vec<Notification>> {
+        self.get_notifications(params)
     }
 
     fn count_notifications(&self) -> Result<NotificationCount> {

@@ -98,10 +98,40 @@ enum Commands {
     },
 }
 
+#[derive(clap::ValueEnum, Clone)]
+enum Order {
+    Asc,
+    Desc,
+}
+
+impl Order {
+    fn as_str(&self) -> &'static str {
+        match self {
+            Order::Asc => "asc",
+            Order::Desc => "desc",
+        }
+    }
+}
+
 #[derive(Subcommand)]
 enum SpaceCommands {
     /// Show recent space activities
     Activities {
+        /// Filter by activity type ID (repeatable)
+        #[arg(long = "activity-type-id", value_name = "ID")]
+        activity_type_ids: Vec<u32>,
+        /// Minimum activity ID
+        #[arg(long)]
+        min_id: Option<u64>,
+        /// Maximum activity ID
+        #[arg(long)]
+        max_id: Option<u64>,
+        /// Number of activities to retrieve
+        #[arg(long, default_value = "20")]
+        count: u32,
+        /// Sort order
+        #[arg(long)]
+        order: Option<Order>,
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -140,6 +170,21 @@ enum ProjectCommands {
     Activities {
         /// Project ID or key
         id_or_key: String,
+        /// Filter by activity type ID (repeatable)
+        #[arg(long = "activity-type-id", value_name = "ID")]
+        activity_type_ids: Vec<u32>,
+        /// Minimum activity ID
+        #[arg(long)]
+        min_id: Option<u64>,
+        /// Maximum activity ID
+        #[arg(long)]
+        max_id: Option<u64>,
+        /// Number of activities to retrieve
+        #[arg(long, default_value = "20")]
+        count: u32,
+        /// Sort order
+        #[arg(long)]
+        order: Option<Order>,
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -563,12 +608,36 @@ enum UserCommands {
     Activities {
         /// User numeric ID
         id: u64,
+        /// Filter by activity type ID (repeatable)
+        #[arg(long = "activity-type-id", value_name = "ID")]
+        activity_type_ids: Vec<u32>,
+        /// Minimum activity ID
+        #[arg(long)]
+        min_id: Option<u64>,
+        /// Maximum activity ID
+        #[arg(long)]
+        max_id: Option<u64>,
+        /// Number of activities to retrieve
+        #[arg(long, default_value = "20")]
+        count: u32,
+        /// Sort order
+        #[arg(long)]
+        order: Option<Order>,
         /// Output as JSON
         #[arg(long)]
         json: bool,
     },
     /// Show recently viewed issues (for the authenticated user)
     RecentlyViewed {
+        /// Number of items to retrieve
+        #[arg(long, default_value = "20")]
+        count: u32,
+        /// Offset for pagination
+        #[arg(long, default_value = "0")]
+        offset: u64,
+        /// Sort order
+        #[arg(long)]
+        order: Option<Order>,
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -579,6 +648,15 @@ enum UserCommands {
 enum TeamCommands {
     /// List all teams in the space
     List {
+        /// Number of teams to retrieve
+        #[arg(long, default_value = "20")]
+        count: u32,
+        /// Offset for pagination
+        #[arg(long, default_value = "0")]
+        offset: u64,
+        /// Sort order
+        #[arg(long)]
+        order: Option<Order>,
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -597,6 +675,24 @@ enum TeamCommands {
 enum NotificationCommands {
     /// List notifications
     List {
+        /// Minimum notification ID
+        #[arg(long)]
+        min_id: Option<u64>,
+        /// Maximum notification ID
+        #[arg(long)]
+        max_id: Option<u64>,
+        /// Number of notifications to retrieve
+        #[arg(long, default_value = "20")]
+        count: u32,
+        /// Sort order
+        #[arg(long)]
+        order: Option<Order>,
+        /// Filter by sender user ID
+        #[arg(long)]
+        sender_id: Option<u64>,
+        /// Show only unread notifications
+        #[arg(long)]
+        unread: bool,
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -713,9 +809,23 @@ fn run() -> Result<()> {
             ProjectCommands::Show { id_or_key, json } => {
                 cmd::project::show(&ProjectShowArgs::new(id_or_key, json))
             }
-            ProjectCommands::Activities { id_or_key, json } => {
-                cmd::project::activities(&ProjectActivitiesArgs::new(id_or_key, json))
-            }
+            ProjectCommands::Activities {
+                id_or_key,
+                activity_type_ids,
+                min_id,
+                max_id,
+                count,
+                order,
+                json,
+            } => cmd::project::activities(&ProjectActivitiesArgs::try_new(
+                id_or_key,
+                json,
+                activity_type_ids,
+                min_id,
+                max_id,
+                count,
+                order.map(|o| o.as_str().to_string()),
+            )?),
             ProjectCommands::DiskUsage { id_or_key, json } => {
                 cmd::project::disk_usage(&ProjectDiskUsageArgs::new(id_or_key, json))
             }
@@ -921,21 +1031,67 @@ fn run() -> Result<()> {
         Commands::User { action } => match action {
             UserCommands::List { json } => cmd::user::list(&UserListArgs::new(json)),
             UserCommands::Show { id, json } => cmd::user::show(&UserShowArgs::new(id, json)),
-            UserCommands::Activities { id, json } => {
-                cmd::user::activities(&UserActivitiesArgs::new(id, json))
-            }
-            UserCommands::RecentlyViewed { json } => {
-                cmd::user::recently_viewed(&UserRecentlyViewedArgs::new(json))
-            }
+            UserCommands::Activities {
+                id,
+                activity_type_ids,
+                min_id,
+                max_id,
+                count,
+                order,
+                json,
+            } => cmd::user::activities(&UserActivitiesArgs::try_new(
+                id,
+                json,
+                activity_type_ids,
+                min_id,
+                max_id,
+                count,
+                order.map(|o| o.as_str().to_string()),
+            )?),
+            UserCommands::RecentlyViewed {
+                count,
+                offset,
+                order,
+                json,
+            } => cmd::user::recently_viewed(&UserRecentlyViewedArgs::try_new(
+                json,
+                count,
+                offset,
+                order.map(|o| o.as_str().to_string()),
+            )?),
         },
         Commands::Team { action } => match action {
-            TeamCommands::List { json } => cmd::team::list(&TeamListArgs::new(json)),
+            TeamCommands::List {
+                count,
+                offset,
+                order,
+                json,
+            } => cmd::team::list(&TeamListArgs::try_new(
+                json,
+                count,
+                order.map(|o| o.as_str().to_string()),
+                offset,
+            )?),
             TeamCommands::Show { id, json } => cmd::team::show(&TeamShowArgs::new(id, json)),
         },
         Commands::Notification { action } => match action {
-            NotificationCommands::List { json } => {
-                cmd::notification::list(&NotificationListArgs::new(json))
-            }
+            NotificationCommands::List {
+                min_id,
+                max_id,
+                count,
+                order,
+                sender_id,
+                unread,
+                json,
+            } => cmd::notification::list(&NotificationListArgs::try_new(
+                json,
+                min_id,
+                max_id,
+                count,
+                order.map(|o| o.as_str().to_string()),
+                sender_id,
+                unread,
+            )?),
             NotificationCommands::Count { json } => {
                 cmd::notification::count(&NotificationCountArgs::new(json))
             }
@@ -946,9 +1102,21 @@ fn run() -> Result<()> {
         },
         Commands::Space { action, json } => match action {
             None => cmd::space::show(&SpaceShowArgs::new(json)),
-            Some(SpaceCommands::Activities { json: sub_json }) => {
-                cmd::space::activities(&SpaceActivitiesArgs::new(json || sub_json))
-            }
+            Some(SpaceCommands::Activities {
+                activity_type_ids,
+                min_id,
+                max_id,
+                count,
+                order,
+                json: sub_json,
+            }) => cmd::space::activities(&SpaceActivitiesArgs::try_new(
+                json || sub_json,
+                activity_type_ids,
+                min_id,
+                max_id,
+                count,
+                order.map(|o| o.as_str().to_string()),
+            )?),
             Some(SpaceCommands::DiskUsage { json: sub_json }) => {
                 cmd::space::disk_usage(&SpaceDiskUsageArgs::new(json || sub_json))
             }

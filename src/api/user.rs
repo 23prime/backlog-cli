@@ -58,13 +58,20 @@ impl BacklogClient {
         deserialize(value, "user response")
     }
 
-    pub fn get_user_activities(&self, user_id: u64) -> Result<Vec<Activity>> {
-        let value = self.get(&format!("/users/{user_id}/activities"))?;
+    pub fn get_user_activities(
+        &self,
+        user_id: u64,
+        params: &[(String, String)],
+    ) -> Result<Vec<Activity>> {
+        let value = self.get_with_query(&format!("/users/{user_id}/activities"), params)?;
         deserialize(value, "user activities response")
     }
 
-    pub fn get_recently_viewed_issues(&self) -> Result<Vec<RecentlyViewedIssue>> {
-        let value = self.get("/users/myself/recentlyViewedIssues")?;
+    pub fn get_recently_viewed_issues(
+        &self,
+        params: &[(String, String)],
+    ) -> Result<Vec<RecentlyViewedIssue>> {
+        let value = self.get_with_query("/users/myself/recentlyViewedIssues", params)?;
         deserialize(value, "recently viewed issues response")
     }
 }
@@ -198,7 +205,7 @@ mod tests {
         });
 
         let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
-        let activities = client.get_user_activities(123).unwrap();
+        let activities = client.get_user_activities(123, &[]).unwrap();
         assert_eq!(activities.len(), 1);
         assert_eq!(activities[0].id, 1);
     }
@@ -213,7 +220,7 @@ mod tests {
         });
 
         let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
-        let err = client.get_user_activities(123).unwrap_err();
+        let err = client.get_user_activities(123, &[]).unwrap_err();
         assert!(err.to_string().contains("No user"));
     }
 
@@ -247,7 +254,7 @@ mod tests {
         });
 
         let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
-        let items = client.get_recently_viewed_issues().unwrap();
+        let items = client.get_recently_viewed_issues(&[]).unwrap();
         assert_eq!(items.len(), 1);
         assert_eq!(items[0].issue.issue_key, "BLG-1");
         assert_eq!(items[0].updated, "2024-06-01T00:00:00Z");
@@ -263,7 +270,7 @@ mod tests {
         });
 
         let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
-        let err = client.get_recently_viewed_issues().unwrap_err();
+        let err = client.get_recently_viewed_issues(&[]).unwrap_err();
         assert!(err.to_string().contains("Authentication failure"));
     }
 

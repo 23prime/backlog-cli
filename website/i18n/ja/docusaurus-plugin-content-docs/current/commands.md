@@ -57,7 +57,8 @@ Backlog スペースの最近のアクティビティを表示します。
 
 ```bash
 bl space activities
-bl space activities --json
+bl space activities --count 50 --order asc
+bl space activities --activity-type-id 1 --activity-type-id 2 --min-id 100 --json
 ```
 
 出力例:
@@ -157,6 +158,9 @@ Archived:   false
 ```bash
 bl project activities <id-or-key>
 bl project activities <id-or-key> --json
+bl project activities <id-or-key> --count 20 --order asc
+bl project activities <id-or-key> --activity-type-id 1 --activity-type-id 2
+bl project activities <id-or-key> --min-id 100 --max-id 200
 ```
 
 出力例:
@@ -529,6 +533,8 @@ bl wiki attachment list 12345 --json
 ```bash
 bl team list
 bl team list --json
+bl team list --count 20 --order asc
+bl team list --offset 10
 ```
 
 出力例:
@@ -567,6 +573,9 @@ Members:
 ```bash
 bl user activities <id>
 bl user activities <id> --json
+bl user activities <id> --count 20 --order asc
+bl user activities <id> --activity-type-id 1 --activity-type-id 2
+bl user activities <id> --min-id 100 --max-id 200
 ```
 
 出力例:
@@ -582,6 +591,8 @@ bl user activities <id> --json
 ```bash
 bl user recently-viewed
 bl user recently-viewed --json
+bl user recently-viewed --count 20 --order asc
+bl user recently-viewed --offset 10
 ```
 
 出力例:
@@ -637,6 +648,9 @@ Last login:   2024-06-01T00:00:00Z
 ```bash
 bl notification list
 bl notification list --json
+bl notification list --count 20 --order asc
+bl notification list --unread
+bl notification list --sender-id 123
 ```
 
 出力例:

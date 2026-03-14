@@ -5,11 +5,41 @@ use crate::api::{BacklogApi, BacklogClient};
 
 pub struct NotificationListArgs {
     pub json: bool,
+    pub min_id: Option<u64>,
+    pub max_id: Option<u64>,
+    pub count: u32,
+    pub order: Option<String>,
+    pub sender_id: Option<u64>,
+    pub unread: bool,
 }
 
 impl NotificationListArgs {
-    pub fn new(json: bool) -> Self {
-        Self { json }
+    pub fn try_new(
+        json: bool,
+        min_id: Option<u64>,
+        max_id: Option<u64>,
+        count: u32,
+        order: Option<String>,
+        sender_id: Option<u64>,
+        unread: bool,
+    ) -> anyhow::Result<Self> {
+        if !(1..=100).contains(&count) {
+            anyhow::bail!("count must be between 1 and 100");
+        }
+        if let (Some(min), Some(max)) = (min_id, max_id)
+            && min > max
+        {
+            anyhow::bail!("min-id must be less than or equal to max-id");
+        }
+        Ok(Self {
+            json,
+            min_id,
+            max_id,
+            count,
+            order,
+            sender_id,
+            unread,
+        })
     }
 }
 
@@ -19,7 +49,24 @@ pub fn list(args: &NotificationListArgs) -> Result<()> {
 }
 
 pub fn list_with(args: &NotificationListArgs, api: &dyn BacklogApi) -> Result<()> {
-    let notifications = api.get_notifications()?;
+    let mut params: Vec<(String, String)> = Vec::new();
+    if let Some(min) = args.min_id {
+        params.push(("minId".to_string(), min.to_string()));
+    }
+    if let Some(max) = args.max_id {
+        params.push(("maxId".to_string(), max.to_string()));
+    }
+    params.push(("count".to_string(), args.count.to_string()));
+    if let Some(ref order) = args.order {
+        params.push(("order".to_string(), order.clone()));
+    }
+    if let Some(sid) = args.sender_id {
+        params.push(("senderId".to_string(), sid.to_string()));
+    }
+    let mut notifications = api.get_notifications(&params)?;
+    if args.unread {
+        notifications.retain(|n| !n.already_read);
+    }
     if args.json {
         anstream::println!(
             "{}",
@@ -81,7 +128,7 @@ mod tests {
         fn get_user(&self, _: u64) -> Result<User> {
             unimplemented!()
         }
-        fn get_space_activities(&self) -> Result<Vec<Activity>> {
+        fn get_space_activities(&self, _: &[(String, String)]) -> Result<Vec<Activity>> {
             unimplemented!()
         }
         fn get_space_disk_usage(&self) -> Result<DiskUsage> {
@@ -96,7 +143,7 @@ mod tests {
         fn get_project(&self, _: &str) -> Result<Project> {
             unimplemented!()
         }
-        fn get_project_activities(&self, _: &str) -> Result<Vec<Activity>> {
+        fn get_project_activities(&self, _: &str, _: &[(String, String)]) -> Result<Vec<Activity>> {
             unimplemented!()
         }
         fn get_project_disk_usage(&self, _: &str) -> Result<ProjectDiskUsage> {
@@ -176,19 +223,22 @@ mod tests {
         fn get_wiki_attachments(&self, _: u64) -> Result<Vec<WikiAttachment>> {
             unimplemented!()
         }
-        fn get_teams(&self) -> Result<Vec<Team>> {
+        fn get_teams(&self, _: &[(String, String)]) -> Result<Vec<Team>> {
             unimplemented!()
         }
         fn get_team(&self, _: u64) -> Result<Team> {
             unimplemented!()
         }
-        fn get_user_activities(&self, _: u64) -> Result<Vec<Activity>> {
+        fn get_user_activities(&self, _: u64, _: &[(String, String)]) -> Result<Vec<Activity>> {
             unimplemented!()
         }
-        fn get_recently_viewed_issues(&self) -> Result<Vec<RecentlyViewedIssue>> {
+        fn get_recently_viewed_issues(
+            &self,
+            _: &[(String, String)],
+        ) -> Result<Vec<RecentlyViewedIssue>> {
             unimplemented!()
         }
-        fn get_notifications(&self) -> Result<Vec<Notification>> {
+        fn get_notifications(&self, _: &[(String, String)]) -> Result<Vec<Notification>> {
             Ok(self.notifications.clone())
         }
         fn count_notifications(&self) -> Result<NotificationCount> {
@@ -296,7 +346,11 @@ mod tests {
             notifications: vec![make_notification(101, false, Some("TEST-1"))],
         };
         // smoke test: should not panic
-        list_with(&NotificationListArgs::new(false), &api).unwrap();
+        list_with(
+            &NotificationListArgs::try_new(false, None, None, 20, None, None, false).unwrap(),
+            &api,
+        )
+        .unwrap();
     }
 
     #[test]
@@ -305,5 +359,203 @@ mod tests {
         let formatted = format_notification(&n);
         assert!(formatted.contains("issue=-"));
         assert!(formatted.contains("read=true"));
+    }
+
+    #[test]
+    fn try_new_rejects_count_over_100() {
+        assert!(NotificationListArgs::try_new(false, None, None, 101, None, None, false).is_err());
+    }
+
+    #[test]
+    fn try_new_rejects_count_zero() {
+        assert!(NotificationListArgs::try_new(false, None, None, 0, None, None, false).is_err());
+    }
+
+    #[test]
+    fn try_new_rejects_min_id_greater_than_max_id() {
+        assert!(
+            NotificationListArgs::try_new(false, Some(20), Some(10), 20, None, None, false)
+                .is_err()
+        );
+    }
+
+    #[test]
+    fn unread_flag_filters_already_read_notifications() {
+        let api = MockApi {
+            notifications: vec![
+                make_notification(1, false, None), // unread
+                make_notification(2, true, None),  // read
+                make_notification(3, false, None), // unread
+            ],
+        };
+        let args = NotificationListArgs::try_new(false, None, None, 20, None, None, true).unwrap();
+        // Should not panic and only unread notifications are displayed
+        list_with(&args, &api).unwrap();
+    }
+
+    struct MockApiCapture {
+        captured: std::cell::RefCell<Vec<(String, String)>>,
+    }
+
+    impl BacklogApi for MockApiCapture {
+        fn get_space(&self) -> Result<Space> {
+            unimplemented!()
+        }
+        fn get_myself(&self) -> Result<User> {
+            unimplemented!()
+        }
+        fn get_users(&self) -> Result<Vec<User>> {
+            unimplemented!()
+        }
+        fn get_user(&self, _: u64) -> Result<User> {
+            unimplemented!()
+        }
+        fn get_space_activities(&self, _: &[(String, String)]) -> Result<Vec<Activity>> {
+            unimplemented!()
+        }
+        fn get_space_disk_usage(&self) -> Result<DiskUsage> {
+            unimplemented!()
+        }
+        fn get_space_notification(&self) -> Result<SpaceNotification> {
+            unimplemented!()
+        }
+        fn get_projects(&self) -> Result<Vec<Project>> {
+            unimplemented!()
+        }
+        fn get_project(&self, _: &str) -> Result<Project> {
+            unimplemented!()
+        }
+        fn get_project_activities(&self, _: &str, _: &[(String, String)]) -> Result<Vec<Activity>> {
+            unimplemented!()
+        }
+        fn get_project_disk_usage(&self, _: &str) -> Result<ProjectDiskUsage> {
+            unimplemented!()
+        }
+        fn get_project_users(&self, _: &str) -> Result<Vec<ProjectUser>> {
+            unimplemented!()
+        }
+        fn get_project_statuses(&self, _: &str) -> Result<Vec<ProjectStatus>> {
+            unimplemented!()
+        }
+        fn get_project_issue_types(&self, _: &str) -> Result<Vec<ProjectIssueType>> {
+            unimplemented!()
+        }
+        fn get_project_categories(&self, _: &str) -> Result<Vec<ProjectCategory>> {
+            unimplemented!()
+        }
+        fn get_project_versions(&self, _: &str) -> Result<Vec<ProjectVersion>> {
+            unimplemented!()
+        }
+        fn get_issues(&self, _: &[(String, String)]) -> Result<Vec<Issue>> {
+            unimplemented!()
+        }
+        fn count_issues(&self, _: &[(String, String)]) -> Result<IssueCount> {
+            unimplemented!()
+        }
+        fn get_issue(&self, _: &str) -> Result<Issue> {
+            unimplemented!()
+        }
+        fn create_issue(&self, _: &[(String, String)]) -> Result<Issue> {
+            unimplemented!()
+        }
+        fn update_issue(&self, _: &str, _: &[(String, String)]) -> Result<Issue> {
+            unimplemented!()
+        }
+        fn delete_issue(&self, _: &str) -> Result<Issue> {
+            unimplemented!()
+        }
+        fn get_issue_comments(&self, _: &str) -> Result<Vec<IssueComment>> {
+            unimplemented!()
+        }
+        fn add_issue_comment(&self, _: &str, _: &[(String, String)]) -> Result<IssueComment> {
+            unimplemented!()
+        }
+        fn update_issue_comment(
+            &self,
+            _: &str,
+            _: u64,
+            _: &[(String, String)],
+        ) -> Result<IssueComment> {
+            unimplemented!()
+        }
+        fn delete_issue_comment(&self, _: &str, _: u64) -> Result<IssueComment> {
+            unimplemented!()
+        }
+        fn get_issue_attachments(&self, _: &str) -> Result<Vec<IssueAttachment>> {
+            unimplemented!()
+        }
+        fn get_wikis(&self, _: &[(String, String)]) -> Result<Vec<WikiListItem>> {
+            unimplemented!()
+        }
+        fn get_wiki(&self, _: u64) -> Result<Wiki> {
+            unimplemented!()
+        }
+        fn create_wiki(&self, _: &[(String, String)]) -> Result<Wiki> {
+            unimplemented!()
+        }
+        fn update_wiki(&self, _: u64, _: &[(String, String)]) -> Result<Wiki> {
+            unimplemented!()
+        }
+        fn delete_wiki(&self, _: u64, _: &[(String, String)]) -> Result<Wiki> {
+            unimplemented!()
+        }
+        fn get_wiki_history(&self, _: u64) -> Result<Vec<WikiHistory>> {
+            unimplemented!()
+        }
+        fn get_wiki_attachments(&self, _: u64) -> Result<Vec<WikiAttachment>> {
+            unimplemented!()
+        }
+        fn get_teams(&self, _: &[(String, String)]) -> Result<Vec<Team>> {
+            unimplemented!()
+        }
+        fn get_team(&self, _: u64) -> Result<Team> {
+            unimplemented!()
+        }
+        fn get_user_activities(&self, _: u64, _: &[(String, String)]) -> Result<Vec<Activity>> {
+            unimplemented!()
+        }
+        fn get_recently_viewed_issues(
+            &self,
+            _: &[(String, String)],
+        ) -> Result<Vec<RecentlyViewedIssue>> {
+            unimplemented!()
+        }
+        fn get_notifications(&self, params: &[(String, String)]) -> Result<Vec<Notification>> {
+            *self.captured.borrow_mut() = params.to_vec();
+            Ok(vec![])
+        }
+        fn count_notifications(&self) -> Result<NotificationCount> {
+            unimplemented!()
+        }
+        fn read_notification(&self, _: u64) -> Result<()> {
+            unimplemented!()
+        }
+        fn reset_unread_notifications(&self) -> Result<NotificationCount> {
+            unimplemented!()
+        }
+    }
+
+    #[test]
+    fn list_with_builds_correct_query_params() {
+        let api = MockApiCapture {
+            captured: std::cell::RefCell::new(vec![]),
+        };
+        let args = NotificationListArgs::try_new(
+            false,
+            Some(10),
+            Some(20),
+            50,
+            Some("asc".to_string()),
+            Some(123),
+            true,
+        )
+        .unwrap();
+        list_with(&args, &api).unwrap();
+        let params = api.captured.borrow();
+        assert!(params.iter().any(|(k, v)| k == "minId" && v == "10"));
+        assert!(params.iter().any(|(k, v)| k == "maxId" && v == "20"));
+        assert!(params.iter().any(|(k, v)| k == "count" && v == "50"));
+        assert!(params.iter().any(|(k, v)| k == "order" && v == "asc"));
+        assert!(params.iter().any(|(k, v)| k == "senderId" && v == "123"));
     }
 }

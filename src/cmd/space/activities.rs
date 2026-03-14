@@ -5,11 +5,38 @@ use crate::api::{BacklogApi, BacklogClient, activity::Activity};
 
 pub struct SpaceActivitiesArgs {
     json: bool,
+    pub activity_type_ids: Vec<u32>,
+    pub min_id: Option<u64>,
+    pub max_id: Option<u64>,
+    pub count: u32,
+    pub order: Option<String>,
 }
 
 impl SpaceActivitiesArgs {
-    pub fn new(json: bool) -> Self {
-        Self { json }
+    pub fn try_new(
+        json: bool,
+        activity_type_ids: Vec<u32>,
+        min_id: Option<u64>,
+        max_id: Option<u64>,
+        count: u32,
+        order: Option<String>,
+    ) -> anyhow::Result<Self> {
+        if !(1..=100).contains(&count) {
+            anyhow::bail!("count must be between 1 and 100");
+        }
+        if let (Some(min), Some(max)) = (min_id, max_id)
+            && min > max
+        {
+            anyhow::bail!("min-id must be less than or equal to max-id");
+        }
+        Ok(Self {
+            json,
+            activity_type_ids,
+            min_id,
+            max_id,
+            count,
+            order,
+        })
     }
 }
 
@@ -19,7 +46,21 @@ pub fn activities(args: &SpaceActivitiesArgs) -> Result<()> {
 }
 
 pub fn activities_with(args: &SpaceActivitiesArgs, api: &dyn BacklogApi) -> Result<()> {
-    let activities = api.get_space_activities()?;
+    let mut params: Vec<(String, String)> = Vec::new();
+    for id in &args.activity_type_ids {
+        params.push(("activityTypeId[]".to_string(), id.to_string()));
+    }
+    if let Some(min) = args.min_id {
+        params.push(("minId".to_string(), min.to_string()));
+    }
+    if let Some(max) = args.max_id {
+        params.push(("maxId".to_string(), max.to_string()));
+    }
+    params.push(("count".to_string(), args.count.to_string()));
+    if let Some(ref order) = args.order {
+        params.push(("order".to_string(), order.clone()));
+    }
+    let activities = api.get_space_activities(&params)?;
     if args.json {
         println!(
             "{}",
@@ -68,7 +109,7 @@ mod tests {
         fn get_user(&self, _user_id: u64) -> anyhow::Result<crate::api::user::User> {
             unimplemented!()
         }
-        fn get_space_activities(&self) -> Result<Vec<Activity>> {
+        fn get_space_activities(&self, _: &[(String, String)]) -> Result<Vec<Activity>> {
             self.activities
                 .clone()
                 .ok_or_else(|| anyhow!("no activities"))
@@ -90,6 +131,7 @@ mod tests {
         fn get_project_activities(
             &self,
             _key: &str,
+            _: &[(String, String)],
         ) -> Result<Vec<crate::api::activity::Activity>> {
             unimplemented!()
         }
@@ -232,7 +274,7 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::wiki::WikiAttachment>> {
             unimplemented!()
         }
-        fn get_teams(&self) -> anyhow::Result<Vec<crate::api::team::Team>> {
+        fn get_teams(&self, _: &[(String, String)]) -> anyhow::Result<Vec<crate::api::team::Team>> {
             unimplemented!()
         }
         fn get_team(&self, _team_id: u64) -> anyhow::Result<crate::api::team::Team> {
@@ -241,15 +283,20 @@ mod tests {
         fn get_user_activities(
             &self,
             _user_id: u64,
+            _: &[(String, String)],
         ) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
             unimplemented!()
         }
         fn get_recently_viewed_issues(
             &self,
+            _: &[(String, String)],
         ) -> anyhow::Result<Vec<crate::api::user::RecentlyViewedIssue>> {
             unimplemented!()
         }
-        fn get_notifications(&self) -> anyhow::Result<Vec<crate::api::notification::Notification>> {
+        fn get_notifications(
+            &self,
+            _: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::notification::Notification>> {
             unimplemented!()
         }
         fn count_notifications(
@@ -299,7 +346,13 @@ mod tests {
         let api = MockApi {
             activities: Some(vec![sample_activity()]),
         };
-        assert!(activities_with(&SpaceActivitiesArgs::new(false), &api).is_ok());
+        assert!(
+            activities_with(
+                &SpaceActivitiesArgs::try_new(false, vec![], None, None, 20, None).unwrap(),
+                &api
+            )
+            .is_ok()
+        );
     }
 
     #[test]
@@ -307,13 +360,291 @@ mod tests {
         let api = MockApi {
             activities: Some(vec![sample_activity()]),
         };
-        assert!(activities_with(&SpaceActivitiesArgs::new(true), &api).is_ok());
+        assert!(
+            activities_with(
+                &SpaceActivitiesArgs::try_new(true, vec![], None, None, 20, None).unwrap(),
+                &api
+            )
+            .is_ok()
+        );
     }
 
     #[test]
     fn activities_with_propagates_api_error() {
         let api = MockApi { activities: None };
-        let err = activities_with(&SpaceActivitiesArgs::new(false), &api).unwrap_err();
+        let err = activities_with(
+            &SpaceActivitiesArgs::try_new(false, vec![], None, None, 20, None).unwrap(),
+            &api,
+        )
+        .unwrap_err();
         assert!(err.to_string().contains("no activities"));
+    }
+
+    #[test]
+    fn try_new_rejects_count_over_100() {
+        assert!(SpaceActivitiesArgs::try_new(false, vec![], None, None, 101, None).is_err());
+    }
+
+    #[test]
+    fn try_new_rejects_count_zero() {
+        assert!(SpaceActivitiesArgs::try_new(false, vec![], None, None, 0, None).is_err());
+    }
+
+    #[test]
+    fn try_new_rejects_min_id_greater_than_max_id() {
+        assert!(SpaceActivitiesArgs::try_new(false, vec![], Some(20), Some(10), 20, None).is_err());
+    }
+
+    struct MockApiCapture {
+        captured: std::cell::RefCell<Vec<(String, String)>>,
+    }
+
+    impl crate::api::BacklogApi for MockApiCapture {
+        fn get_space(&self) -> Result<crate::api::space::Space> {
+            unimplemented!()
+        }
+        fn get_myself(&self) -> Result<crate::api::user::User> {
+            unimplemented!()
+        }
+        fn get_users(&self) -> anyhow::Result<Vec<crate::api::user::User>> {
+            unimplemented!()
+        }
+        fn get_user(&self, _user_id: u64) -> anyhow::Result<crate::api::user::User> {
+            unimplemented!()
+        }
+        fn get_space_activities(&self, params: &[(String, String)]) -> Result<Vec<Activity>> {
+            *self.captured.borrow_mut() = params.to_vec();
+            Ok(vec![])
+        }
+        fn get_space_disk_usage(&self) -> Result<crate::api::disk_usage::DiskUsage> {
+            unimplemented!()
+        }
+        fn get_space_notification(
+            &self,
+        ) -> Result<crate::api::space_notification::SpaceNotification> {
+            unimplemented!()
+        }
+        fn get_projects(&self) -> Result<Vec<crate::api::project::Project>> {
+            unimplemented!()
+        }
+        fn get_project(&self, _key: &str) -> Result<crate::api::project::Project> {
+            unimplemented!()
+        }
+        fn get_project_activities(
+            &self,
+            _key: &str,
+            _: &[(String, String)],
+        ) -> Result<Vec<crate::api::activity::Activity>> {
+            unimplemented!()
+        }
+        fn get_project_disk_usage(
+            &self,
+            _key: &str,
+        ) -> Result<crate::api::project::ProjectDiskUsage> {
+            unimplemented!()
+        }
+        fn get_project_users(&self, _key: &str) -> Result<Vec<crate::api::project::ProjectUser>> {
+            unimplemented!()
+        }
+        fn get_project_statuses(
+            &self,
+            _key: &str,
+        ) -> Result<Vec<crate::api::project::ProjectStatus>> {
+            unimplemented!()
+        }
+        fn get_project_issue_types(
+            &self,
+            _key: &str,
+        ) -> Result<Vec<crate::api::project::ProjectIssueType>> {
+            unimplemented!()
+        }
+        fn get_project_categories(
+            &self,
+            _key: &str,
+        ) -> Result<Vec<crate::api::project::ProjectCategory>> {
+            unimplemented!()
+        }
+        fn get_project_versions(
+            &self,
+            _key: &str,
+        ) -> Result<Vec<crate::api::project::ProjectVersion>> {
+            unimplemented!()
+        }
+        fn get_issues(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::issue::Issue>> {
+            unimplemented!()
+        }
+        fn count_issues(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::IssueCount> {
+            unimplemented!()
+        }
+        fn get_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn create_issue(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn update_issue(
+            &self,
+            _key: &str,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn delete_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn get_issue_comments(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueComment>> {
+            unimplemented!()
+        }
+        fn add_issue_comment(
+            &self,
+            _key: &str,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+            unimplemented!()
+        }
+        fn update_issue_comment(
+            &self,
+            _key: &str,
+            _comment_id: u64,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+            unimplemented!()
+        }
+        fn delete_issue_comment(
+            &self,
+            _key: &str,
+            _comment_id: u64,
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+            unimplemented!()
+        }
+        fn get_issue_attachments(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueAttachment>> {
+            unimplemented!()
+        }
+        fn get_wikis(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::wiki::WikiListItem>> {
+            unimplemented!()
+        }
+        fn get_wiki(&self, _wiki_id: u64) -> anyhow::Result<crate::api::wiki::Wiki> {
+            unimplemented!()
+        }
+        fn create_wiki(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::wiki::Wiki> {
+            unimplemented!()
+        }
+        fn update_wiki(
+            &self,
+            _wiki_id: u64,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::wiki::Wiki> {
+            unimplemented!()
+        }
+        fn delete_wiki(
+            &self,
+            _wiki_id: u64,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::wiki::Wiki> {
+            unimplemented!()
+        }
+        fn get_wiki_history(
+            &self,
+            _wiki_id: u64,
+        ) -> anyhow::Result<Vec<crate::api::wiki::WikiHistory>> {
+            unimplemented!()
+        }
+        fn get_wiki_attachments(
+            &self,
+            _wiki_id: u64,
+        ) -> anyhow::Result<Vec<crate::api::wiki::WikiAttachment>> {
+            unimplemented!()
+        }
+        fn get_teams(&self, _: &[(String, String)]) -> anyhow::Result<Vec<crate::api::team::Team>> {
+            unimplemented!()
+        }
+        fn get_team(&self, _team_id: u64) -> anyhow::Result<crate::api::team::Team> {
+            unimplemented!()
+        }
+        fn get_user_activities(
+            &self,
+            _user_id: u64,
+            _: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
+            unimplemented!()
+        }
+        fn get_recently_viewed_issues(
+            &self,
+            _: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::user::RecentlyViewedIssue>> {
+            unimplemented!()
+        }
+        fn get_notifications(
+            &self,
+            _: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::notification::Notification>> {
+            unimplemented!()
+        }
+        fn count_notifications(
+            &self,
+        ) -> anyhow::Result<crate::api::notification::NotificationCount> {
+            unimplemented!()
+        }
+        fn read_notification(&self, _: u64) -> anyhow::Result<()> {
+            unimplemented!()
+        }
+        fn reset_unread_notifications(
+            &self,
+        ) -> anyhow::Result<crate::api::notification::NotificationCount> {
+            unimplemented!()
+        }
+    }
+
+    #[test]
+    fn activities_with_builds_correct_query_params() {
+        let api = MockApiCapture {
+            captured: std::cell::RefCell::new(vec![]),
+        };
+        let args = SpaceActivitiesArgs::try_new(
+            false,
+            vec![1, 2],
+            Some(10),
+            Some(20),
+            50,
+            Some("asc".to_string()),
+        )
+        .unwrap();
+        activities_with(&args, &api).unwrap();
+        let params = api.captured.borrow();
+        assert!(
+            params
+                .iter()
+                .any(|(k, v)| k == "activityTypeId[]" && v == "1")
+        );
+        assert!(
+            params
+                .iter()
+                .any(|(k, v)| k == "activityTypeId[]" && v == "2")
+        );
+        assert!(params.iter().any(|(k, v)| k == "minId" && v == "10"));
+        assert!(params.iter().any(|(k, v)| k == "maxId" && v == "20"));
+        assert!(params.iter().any(|(k, v)| k == "count" && v == "50"));
+        assert!(params.iter().any(|(k, v)| k == "order" && v == "asc"));
     }
 }

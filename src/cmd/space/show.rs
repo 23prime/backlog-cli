@@ -66,7 +66,10 @@ mod tests {
         fn get_user(&self, _user_id: u64) -> anyhow::Result<crate::api::user::User> {
             unimplemented!()
         }
-        fn get_space_activities(&self) -> Result<Vec<crate::api::activity::Activity>> {
+        fn get_space_activities(
+            &self,
+            _: &[(String, String)],
+        ) -> Result<Vec<crate::api::activity::Activity>> {
             unimplemented!()
         }
         fn get_space_disk_usage(&self) -> Result<crate::api::disk_usage::DiskUsage> {
@@ -86,6 +89,7 @@ mod tests {
         fn get_project_activities(
             &self,
             _key: &str,
+            _: &[(String, String)],
         ) -> Result<Vec<crate::api::activity::Activity>> {
             unimplemented!()
         }
@@ -228,7 +232,7 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::wiki::WikiAttachment>> {
             unimplemented!()
         }
-        fn get_teams(&self) -> anyhow::Result<Vec<crate::api::team::Team>> {
+        fn get_teams(&self, _: &[(String, String)]) -> anyhow::Result<Vec<crate::api::team::Team>> {
             unimplemented!()
         }
         fn get_team(&self, _team_id: u64) -> anyhow::Result<crate::api::team::Team> {
@@ -237,15 +241,20 @@ mod tests {
         fn get_user_activities(
             &self,
             _user_id: u64,
+            _: &[(String, String)],
         ) -> anyhow::Result<Vec<crate::api::activity::Activity>> {
             unimplemented!()
         }
         fn get_recently_viewed_issues(
             &self,
+            _: &[(String, String)],
         ) -> anyhow::Result<Vec<crate::api::user::RecentlyViewedIssue>> {
             unimplemented!()
         }
-        fn get_notifications(&self) -> anyhow::Result<Vec<crate::api::notification::Notification>> {
+        fn get_notifications(
+            &self,
+            _: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::notification::Notification>> {
             unimplemented!()
         }
         fn count_notifications(
