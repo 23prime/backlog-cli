@@ -57,7 +57,8 @@ Show recent activities in your Backlog space.
 
 ```bash
 bl space activities
-bl space activities --json
+bl space activities --count 50 --order asc
+bl space activities --activity-type-id 1 --activity-type-id 2 --min-id 100 --json
 ```
 
 Example output:
@@ -156,7 +157,8 @@ Show recent activities for a specific project.
 
 ```bash
 bl project activities <id-or-key>
-bl project activities <id-or-key> --json
+bl project activities <id-or-key> --count 50 --order asc
+bl project activities <id-or-key> --activity-type-id 1 --min-id 100 --json
 ```
 
 Example output:
@@ -528,6 +530,7 @@ List all teams in the space.
 
 ```bash
 bl team list
+bl team list --count 50 --offset 10
 bl team list --json
 ```
 
@@ -566,7 +569,8 @@ Show recent activities of a specific user.
 
 ```bash
 bl user activities <id>
-bl user activities <id> --json
+bl user activities <id> --count 50 --order asc
+bl user activities <id> --activity-type-id 1 --min-id 100 --json
 ```
 
 Example output:
@@ -581,6 +585,7 @@ Show issues recently viewed by the authenticated user.
 
 ```bash
 bl user recently-viewed
+bl user recently-viewed --count 50 --offset 20 --order asc
 bl user recently-viewed --json
 ```
 
@@ -636,7 +641,8 @@ List notifications for the authenticated user.
 
 ```bash
 bl notification list
-bl notification list --json
+bl notification list --count 50 --order asc
+bl notification list --min-id 100 --sender-id 123 --json
 ```
 
 Example output:
