@@ -657,10 +657,11 @@ fn run() -> Result<()> {
         return Ok(());
     }
     let Some(command) = cli.command else {
+        cmd::banner::print_banner();
         use clap::CommandFactory;
         Cli::command().print_help()?;
         anstream::println!();
-        std::process::exit(2);
+        return Ok(());
     };
     match command {
         Commands::Auth { action } => match action {
