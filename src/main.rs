@@ -127,6 +127,21 @@ impl Order {
     }
 }
 
+#[derive(clap::ValueEnum, Clone)]
+enum TextFormattingRule {
+    Backlog,
+    Markdown,
+}
+
+impl TextFormattingRule {
+    fn as_str(&self) -> &'static str {
+        match self {
+            TextFormattingRule::Backlog => "backlog",
+            TextFormattingRule::Markdown => "markdown",
+        }
+    }
+}
+
 #[derive(Subcommand)]
 enum SpaceCommands {
     /// Show recent space activities
@@ -235,14 +250,14 @@ enum ProjectCommands {
         #[arg(long)]
         key: String,
         /// Enable chart feature
-        #[arg(long, default_value = "false")]
+        #[arg(long)]
         chart_enabled: bool,
         /// Enable subtasking
-        #[arg(long, default_value = "false")]
+        #[arg(long)]
         subtasking_enabled: bool,
-        /// Text formatting rule ("backlog" or "markdown")
+        /// Text formatting rule
         #[arg(long, default_value = "markdown")]
-        text_formatting_rule: String,
+        text_formatting_rule: TextFormattingRule,
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -263,9 +278,9 @@ enum ProjectCommands {
         /// Enable or disable subtasking
         #[arg(long)]
         subtasking_enabled: Option<bool>,
-        /// Text formatting rule ("backlog" or "markdown")
+        /// Text formatting rule
         #[arg(long)]
-        text_formatting_rule: Option<String>,
+        text_formatting_rule: Option<TextFormattingRule>,
         /// Archive or unarchive the project
         #[arg(long)]
         archived: Option<bool>,
@@ -1040,7 +1055,7 @@ fn run() -> Result<()> {
                 key,
                 chart_enabled,
                 subtasking_enabled,
-                text_formatting_rule,
+                text_formatting_rule.as_str().to_string(),
                 json,
             )),
             ProjectCommands::Update {
@@ -1058,7 +1073,7 @@ fn run() -> Result<()> {
                 key,
                 chart_enabled,
                 subtasking_enabled,
-                text_formatting_rule,
+                text_formatting_rule.map(|r| r.as_str().to_string()),
                 archived,
                 json,
             )?),
