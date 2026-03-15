@@ -18,8 +18,8 @@ pub struct MyResource {
 }
 
 impl BacklogClient {
-    pub fn get_my_resource(&self) -> Result<MyResource> {
-        let value = self.get("/my-resource")?;
+    pub fn get_my_resource(&self, params: &[(String, String)]) -> Result<MyResource> {
+        let value = self.get_with_query("/my-resource", params)?;
         serde_json::from_value(value.clone()).map_err(|e| {
             anyhow::anyhow!(
                 "Failed to deserialize response: {}\nRaw JSON:\n{}",
@@ -62,7 +62,8 @@ pub fn show(json: bool) -> Result<()> {
 }
 
 pub fn show_with(json: bool, api: &dyn BacklogApi) -> Result<()> {
-    let data = api.get_my_resource()?;
+    let params: Vec<(String, String)> = vec![];
+    let data = api.get_my_resource(&params)?;
     if json {
         println!("{}", serde_json::to_string_pretty(&data).context("Failed to serialize JSON")?);
     } else {
