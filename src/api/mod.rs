@@ -33,6 +33,21 @@ use team::Team;
 use user::{RecentlyViewedIssue, User};
 use wiki::{Wiki, WikiAttachment, WikiHistory, WikiListItem};
 
+/// Abstraction over the Backlog HTTP API.
+///
+/// All methods have a default body of `unimplemented!()` so that test
+/// `MockApi` structs only need to override the methods actually exercised
+/// by the test.  `impl BacklogApi for BacklogClient` overrides every method
+/// with a real HTTP call.
+///
+/// # Adding a new method
+///
+/// 1. Add the method signature with a default `{ unimplemented!() }` body
+///    here (using `_`-prefixed parameter names to suppress unused-variable
+///    warnings in the default).
+/// 2. Override it in `impl BacklogApi for BacklogClient` below.
+/// 3. Test `MockApi` structs **do not** need to be updated — the default
+///    `unimplemented!()` fires automatically if an untested method is called.
 pub trait BacklogApi {
     fn get_space(&self) -> Result<Space> {
         unimplemented!()

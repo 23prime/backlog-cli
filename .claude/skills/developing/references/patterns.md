@@ -42,12 +42,13 @@ pub mod my_resource;          // 1. module declaration
 use my_resource::MyResource;  // 2. import
 
 pub trait BacklogApi {
-    fn get_my_resource(&self) -> Result<MyResource>;  // 3a. trait method
+    // 3a. trait method — default body suppresses compile errors in MockApis
+    fn get_my_resource(&self, _params: &[(String, String)]) -> Result<MyResource> { unimplemented!() }
 }
 
 impl BacklogApi for BacklogClient {
-    fn get_my_resource(&self) -> Result<MyResource> {  // 3b. impl
-        self.get_my_resource()
+    fn get_my_resource(&self, params: &[(String, String)]) -> Result<MyResource> {  // 3b. impl
+        self.get_my_resource(params)
     }
 }
 ```
@@ -89,23 +90,24 @@ Rename inner binding to avoid shadowing: `json: sub_json`.
 
 ## Test MockApi pattern
 
-Every test module that implements `BacklogApi` on a `MockApi` **must include ALL trait methods**.
-Use `unimplemented!()` for methods not under test:
+`BacklogApi` has default `unimplemented!()` bodies for all methods, so a
+`MockApi` only needs to override the methods actually exercised by the test.
+Do **not** add `unimplemented!()` stubs for unused methods — the default fires
+automatically.
 
 ```rust
 struct MockApi { data: Option<MyResource> }
 
 impl BacklogApi for MockApi {
-    fn get_space(&self) -> Result<Space> { unimplemented!() }
-    fn get_myself(&self) -> Result<User> { unimplemented!() }
-    fn get_space_activities(&self) -> Result<Vec<Activity>> { unimplemented!() }
-    fn get_my_resource(&self) -> Result<MyResource> {
+    fn get_my_resource(&self, _params: &[(String, String)]) -> Result<MyResource> {
         self.data.clone().ok_or_else(|| anyhow!("no data"))
     }
 }
 ```
 
-Forgetting a method causes a compile error.
+When a test calls a method that isn't overridden, it will panic with
+`not implemented` — which is the desired behavior (it means the test is
+exercising an unexpected code path).
 
 ## Known Backlog API gotchas
 
