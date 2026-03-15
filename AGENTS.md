@@ -101,7 +101,7 @@ Summary:
 
 - **`main.rs` (clap)** — Syntactic/type-level checks only (e.g. "cannot parse as u64").
 - **`Args::try_new`** — Domain invariants that must hold before any logic runs.
-- **`cmd/*_with`** — API call logic and output formatting only.
+- **`cmd/*_with`** — API call logic and output formatting. API-spec constraints that depend on runtime data may also live here.
 - **`api/`** — HTTP-level error translation only.
 
 ### Build, lint, and test

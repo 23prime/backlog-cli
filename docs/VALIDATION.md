@@ -8,7 +8,7 @@ Validation is split by responsibility. Each layer handles only what belongs to i
 | ----- | -------------- |
 | `main.rs` (clap) | Syntactic/type-level checks only |
 | `Args::try_new` | Domain invariants that must hold before any logic runs |
-| `cmd/*_with` | API call logic and output formatting only |
+| `cmd/*_with` | API call logic and output formatting; API-spec constraints that depend on runtime data |
 | `api/` | HTTP-level error translation only |
 
 ## `main.rs` (clap)
