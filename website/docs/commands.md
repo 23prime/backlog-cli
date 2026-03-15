@@ -444,6 +444,42 @@ bl issue comment delete TEST-1 42
 bl issue comment delete TEST-1 42 --json
 ```
 
+## `bl issue comment count`
+
+Count comments on an issue.
+
+```bash
+bl issue comment count TEST-1
+bl issue comment count TEST-1 --json
+```
+
+## `bl issue comment show`
+
+Show a specific comment.
+
+```bash
+bl issue comment show TEST-1 42
+bl issue comment show TEST-1 42 --json
+```
+
+## `bl issue comment notification list`
+
+List notifications for a comment.
+
+```bash
+bl issue comment notification list TEST-1 42
+bl issue comment notification list TEST-1 42 --json
+```
+
+## `bl issue comment notification add`
+
+Add notifications for a comment.
+
+```bash
+bl issue comment notification add TEST-1 42 --notified-user-id 1
+bl issue comment notification add TEST-1 42 --notified-user-id 1 --notified-user-id 2 --json
+```
+
 ## `bl issue attachment list`
 
 List attachments on an issue.
@@ -815,12 +851,12 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | `bl issue delete <id-or-key>` | `DELETE /api/v2/issues/{issueIdOrKey}` | ✅ Implemented |
 | `bl issue comment list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/comments` | ✅ Implemented |
 | `bl issue comment add <id-or-key>` | `POST /api/v2/issues/{issueIdOrKey}/comments` | ✅ Implemented |
-| `bl issue comment count <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/comments/count` | Planned |
-| `bl issue comment show <id-or-key> <comment-id>` | `GET /api/v2/issues/{issueIdOrKey}/comments/{commentId}` | Planned |
+| `bl issue comment count <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/comments/count` | ✅ Implemented |
+| `bl issue comment show <id-or-key> <comment-id>` | `GET /api/v2/issues/{issueIdOrKey}/comments/{commentId}` | ✅ Implemented |
 | `bl issue comment update <id-or-key> <comment-id>` | `PATCH /api/v2/issues/{issueIdOrKey}/comments/{commentId}` | ✅ Implemented |
 | `bl issue comment delete <id-or-key> <comment-id>` | `DELETE /api/v2/issues/{issueIdOrKey}/comments/{commentId}` | ✅ Implemented |
-| `bl issue comment notification list <id-or-key> <comment-id>` | `GET /api/v2/issues/{issueIdOrKey}/comments/{commentId}/notifications` | Planned |
-| `bl issue comment notification add <id-or-key> <comment-id>` | `POST /api/v2/issues/{issueIdOrKey}/comments/{commentId}/notifications` | Planned |
+| `bl issue comment notification list <id-or-key> <comment-id>` | `GET /api/v2/issues/{issueIdOrKey}/comments/{commentId}/notifications` | ✅ Implemented |
+| `bl issue comment notification add <id-or-key> <comment-id>` | `POST /api/v2/issues/{issueIdOrKey}/comments/{commentId}/notifications` | ✅ Implemented |
 | `bl issue attachment list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/attachments` | ✅ Implemented |
 | `bl issue attachment get <id-or-key> <attachment-id>` | `GET /api/v2/issues/{issueIdOrKey}/attachments/{attachmentId}` | Planned |
 | `bl issue attachment delete <id-or-key> <attachment-id>` | `DELETE /api/v2/issues/{issueIdOrKey}/attachments/{attachmentId}` | Planned |

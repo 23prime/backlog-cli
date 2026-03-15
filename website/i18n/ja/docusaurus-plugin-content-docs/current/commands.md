@@ -444,6 +444,42 @@ bl issue comment delete TEST-1 42
 bl issue comment delete TEST-1 42 --json
 ```
 
+## `bl issue comment count`
+
+課題のコメント数を取得します。
+
+```bash
+bl issue comment count TEST-1
+bl issue comment count TEST-1 --json
+```
+
+## `bl issue comment show`
+
+特定のコメントを表示します。
+
+```bash
+bl issue comment show TEST-1 42
+bl issue comment show TEST-1 42 --json
+```
+
+## `bl issue comment notification list`
+
+コメントの通知一覧を取得します。
+
+```bash
+bl issue comment notification list TEST-1 42
+bl issue comment notification list TEST-1 42 --json
+```
+
+## `bl issue comment notification add`
+
+コメントに通知を追加します。
+
+```bash
+bl issue comment notification add TEST-1 42 --notified-user-id 1
+bl issue comment notification add TEST-1 42 --notified-user-id 1 --notified-user-id 2 --json
+```
+
 ## `bl issue attachment list`
 
 課題の添付ファイルを一覧表示します。
@@ -819,12 +855,12 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl issue delete <id-or-key>` | `DELETE /api/v2/issues/{issueIdOrKey}` | ✅ 実装済み |
 | `bl issue comment list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/comments` | ✅ 実装済み |
 | `bl issue comment add <id-or-key>` | `POST /api/v2/issues/{issueIdOrKey}/comments` | ✅ 実装済み |
-| `bl issue comment count <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/comments/count` | 計画中 |
-| `bl issue comment show <id-or-key> <comment-id>` | `GET /api/v2/issues/{issueIdOrKey}/comments/{commentId}` | 計画中 |
+| `bl issue comment count <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/comments/count` | ✅ 実装済み |
+| `bl issue comment show <id-or-key> <comment-id>` | `GET /api/v2/issues/{issueIdOrKey}/comments/{commentId}` | ✅ 実装済み |
 | `bl issue comment update <id-or-key> <comment-id>` | `PATCH /api/v2/issues/{issueIdOrKey}/comments/{commentId}` | ✅ 実装済み |
 | `bl issue comment delete <id-or-key> <comment-id>` | `DELETE /api/v2/issues/{issueIdOrKey}/comments/{commentId}` | ✅ 実装済み |
-| `bl issue comment notification list <id-or-key> <comment-id>` | `GET /api/v2/issues/{issueIdOrKey}/comments/{commentId}/notifications` | 計画中 |
-| `bl issue comment notification add <id-or-key> <comment-id>` | `POST /api/v2/issues/{issueIdOrKey}/comments/{commentId}/notifications` | 計画中 |
+| `bl issue comment notification list <id-or-key> <comment-id>` | `GET /api/v2/issues/{issueIdOrKey}/comments/{commentId}/notifications` | ✅ 実装済み |
+| `bl issue comment notification add <id-or-key> <comment-id>` | `POST /api/v2/issues/{issueIdOrKey}/comments/{commentId}/notifications` | ✅ 実装済み |
 | `bl issue attachment list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/attachments` | ✅ 実装済み |
 | `bl issue attachment get <id-or-key> <attachment-id>` | `GET /api/v2/issues/{issueIdOrKey}/attachments/{attachmentId}` | 計画中 |
 | `bl issue attachment delete <id-or-key> <attachment-id>` | `DELETE /api/v2/issues/{issueIdOrKey}/attachments/{attachmentId}` | 計画中 |

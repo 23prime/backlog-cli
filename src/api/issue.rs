@@ -97,6 +97,21 @@ pub struct IssueComment {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct IssueCommentCount {
+    pub count: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IssueCommentNotification {
+    pub id: u64,
+    pub already_read: bool,
+    pub reason: u64,
+    pub user: IssueUser,
+    pub resource_already_read: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IssueAttachment {
     pub id: u64,
@@ -181,6 +196,41 @@ impl BacklogClient {
         let value = self.get(&format!("/issues/{}/attachments", key))?;
         deserialize(value)
     }
+
+    pub fn count_issue_comments(&self, key: &str) -> Result<IssueCommentCount> {
+        let value = self.get(&format!("/issues/{}/comments/count", key))?;
+        deserialize(value)
+    }
+
+    pub fn get_issue_comment(&self, key: &str, comment_id: u64) -> Result<IssueComment> {
+        let value = self.get(&format!("/issues/{}/comments/{}", key, comment_id))?;
+        deserialize(value)
+    }
+
+    pub fn get_issue_comment_notifications(
+        &self,
+        key: &str,
+        comment_id: u64,
+    ) -> Result<Vec<IssueCommentNotification>> {
+        let value = self.get(&format!(
+            "/issues/{}/comments/{}/notifications",
+            key, comment_id
+        ))?;
+        deserialize(value)
+    }
+
+    pub fn add_issue_comment_notifications(
+        &self,
+        key: &str,
+        comment_id: u64,
+        params: &[(String, String)],
+    ) -> Result<Vec<IssueCommentNotification>> {
+        let value = self.post_form(
+            &format!("/issues/{}/comments/{}/notifications", key, comment_id),
+            params,
+        )?;
+        deserialize(value)
+    }
 }
 
 #[cfg(test)]
@@ -246,6 +296,16 @@ mod tests {
             "createdUser": issue_user_json(),
             "created": "2024-01-01T00:00:00Z",
             "updated": "2024-01-01T00:00:00Z"
+        })
+    }
+
+    fn notification_json() -> serde_json::Value {
+        json!({
+            "id": 1,
+            "alreadyRead": false,
+            "reason": 2,
+            "user": issue_user_json(),
+            "resourceAlreadyRead": false
         })
     }
 
@@ -356,6 +416,68 @@ mod tests {
         let attachments = client.get_issue_attachments("TEST-1").unwrap();
         assert_eq!(attachments.len(), 1);
         assert_eq!(attachments[0].name, "file.txt");
+    }
+
+    #[test]
+    fn count_issue_comments_returns_count() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET)
+                .path("/issues/TEST-1/comments/count")
+                .query_param("apiKey", TEST_KEY);
+            then.status(200).json_body(json!({"count": 7}));
+        });
+        let client = super::super::BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let count = client.count_issue_comments("TEST-1").unwrap();
+        assert_eq!(count.count, 7);
+    }
+
+    #[test]
+    fn get_issue_comment_returns_single() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET)
+                .path("/issues/TEST-1/comments/1")
+                .query_param("apiKey", TEST_KEY);
+            then.status(200).json_body(comment_json());
+        });
+        let client = super::super::BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let comment = client.get_issue_comment("TEST-1", 1).unwrap();
+        assert_eq!(comment.content.as_deref(), Some("A comment"));
+    }
+
+    #[test]
+    fn get_issue_comment_notifications_returns_list() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET)
+                .path("/issues/TEST-1/comments/1/notifications")
+                .query_param("apiKey", TEST_KEY);
+            then.status(200).json_body(json!([notification_json()]));
+        });
+        let client = super::super::BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let notifications = client.get_issue_comment_notifications("TEST-1", 1).unwrap();
+        assert_eq!(notifications.len(), 1);
+        assert_eq!(notifications[0].id, 1);
+        assert!(!notifications[0].already_read);
+    }
+
+    #[test]
+    fn add_issue_comment_notifications_returns_list() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST)
+                .path("/issues/TEST-1/comments/1/notifications")
+                .query_param("apiKey", TEST_KEY);
+            then.status(200).json_body(json!([notification_json()]));
+        });
+        let client = super::super::BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let params = vec![("notifiedUserId[]".to_string(), "1".to_string())];
+        let notifications = client
+            .add_issue_comment_notifications("TEST-1", 1, &params)
+            .unwrap();
+        assert_eq!(notifications.len(), 1);
+        assert_eq!(notifications[0].user.name, "John Doe");
     }
 
     #[test]
