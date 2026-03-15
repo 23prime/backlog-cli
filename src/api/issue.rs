@@ -97,6 +97,30 @@ pub struct IssueComment {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IssueParticipant {
+    pub id: u64,
+    pub user_id: Option<String>,
+    pub name: String,
+    pub role_type: Option<u8>,
+    pub lang: Option<String>,
+    pub mail_address: Option<String>,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, serde_json::Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IssueSharedFile {
+    pub id: u64,
+    pub dir: String,
+    pub name: String,
+    pub size: u64,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, serde_json::Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IssueCommentCount {
     pub count: u64,
 }
@@ -194,6 +218,47 @@ impl BacklogClient {
 
     pub fn get_issue_attachments(&self, key: &str) -> Result<Vec<IssueAttachment>> {
         let value = self.get(&format!("/issues/{}/attachments", key))?;
+        deserialize(value)
+    }
+
+    pub fn delete_issue_attachment(
+        &self,
+        key: &str,
+        attachment_id: u64,
+    ) -> Result<IssueAttachment> {
+        let value = self.delete_req(&format!("/issues/{}/attachments/{}", key, attachment_id))?;
+        deserialize(value)
+    }
+
+    pub fn get_issue_participants(&self, key: &str) -> Result<Vec<IssueParticipant>> {
+        let value = self.get(&format!("/issues/{}/participants", key))?;
+        deserialize(value)
+    }
+
+    pub fn get_issue_shared_files(&self, key: &str) -> Result<Vec<IssueSharedFile>> {
+        let value = self.get(&format!("/issues/{}/sharedFiles", key))?;
+        deserialize(value)
+    }
+
+    pub fn link_issue_shared_files(
+        &self,
+        key: &str,
+        shared_file_ids: &[u64],
+    ) -> Result<Vec<IssueSharedFile>> {
+        let params: Vec<(String, String)> = shared_file_ids
+            .iter()
+            .map(|id| ("fileId[]".to_string(), id.to_string()))
+            .collect();
+        let value = self.post_form(&format!("/issues/{}/sharedFiles", key), &params)?;
+        deserialize(value)
+    }
+
+    pub fn unlink_issue_shared_file(
+        &self,
+        key: &str,
+        shared_file_id: u64,
+    ) -> Result<IssueSharedFile> {
+        let value = self.delete_req(&format!("/issues/{}/sharedFiles/{}", key, shared_file_id))?;
         deserialize(value)
     }
 
@@ -416,6 +481,98 @@ mod tests {
         let attachments = client.get_issue_attachments("TEST-1").unwrap();
         assert_eq!(attachments.len(), 1);
         assert_eq!(attachments[0].name, "file.txt");
+    }
+
+    fn participant_json() -> serde_json::Value {
+        json!({
+            "id": 1,
+            "userId": "alice",
+            "name": "Alice",
+            "roleType": 1,
+            "lang": null,
+            "mailAddress": null
+        })
+    }
+
+    fn shared_file_json() -> serde_json::Value {
+        json!({
+            "id": 1,
+            "dir": "/docs",
+            "name": "spec.pdf",
+            "size": 2048
+        })
+    }
+
+    #[test]
+    fn delete_issue_attachment_returns_attachment() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(DELETE)
+                .path("/issues/TEST-1/attachments/1")
+                .query_param("apiKey", TEST_KEY);
+            then.status(200).json_body(attachment_json());
+        });
+        let client = super::super::BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let a = client.delete_issue_attachment("TEST-1", 1).unwrap();
+        assert_eq!(a.name, "file.txt");
+    }
+
+    #[test]
+    fn get_issue_participants_returns_list() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET)
+                .path("/issues/TEST-1/participants")
+                .query_param("apiKey", TEST_KEY);
+            then.status(200).json_body(json!([participant_json()]));
+        });
+        let client = super::super::BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let ps = client.get_issue_participants("TEST-1").unwrap();
+        assert_eq!(ps.len(), 1);
+        assert_eq!(ps[0].name, "Alice");
+    }
+
+    #[test]
+    fn get_issue_shared_files_returns_list() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET)
+                .path("/issues/TEST-1/sharedFiles")
+                .query_param("apiKey", TEST_KEY);
+            then.status(200).json_body(json!([shared_file_json()]));
+        });
+        let client = super::super::BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let fs = client.get_issue_shared_files("TEST-1").unwrap();
+        assert_eq!(fs.len(), 1);
+        assert_eq!(fs[0].name, "spec.pdf");
+    }
+
+    #[test]
+    fn link_issue_shared_files_returns_list() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST)
+                .path("/issues/TEST-1/sharedFiles")
+                .query_param("apiKey", TEST_KEY);
+            then.status(200).json_body(json!([shared_file_json()]));
+        });
+        let client = super::super::BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let fs = client.link_issue_shared_files("TEST-1", &[1]).unwrap();
+        assert_eq!(fs.len(), 1);
+    }
+
+    #[test]
+    fn unlink_issue_shared_file_returns_file() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(DELETE)
+                .path("/issues/TEST-1/sharedFiles/1")
+                .query_param("apiKey", TEST_KEY);
+            then.status(200).json_body(shared_file_json());
+        });
+        let client = super::super::BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let f = client.unlink_issue_shared_file("TEST-1", 1).unwrap();
+        assert_eq!(f.name, "spec.pdf");
     }
 
     #[test]

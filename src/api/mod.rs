@@ -22,6 +22,7 @@ use activity::Activity;
 use disk_usage::DiskUsage;
 use issue::{
     Issue, IssueAttachment, IssueComment, IssueCommentCount, IssueCommentNotification, IssueCount,
+    IssueParticipant, IssueSharedFile,
 };
 use licence::Licence;
 use notification::{Notification, NotificationCount};
@@ -139,6 +140,29 @@ pub trait BacklogApi {
         unimplemented!()
     }
     fn get_issue_attachments(&self, _key: &str) -> Result<Vec<IssueAttachment>> {
+        unimplemented!()
+    }
+    fn delete_issue_attachment(&self, _key: &str, _attachment_id: u64) -> Result<IssueAttachment> {
+        unimplemented!()
+    }
+    fn get_issue_participants(&self, _key: &str) -> Result<Vec<IssueParticipant>> {
+        unimplemented!()
+    }
+    fn get_issue_shared_files(&self, _key: &str) -> Result<Vec<IssueSharedFile>> {
+        unimplemented!()
+    }
+    fn link_issue_shared_files(
+        &self,
+        _key: &str,
+        _shared_file_ids: &[u64],
+    ) -> Result<Vec<IssueSharedFile>> {
+        unimplemented!()
+    }
+    fn unlink_issue_shared_file(
+        &self,
+        _key: &str,
+        _shared_file_id: u64,
+    ) -> Result<IssueSharedFile> {
         unimplemented!()
     }
     fn count_issue_comments(&self, _key: &str) -> Result<IssueCommentCount> {
@@ -338,6 +362,30 @@ impl BacklogApi for BacklogClient {
 
     fn get_issue_attachments(&self, key: &str) -> Result<Vec<IssueAttachment>> {
         self.get_issue_attachments(key)
+    }
+
+    fn delete_issue_attachment(&self, key: &str, attachment_id: u64) -> Result<IssueAttachment> {
+        self.delete_issue_attachment(key, attachment_id)
+    }
+
+    fn get_issue_participants(&self, key: &str) -> Result<Vec<IssueParticipant>> {
+        self.get_issue_participants(key)
+    }
+
+    fn get_issue_shared_files(&self, key: &str) -> Result<Vec<IssueSharedFile>> {
+        self.get_issue_shared_files(key)
+    }
+
+    fn link_issue_shared_files(
+        &self,
+        key: &str,
+        shared_file_ids: &[u64],
+    ) -> Result<Vec<IssueSharedFile>> {
+        self.link_issue_shared_files(key, shared_file_ids)
+    }
+
+    fn unlink_issue_shared_file(&self, key: &str, shared_file_id: u64) -> Result<IssueSharedFile> {
+        self.unlink_issue_shared_file(key, shared_file_id)
     }
 
     fn count_issue_comments(&self, key: &str) -> Result<IssueCommentCount> {

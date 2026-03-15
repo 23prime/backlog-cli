@@ -496,6 +496,51 @@ bl issue attachment list TEST-1 --json
 [2] log.txt (1024 bytes)
 ```
 
+## `bl issue attachment delete`
+
+課題の添付ファイルを削除します。
+
+```bash
+bl issue attachment delete TEST-1 1
+bl issue attachment delete TEST-1 1 --json
+```
+
+## `bl issue participant list`
+
+課題の参加者一覧を取得します。
+
+```bash
+bl issue participant list TEST-1
+bl issue participant list TEST-1 --json
+```
+
+## `bl issue shared-file list`
+
+課題にリンクされた共有ファイルの一覧を取得します。
+
+```bash
+bl issue shared-file list TEST-1
+bl issue shared-file list TEST-1 --json
+```
+
+## `bl issue shared-file link`
+
+課題に共有ファイルをリンクします。
+
+```bash
+bl issue shared-file link TEST-1 --shared-file-id 1
+bl issue shared-file link TEST-1 --shared-file-id 1 --shared-file-id 2 --json
+```
+
+## `bl issue shared-file unlink`
+
+課題から共有ファイルのリンクを解除します。
+
+```bash
+bl issue shared-file unlink TEST-1 1
+bl issue shared-file unlink TEST-1 1 --json
+```
+
 ## `bl wiki list`
 
 プロジェクトの Wiki ページを一覧表示します。
@@ -863,11 +908,11 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl issue comment notification add <id-or-key> <comment-id>` | `POST /api/v2/issues/{issueIdOrKey}/comments/{commentId}/notifications` | ✅ 実装済み |
 | `bl issue attachment list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/attachments` | ✅ 実装済み |
 | `bl issue attachment get <id-or-key> <attachment-id>` | `GET /api/v2/issues/{issueIdOrKey}/attachments/{attachmentId}` | 計画中 |
-| `bl issue attachment delete <id-or-key> <attachment-id>` | `DELETE /api/v2/issues/{issueIdOrKey}/attachments/{attachmentId}` | 計画中 |
-| `bl issue participant list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/participants` | 計画中 |
-| `bl issue shared-file list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/sharedFiles` | 計画中 |
-| `bl issue shared-file link <id-or-key>` | `POST /api/v2/issues/{issueIdOrKey}/sharedFiles` | 計画中 |
-| `bl issue shared-file unlink <id-or-key> <id>` | `DELETE /api/v2/issues/{issueIdOrKey}/sharedFiles/{id}` | 計画中 |
+| `bl issue attachment delete <id-or-key> <attachment-id>` | `DELETE /api/v2/issues/{issueIdOrKey}/attachments/{attachmentId}` | ✅ 実装済み |
+| `bl issue participant list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/participants` | ✅ 実装済み |
+| `bl issue shared-file list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/sharedFiles` | ✅ 実装済み |
+| `bl issue shared-file link <id-or-key>` | `POST /api/v2/issues/{issueIdOrKey}/sharedFiles` | ✅ 実装済み |
+| `bl issue shared-file unlink <id-or-key> <shared-file-id>` | `DELETE /api/v2/issues/{issueIdOrKey}/sharedFiles/{id}` | ✅ 実装済み |
 
 ### Documents
 

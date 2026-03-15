@@ -4,6 +4,8 @@ mod count;
 mod create;
 mod delete;
 pub mod list;
+pub mod participant;
+pub mod shared_file;
 mod show;
 mod update;
 
