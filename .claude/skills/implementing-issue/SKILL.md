@@ -151,10 +151,10 @@ gh pr view <PR_NUMBER> --json reviews | jq '[.reviews[].author.login]'
 - If still empty after ~5 minutes, automated reviews are likely disabled — skip this step.
 - If `copilot-pull-request-reviewer` or `coderabbitai` appear, invoke the `implementing-pr-review` skill to evaluate and apply valid suggestions.
 
-## Step 11 — Reflect learnings into `docs/PATTERNS.md`
+## Step 11 — Reflect learnings into `docs/`
 
 After the PR is merged, review what was encountered during implementation and PR review.
-If anything is **generalizable** — useful for future implementations in this project — add it to `docs/PATTERNS.md`.
+If anything is **generalizable** — useful for future implementations in this project — add it to the appropriate file under `docs/`.
 
 Sources to review:
 
@@ -162,16 +162,24 @@ Sources to review:
 - **User corrections**: when the user said "no, not that — do X instead", consider whether X is a project-wide rule worth documenting
 - **Compilation/check failures**: if `mise run check` failed for a non-obvious reason, note the fix
 
-Criteria for adding to `docs/PATTERNS.md`:
+Choose the target file based on the nature of the learning:
+
+| Learning type | Target file |
+| --- | --- |
+| Code patterns, API gotchas, clap/serde conventions | `docs/PATTERNS.md` |
+| Test structure, httpmock usage, MockApi patterns | `docs/TESTING.md` |
+| Validation boundary decisions, `try_new` vs `new` | `docs/VALIDATION.md` |
+
+Criteria for adding:
 
 - Would a future implementer likely make the same mistake?
 - Is it specific to this codebase (not just "read the Rust docs")?
 - Is it concrete enough to be actionable?
 
-If any of the above apply, append to the relevant section of `docs/PATTERNS.md` and commit directly to `main`:
+If any of the above apply, update the relevant file(s) and commit directly to `main`:
 
 ```bash
-git add docs/PATTERNS.md
+git add docs/
 git commit -m "docs: add patterns from <issue-N> implementation"
 ```
 

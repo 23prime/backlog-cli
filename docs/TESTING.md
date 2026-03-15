@@ -92,6 +92,15 @@ fn builds_correct_params() {
 }
 ```
 
+## httpmock method constants
+
+`httpmock::prelude::*` (v0.7) exports `GET`, `POST`, `PUT`, `DELETE`, `OPTIONS` —
+but **not `PATCH`**. Use the fully-qualified path for PATCH requests:
+
+```rust
+when.method(httpmock::Method::PATCH).path("/projects/TEST");
+```
+
 ## Rules
 
 - **Never** call `BacklogClient::from_config()` in tests — it requires real credentials on disk.
