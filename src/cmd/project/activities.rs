@@ -319,6 +319,12 @@ mod tests {
         ) -> anyhow::Result<crate::api::notification::NotificationCount> {
             unimplemented!()
         }
+        fn get_space_licence(&self) -> anyhow::Result<crate::api::licence::Licence> {
+            unimplemented!()
+        }
+        fn put_space_notification(&self, _content: &str) -> anyhow::Result<crate::api::space_notification::SpaceNotification> {
+            unimplemented!()
+        }
     }
 
     fn sample_activity() -> Activity {

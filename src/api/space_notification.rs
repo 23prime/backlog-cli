@@ -21,6 +21,18 @@ impl BacklogClient {
             )
         })
     }
+
+    pub fn put_space_notification(&self, content: &str) -> Result<SpaceNotification> {
+        let params = vec![("content".to_string(), content.to_string())];
+        let value = self.put_form("/space/notification", &params)?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize space notification response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
 }
 
 #[cfg(test)]
@@ -65,6 +77,23 @@ mod tests {
         let n = client.get_space_notification().unwrap();
         assert_eq!(n.content, "");
         assert_eq!(n.updated, None);
+    }
+
+    #[test]
+    fn put_space_notification_returns_updated_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(PUT).path("/space/notification");
+            then.status(200).json_body(json!({
+                "content": "New notification text.",
+                "updated": "2024-07-01T00:00:00Z"
+            }));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let n = client.put_space_notification("New notification text.").unwrap();
+        assert_eq!(n.content, "New notification text.");
+        assert_eq!(n.updated, Some("2024-07-01T00:00:00Z".to_string()));
     }
 
     #[test]

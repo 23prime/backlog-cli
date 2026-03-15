@@ -9,6 +9,7 @@ const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 pub mod activity;
 pub mod disk_usage;
 pub mod issue;
+pub mod licence;
 pub mod notification;
 pub mod project;
 pub mod space;
@@ -20,6 +21,7 @@ pub mod wiki;
 use activity::Activity;
 use disk_usage::DiskUsage;
 use issue::{Issue, IssueAttachment, IssueComment, IssueCount};
+use licence::Licence;
 use notification::{Notification, NotificationCount};
 use project::{
     Project, ProjectCategory, ProjectDiskUsage, ProjectIssueType, ProjectStatus, ProjectUser,
@@ -90,6 +92,8 @@ pub trait BacklogApi {
     fn count_notifications(&self) -> Result<NotificationCount>;
     fn read_notification(&self, id: u64) -> Result<()>;
     fn reset_unread_notifications(&self) -> Result<NotificationCount>;
+    fn get_space_licence(&self) -> Result<Licence>;
+    fn put_space_notification(&self, content: &str) -> Result<SpaceNotification>;
 }
 
 impl BacklogApi for BacklogClient {
@@ -276,6 +280,14 @@ impl BacklogApi for BacklogClient {
     fn reset_unread_notifications(&self) -> Result<NotificationCount> {
         self.reset_unread_notifications()
     }
+
+    fn get_space_licence(&self) -> Result<Licence> {
+        self.get_space_licence()
+    }
+
+    fn put_space_notification(&self, content: &str) -> Result<SpaceNotification> {
+        self.put_space_notification(content)
+    }
 }
 
 /// How the client authenticates with Backlog.
@@ -452,6 +464,17 @@ impl BacklogClient {
                 .form(params)
                 .send()
                 .with_context(|| format!("Failed to PATCH {url}"))
+        })
+    }
+
+    pub fn put_form(&self, path: &str, params: &[(String, String)]) -> Result<serde_json::Value> {
+        let url = format!("{}{}", self.base_url, path);
+        self.execute(|| {
+            crate::logger::verbose(&format!("→ PUT {url}"));
+            self.apply_auth(self.client.put(&url))
+                .form(params)
+                .send()
+                .with_context(|| format!("Failed to PUT {url}"))
         })
     }
 
