@@ -710,6 +710,10 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl space activities` | `GET /api/v2/space/activities` | ✅ 実装済み |
 | `bl space disk-usage` | `GET /api/v2/space/diskUsage` | ✅ 実装済み |
 | `bl space notification` | `GET /api/v2/space/notification` | ✅ 実装済み |
+| `bl space licence` | `GET /api/v2/space/licence` | 計画中 |
+| `bl space update-notification` | `PUT /api/v2/space/notification` | 計画中 |
+| — | `GET /api/v2/space/image` | 計画中 |
+| — | `POST /api/v2/space/attachment` | 計画中 |
 
 ### Projects
 
@@ -717,13 +721,57 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | --- | --- | --- |
 | `bl project list` | `GET /api/v2/projects` | ✅ 実装済み |
 | `bl project show <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}` | ✅ 実装済み |
+| `bl project create` | `POST /api/v2/projects` | 計画中 |
+| `bl project update <id-or-key>` | `PATCH /api/v2/projects/{projectIdOrKey}` | 計画中 |
+| `bl project delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}` | 計画中 |
 | `bl project activities <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/activities` | ✅ 実装済み |
 | `bl project disk-usage <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/diskUsage` | ✅ 実装済み |
 | `bl project user list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/users` | ✅ 実装済み |
+| `bl project user add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/users` | 計画中 |
+| `bl project user delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/users` | 計画中 |
+| `bl project admin list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/administrators` | 計画中 |
+| `bl project admin add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/administrators` | 計画中 |
+| `bl project admin delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/administrators` | 計画中 |
+| — | `GET /api/v2/projects/{projectIdOrKey}/image` | 計画中 |
 | `bl project status list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/statuses` | ✅ 実装済み |
+| `bl project status add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/statuses` | 計画中 |
+| `bl project status update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/statuses/{id}` | 計画中 |
+| `bl project status delete <id-or-key> <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/statuses/{id}` | 計画中 |
+| `bl project status reorder <id-or-key>` | `PATCH /api/v2/projects/{projectIdOrKey}/statuses/updateDisplayOrder` | 計画中 |
 | `bl project issue-type list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/issueTypes` | ✅ 実装済み |
+| `bl project issue-type add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/issueTypes` | 計画中 |
+| `bl project issue-type update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/issueTypes/{id}` | 計画中 |
+| `bl project issue-type delete <id-or-key> <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/issueTypes/{id}` | 計画中 |
 | `bl project category list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/categories` | ✅ 実装済み |
+| `bl project category add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/categories` | 計画中 |
+| `bl project category update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/categories/{id}` | 計画中 |
+| `bl project category delete <id-or-key> <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/categories/{id}` | 計画中 |
 | `bl project version list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/versions` | ✅ 実装済み |
+| `bl project version add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/versions` | 計画中 |
+| `bl project version update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/versions/{id}` | 計画中 |
+| `bl project version delete <id-or-key> <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/versions/{id}` | 計画中 |
+| `bl project custom-field list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/customFields` | 計画中 |
+| `bl project custom-field add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/customFields` | 計画中 |
+| `bl project custom-field update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/customFields/{id}` | 計画中 |
+| `bl project custom-field delete <id-or-key> <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/customFields/{id}` | 計画中 |
+| `bl project custom-field item add <id-or-key> <id>` | `POST /api/v2/projects/{projectIdOrKey}/customFields/{id}/items` | 計画中 |
+| `bl project custom-field item update <id-or-key> <id> <item-id>` | `PATCH /api/v2/projects/{projectIdOrKey}/customFields/{id}/items/{itemId}` | 計画中 |
+| `bl project custom-field item delete <id-or-key> <id> <item-id>` | `DELETE /api/v2/projects/{projectIdOrKey}/customFields/{id}/items/{itemId}` | 計画中 |
+| `bl project webhook list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/webhooks` | 計画中 |
+| `bl project webhook show <id-or-key> <webhook-id>` | `GET /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | 計画中 |
+| `bl project webhook add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/webhooks` | 計画中 |
+| `bl project webhook update <id-or-key> <webhook-id>` | `PATCH /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | 計画中 |
+| `bl project webhook delete <id-or-key> <webhook-id>` | `DELETE /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | 計画中 |
+| `bl project team list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/teams` | 計画中 |
+| `bl project team add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/teams` | 計画中 |
+| `bl project team delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/teams` | 計画中 |
+
+### Priorities & Resolutions
+
+| コマンド | API エンドポイント | 状態 |
+| --- | --- | --- |
+| `bl priority list` | `GET /api/v2/priorities` | 計画中 |
+| `bl resolution list` | `GET /api/v2/resolutions` | 計画中 |
 
 ### Issues
 
@@ -737,40 +785,91 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl issue delete <id-or-key>` | `DELETE /api/v2/issues/{issueIdOrKey}` | ✅ 実装済み |
 | `bl issue comment list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/comments` | ✅ 実装済み |
 | `bl issue comment add <id-or-key>` | `POST /api/v2/issues/{issueIdOrKey}/comments` | ✅ 実装済み |
+| `bl issue comment count <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/comments/count` | 計画中 |
+| `bl issue comment show <id-or-key> <comment-id>` | `GET /api/v2/issues/{issueIdOrKey}/comments/{commentId}` | 計画中 |
 | `bl issue comment update <id-or-key> <comment-id>` | `PATCH /api/v2/issues/{issueIdOrKey}/comments/{commentId}` | ✅ 実装済み |
 | `bl issue comment delete <id-or-key> <comment-id>` | `DELETE /api/v2/issues/{issueIdOrKey}/comments/{commentId}` | ✅ 実装済み |
+| `bl issue comment notification list <id-or-key> <comment-id>` | `GET /api/v2/issues/{issueIdOrKey}/comments/{commentId}/notifications` | 計画中 |
+| `bl issue comment notification add <id-or-key> <comment-id>` | `POST /api/v2/issues/{issueIdOrKey}/comments/{commentId}/notifications` | 計画中 |
 | `bl issue attachment list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/attachments` | ✅ 実装済み |
+| `bl issue attachment get <id-or-key> <attachment-id>` | `GET /api/v2/issues/{issueIdOrKey}/attachments/{attachmentId}` | 計画中 |
+| `bl issue attachment delete <id-or-key> <attachment-id>` | `DELETE /api/v2/issues/{issueIdOrKey}/attachments/{attachmentId}` | 計画中 |
+| `bl issue participant list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/participants` | 計画中 |
+| `bl issue shared-file list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/sharedFiles` | 計画中 |
+| `bl issue shared-file link <id-or-key>` | `POST /api/v2/issues/{issueIdOrKey}/sharedFiles` | 計画中 |
+| `bl issue shared-file unlink <id-or-key> <id>` | `DELETE /api/v2/issues/{issueIdOrKey}/sharedFiles/{id}` | 計画中 |
+
+### Documents
+
+| コマンド | API エンドポイント | 状態 |
+| --- | --- | --- |
+| `bl document list` | `GET /api/v2/documents` | 計画中 |
+| `bl document tree` | `GET /api/v2/documents/tree` | 計画中 |
+| `bl document show <id>` | `GET /api/v2/documents/{documentId}` | 計画中 |
+| `bl document create` | `POST /api/v2/documents` | 計画中 |
+| `bl document delete <id>` | `DELETE /api/v2/documents/{documentId}` | 計画中 |
+| `bl document attachment get <id> <attachment-id>` | `GET /api/v2/documents/{documentId}/attachments/{attachmentId}` | 計画中 |
 
 ### Wiki
 
 | コマンド | API エンドポイント | 状態 |
 | --- | --- | --- |
 | `bl wiki list` | `GET /api/v2/wikis` | ✅ 実装済み |
+| `bl wiki count` | `GET /api/v2/wikis/count` | 計画中 |
+| `bl wiki tag list` | `GET /api/v2/wikis/tags` | 計画中 |
 | `bl wiki show <id>` | `GET /api/v2/wikis/{wikiId}` | ✅ 実装済み |
 | `bl wiki create` | `POST /api/v2/wikis` | ✅ 実装済み |
 | `bl wiki update <id>` | `PATCH /api/v2/wikis/{wikiId}` | ✅ 実装済み |
 | `bl wiki delete <id>` | `DELETE /api/v2/wikis/{wikiId}` | ✅ 実装済み |
 | `bl wiki history <id>` | `GET /api/v2/wikis/{wikiId}/history` | ✅ 実装済み |
+| `bl wiki star list <id>` | `GET /api/v2/wikis/{wikiId}/stars` | 計画中 |
 | `bl wiki attachment list <id>` | `GET /api/v2/wikis/{wikiId}/attachments` | ✅ 実装済み |
+| `bl wiki attachment add <id>` | `POST /api/v2/wikis/{wikiId}/attachments` | 計画中 |
+| `bl wiki attachment get <id> <attachment-id>` | `GET /api/v2/wikis/{wikiId}/attachments/{attachmentId}` | 計画中 |
+| `bl wiki attachment delete <id> <attachment-id>` | `DELETE /api/v2/wikis/{wikiId}/attachments/{attachmentId}` | 計画中 |
+| `bl wiki shared-file list <id>` | `GET /api/v2/wikis/{wikiId}/sharedFiles` | 計画中 |
+| `bl wiki shared-file link <id>` | `POST /api/v2/wikis/{wikiId}/sharedFiles` | 計画中 |
+| `bl wiki shared-file unlink <id> <shared-file-id>` | `DELETE /api/v2/wikis/{wikiId}/sharedFiles/{id}` | 計画中 |
+
+### Shared Files
+
+| コマンド | API エンドポイント | 状態 |
+| --- | --- | --- |
+| `bl shared-file list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/files/metadata/{path}` | 計画中 |
+| `bl shared-file get <id-or-key> <id>` | `GET /api/v2/projects/{projectIdOrKey}/files/{sharedFileId}` | 計画中 |
+
+### Stars
+
+| コマンド | API エンドポイント | 状態 |
+| --- | --- | --- |
+| `bl star add` | `POST /api/v2/stars` | 計画中 |
+| `bl star delete <id>` | `DELETE /api/v2/stars/{starId}` | 計画中 |
+| `bl user star list <id>` | `GET /api/v2/users/{userId}/stars` | 計画中 |
+| `bl user star count <id>` | `GET /api/v2/users/{userId}/stars/count` | 計画中 |
 
 ### Pull Requests
 
 | コマンド | API エンドポイント | 状態 |
 | --- | --- | --- |
-| `bl pr list` | `GET /api/v2/projects/{projectIdOrKey}/pullRequests` | 計画中 |
-| `bl pr show <number>` | `GET /api/v2/projects/{projectIdOrKey}/pullRequests/{number}` | 計画中 |
-| `bl pr create` | `POST /api/v2/projects/{projectIdOrKey}/pullRequests` | 計画中 |
-| `bl pr update <number>` | `PUT /api/v2/projects/{projectIdOrKey}/pullRequests/{number}` | 計画中 |
-| `bl pr comment list <number>` | `GET /api/v2/projects/{projectIdOrKey}/pullRequests/{number}/comments` | 計画中 |
-| `bl pr comment add <number>` | `POST /api/v2/projects/{projectIdOrKey}/pullRequests/{number}/comments` | 計画中 |
-| `bl pr comment update <number> <comment-id>` | `PUT /api/v2/projects/{projectIdOrKey}/pullRequests/{number}/comments/{commentId}` | 計画中 |
+| `bl pr list <id-or-key> <repo>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests` | 計画中 |
+| `bl pr count <id-or-key> <repo>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/count` | 計画中 |
+| `bl pr show <id-or-key> <repo> <number>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}` | 計画中 |
+| `bl pr create <id-or-key> <repo>` | `POST /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests` | 計画中 |
+| `bl pr update <id-or-key> <repo> <number>` | `PATCH /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}` | 計画中 |
+| `bl pr comment list <id-or-key> <repo> <number>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/comments` | 計画中 |
+| `bl pr comment count <id-or-key> <repo> <number>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/comments/count` | 計画中 |
+| `bl pr comment add <id-or-key> <repo> <number>` | `POST /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/comments` | 計画中 |
+| `bl pr comment update <id-or-key> <repo> <number> <comment-id>` | `PATCH /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/comments/{commentId}` | 計画中 |
+| `bl pr attachment list <id-or-key> <repo> <number>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/attachments` | 計画中 |
+| `bl pr attachment get <id-or-key> <repo> <number> <attachment-id>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/attachments/{attachmentId}` | 計画中 |
+| `bl pr attachment delete <id-or-key> <repo> <number> <attachment-id>` | `DELETE /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/attachments/{attachmentId}` | 計画中 |
 
 ### Git Repositories
 
 | コマンド | API エンドポイント | 状態 |
 | --- | --- | --- |
-| `bl git repo list` | `GET /api/v2/projects/{projectIdOrKey}/repositories` | 計画中 |
-| `bl git repo show <repo>` | `GET /api/v2/projects/{projectIdOrKey}/repositories/{repoId}` | 計画中 |
+| `bl git repo list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories` | 計画中 |
+| `bl git repo show <id-or-key> <repo>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}` | 計画中 |
 
 ### Users
 
@@ -779,8 +878,16 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl auth status` | `GET /api/v2/users/myself` | ✅ 実装済み（内部） |
 | `bl user list` | `GET /api/v2/users` | ✅ 実装済み |
 | `bl user show <id>` | `GET /api/v2/users/{userId}` | ✅ 実装済み |
+| `bl user add` | `POST /api/v2/users` | 計画中 |
+| `bl user update <id>` | `PATCH /api/v2/users/{userId}` | 計画中 |
+| `bl user delete <id>` | `DELETE /api/v2/users/{userId}` | 計画中 |
 | `bl user activities <id>` | `GET /api/v2/users/{userId}/activities` | ✅ 実装済み |
 | `bl user recently-viewed` | `GET /api/v2/users/myself/recentlyViewedIssues` | ✅ 実装済み |
+| `bl user recently-viewed-projects` | `GET /api/v2/users/myself/recentlyViewedProjects` | 計画中 |
+| `bl user recently-viewed-wikis` | `GET /api/v2/users/myself/recentlyViewedWikis` | 計画中 |
+| `bl user star list <id>` | `GET /api/v2/users/{userId}/stars` | 計画中 |
+| `bl user star count <id>` | `GET /api/v2/users/{userId}/stars/count` | 計画中 |
+| — | `GET /api/v2/users/{userId}/icon` | 計画中 |
 
 ### Notifications
 
@@ -795,9 +902,13 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 
 | コマンド | API エンドポイント | 状態 |
 | --- | --- | --- |
-| `bl watch list` | `GET /api/v2/watching` | 計画中 |
-| `bl watch add` | `POST /api/v2/watching` | 計画中 |
-| `bl watch delete <id>` | `DELETE /api/v2/watching/{watchingId}` | 計画中 |
+| `bl watch list` | `GET /api/v2/users/{userId}/watchings` | 計画中 |
+| `bl watch count` | `GET /api/v2/users/{userId}/watchings/count` | 計画中 |
+| `bl watch show <id>` | `GET /api/v2/watchings/{watchingId}` | 計画中 |
+| `bl watch add` | `POST /api/v2/watchings` | 計画中 |
+| `bl watch update <id>` | `PATCH /api/v2/watchings/{watchingId}` | 計画中 |
+| `bl watch delete <id>` | `DELETE /api/v2/watchings/{watchingId}` | 計画中 |
+| `bl watch read <id>` | `POST /api/v2/watchings/{watchingId}/markAsRead` | 計画中 |
 
 ### Teams
 
@@ -805,3 +916,13 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | --- | --- | --- |
 | `bl team list` | `GET /api/v2/teams` | ✅ 実装済み |
 | `bl team show <id>` | `GET /api/v2/teams/{teamId}` | ✅ 実装済み |
+| `bl team add` | `POST /api/v2/teams` | 計画中 |
+| `bl team update <id>` | `PATCH /api/v2/teams/{teamId}` | 計画中 |
+| `bl team delete <id>` | `DELETE /api/v2/teams/{teamId}` | 計画中 |
+| — | `GET /api/v2/teams/{teamId}/icon` | 計画中 |
+
+### System
+
+| コマンド | API エンドポイント | 状態 |
+| --- | --- | --- |
+| `bl rate-limit` | `GET /api/v2/rateLimit` | 計画中 |

@@ -706,6 +706,10 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | `bl space activities` | `GET /api/v2/space/activities` | ✅ Implemented |
 | `bl space disk-usage` | `GET /api/v2/space/diskUsage` | ✅ Implemented |
 | `bl space notification` | `GET /api/v2/space/notification` | ✅ Implemented |
+| `bl space licence` | `GET /api/v2/space/licence` | Planned |
+| `bl space update-notification` | `PUT /api/v2/space/notification` | Planned |
+| — | `GET /api/v2/space/image` | Planned |
+| — | `POST /api/v2/space/attachment` | Planned |
 
 ### Projects
 
@@ -713,13 +717,57 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | --- | --- | --- |
 | `bl project list` | `GET /api/v2/projects` | ✅ Implemented |
 | `bl project show <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}` | ✅ Implemented |
+| `bl project create` | `POST /api/v2/projects` | Planned |
+| `bl project update <id-or-key>` | `PATCH /api/v2/projects/{projectIdOrKey}` | Planned |
+| `bl project delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}` | Planned |
 | `bl project activities <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/activities` | ✅ Implemented |
 | `bl project disk-usage <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/diskUsage` | ✅ Implemented |
 | `bl project user list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/users` | ✅ Implemented |
+| `bl project user add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/users` | Planned |
+| `bl project user delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/users` | Planned |
+| `bl project admin list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/administrators` | Planned |
+| `bl project admin add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/administrators` | Planned |
+| `bl project admin delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/administrators` | Planned |
+| — | `GET /api/v2/projects/{projectIdOrKey}/image` | Planned |
 | `bl project status list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/statuses` | ✅ Implemented |
+| `bl project status add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/statuses` | Planned |
+| `bl project status update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/statuses/{id}` | Planned |
+| `bl project status delete <id-or-key> <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/statuses/{id}` | Planned |
+| `bl project status reorder <id-or-key>` | `PATCH /api/v2/projects/{projectIdOrKey}/statuses/updateDisplayOrder` | Planned |
 | `bl project issue-type list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/issueTypes` | ✅ Implemented |
+| `bl project issue-type add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/issueTypes` | Planned |
+| `bl project issue-type update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/issueTypes/{id}` | Planned |
+| `bl project issue-type delete <id-or-key> <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/issueTypes/{id}` | Planned |
 | `bl project category list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/categories` | ✅ Implemented |
+| `bl project category add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/categories` | Planned |
+| `bl project category update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/categories/{id}` | Planned |
+| `bl project category delete <id-or-key> <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/categories/{id}` | Planned |
 | `bl project version list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/versions` | ✅ Implemented |
+| `bl project version add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/versions` | Planned |
+| `bl project version update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/versions/{id}` | Planned |
+| `bl project version delete <id-or-key> <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/versions/{id}` | Planned |
+| `bl project custom-field list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/customFields` | Planned |
+| `bl project custom-field add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/customFields` | Planned |
+| `bl project custom-field update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/customFields/{id}` | Planned |
+| `bl project custom-field delete <id-or-key> <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/customFields/{id}` | Planned |
+| `bl project custom-field item add <id-or-key> <id>` | `POST /api/v2/projects/{projectIdOrKey}/customFields/{id}/items` | Planned |
+| `bl project custom-field item update <id-or-key> <id> <item-id>` | `PATCH /api/v2/projects/{projectIdOrKey}/customFields/{id}/items/{itemId}` | Planned |
+| `bl project custom-field item delete <id-or-key> <id> <item-id>` | `DELETE /api/v2/projects/{projectIdOrKey}/customFields/{id}/items/{itemId}` | Planned |
+| `bl project webhook list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/webhooks` | Planned |
+| `bl project webhook show <id-or-key> <webhook-id>` | `GET /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | Planned |
+| `bl project webhook add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/webhooks` | Planned |
+| `bl project webhook update <id-or-key> <webhook-id>` | `PATCH /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | Planned |
+| `bl project webhook delete <id-or-key> <webhook-id>` | `DELETE /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | Planned |
+| `bl project team list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/teams` | Planned |
+| `bl project team add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/teams` | Planned |
+| `bl project team delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/teams` | Planned |
+
+### Priorities & Resolutions
+
+| Command | API endpoint | Status |
+| --- | --- | --- |
+| `bl priority list` | `GET /api/v2/priorities` | Planned |
+| `bl resolution list` | `GET /api/v2/resolutions` | Planned |
 
 ### Issues
 
@@ -733,40 +781,91 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | `bl issue delete <id-or-key>` | `DELETE /api/v2/issues/{issueIdOrKey}` | ✅ Implemented |
 | `bl issue comment list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/comments` | ✅ Implemented |
 | `bl issue comment add <id-or-key>` | `POST /api/v2/issues/{issueIdOrKey}/comments` | ✅ Implemented |
+| `bl issue comment count <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/comments/count` | Planned |
+| `bl issue comment show <id-or-key> <comment-id>` | `GET /api/v2/issues/{issueIdOrKey}/comments/{commentId}` | Planned |
 | `bl issue comment update <id-or-key> <comment-id>` | `PATCH /api/v2/issues/{issueIdOrKey}/comments/{commentId}` | ✅ Implemented |
 | `bl issue comment delete <id-or-key> <comment-id>` | `DELETE /api/v2/issues/{issueIdOrKey}/comments/{commentId}` | ✅ Implemented |
+| `bl issue comment notification list <id-or-key> <comment-id>` | `GET /api/v2/issues/{issueIdOrKey}/comments/{commentId}/notifications` | Planned |
+| `bl issue comment notification add <id-or-key> <comment-id>` | `POST /api/v2/issues/{issueIdOrKey}/comments/{commentId}/notifications` | Planned |
 | `bl issue attachment list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/attachments` | ✅ Implemented |
+| `bl issue attachment get <id-or-key> <attachment-id>` | `GET /api/v2/issues/{issueIdOrKey}/attachments/{attachmentId}` | Planned |
+| `bl issue attachment delete <id-or-key> <attachment-id>` | `DELETE /api/v2/issues/{issueIdOrKey}/attachments/{attachmentId}` | Planned |
+| `bl issue participant list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/participants` | Planned |
+| `bl issue shared-file list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/sharedFiles` | Planned |
+| `bl issue shared-file link <id-or-key>` | `POST /api/v2/issues/{issueIdOrKey}/sharedFiles` | Planned |
+| `bl issue shared-file unlink <id-or-key> <id>` | `DELETE /api/v2/issues/{issueIdOrKey}/sharedFiles/{id}` | Planned |
+
+### Documents
+
+| Command | API endpoint | Status |
+| --- | --- | --- |
+| `bl document list` | `GET /api/v2/documents` | Planned |
+| `bl document tree` | `GET /api/v2/documents/tree` | Planned |
+| `bl document show <id>` | `GET /api/v2/documents/{documentId}` | Planned |
+| `bl document create` | `POST /api/v2/documents` | Planned |
+| `bl document delete <id>` | `DELETE /api/v2/documents/{documentId}` | Planned |
+| `bl document attachment get <id> <attachment-id>` | `GET /api/v2/documents/{documentId}/attachments/{attachmentId}` | Planned |
 
 ### Wiki
 
 | Command | API endpoint | Status |
 | --- | --- | --- |
 | `bl wiki list` | `GET /api/v2/wikis` | ✅ Implemented |
+| `bl wiki count` | `GET /api/v2/wikis/count` | Planned |
+| `bl wiki tag list` | `GET /api/v2/wikis/tags` | Planned |
 | `bl wiki show <id>` | `GET /api/v2/wikis/{wikiId}` | ✅ Implemented |
 | `bl wiki create` | `POST /api/v2/wikis` | ✅ Implemented |
 | `bl wiki update <id>` | `PATCH /api/v2/wikis/{wikiId}` | ✅ Implemented |
 | `bl wiki delete <id>` | `DELETE /api/v2/wikis/{wikiId}` | ✅ Implemented |
 | `bl wiki history <id>` | `GET /api/v2/wikis/{wikiId}/history` | ✅ Implemented |
+| `bl wiki star list <id>` | `GET /api/v2/wikis/{wikiId}/stars` | Planned |
 | `bl wiki attachment list <id>` | `GET /api/v2/wikis/{wikiId}/attachments` | ✅ Implemented |
+| `bl wiki attachment add <id>` | `POST /api/v2/wikis/{wikiId}/attachments` | Planned |
+| `bl wiki attachment get <id> <attachment-id>` | `GET /api/v2/wikis/{wikiId}/attachments/{attachmentId}` | Planned |
+| `bl wiki attachment delete <id> <attachment-id>` | `DELETE /api/v2/wikis/{wikiId}/attachments/{attachmentId}` | Planned |
+| `bl wiki shared-file list <id>` | `GET /api/v2/wikis/{wikiId}/sharedFiles` | Planned |
+| `bl wiki shared-file link <id>` | `POST /api/v2/wikis/{wikiId}/sharedFiles` | Planned |
+| `bl wiki shared-file unlink <id> <shared-file-id>` | `DELETE /api/v2/wikis/{wikiId}/sharedFiles/{id}` | Planned |
+
+### Shared Files
+
+| Command | API endpoint | Status |
+| --- | --- | --- |
+| `bl shared-file list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/files/metadata/{path}` | Planned |
+| `bl shared-file get <id-or-key> <id>` | `GET /api/v2/projects/{projectIdOrKey}/files/{sharedFileId}` | Planned |
+
+### Stars
+
+| Command | API endpoint | Status |
+| --- | --- | --- |
+| `bl star add` | `POST /api/v2/stars` | Planned |
+| `bl star delete <id>` | `DELETE /api/v2/stars/{starId}` | Planned |
+| `bl user star list <id>` | `GET /api/v2/users/{userId}/stars` | Planned |
+| `bl user star count <id>` | `GET /api/v2/users/{userId}/stars/count` | Planned |
 
 ### Pull Requests
 
 | Command | API endpoint | Status |
 | --- | --- | --- |
-| `bl pr list` | `GET /api/v2/projects/{projectIdOrKey}/pullRequests` | Planned |
-| `bl pr show <number>` | `GET /api/v2/projects/{projectIdOrKey}/pullRequests/{number}` | Planned |
-| `bl pr create` | `POST /api/v2/projects/{projectIdOrKey}/pullRequests` | Planned |
-| `bl pr update <number>` | `PUT /api/v2/projects/{projectIdOrKey}/pullRequests/{number}` | Planned |
-| `bl pr comment list <number>` | `GET /api/v2/projects/{projectIdOrKey}/pullRequests/{number}/comments` | Planned |
-| `bl pr comment add <number>` | `POST /api/v2/projects/{projectIdOrKey}/pullRequests/{number}/comments` | Planned |
-| `bl pr comment update <number> <comment-id>` | `PUT /api/v2/projects/{projectIdOrKey}/pullRequests/{number}/comments/{commentId}` | Planned |
+| `bl pr list <id-or-key> <repo>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests` | Planned |
+| `bl pr count <id-or-key> <repo>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/count` | Planned |
+| `bl pr show <id-or-key> <repo> <number>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}` | Planned |
+| `bl pr create <id-or-key> <repo>` | `POST /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests` | Planned |
+| `bl pr update <id-or-key> <repo> <number>` | `PATCH /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}` | Planned |
+| `bl pr comment list <id-or-key> <repo> <number>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/comments` | Planned |
+| `bl pr comment count <id-or-key> <repo> <number>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/comments/count` | Planned |
+| `bl pr comment add <id-or-key> <repo> <number>` | `POST /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/comments` | Planned |
+| `bl pr comment update <id-or-key> <repo> <number> <comment-id>` | `PATCH /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/comments/{commentId}` | Planned |
+| `bl pr attachment list <id-or-key> <repo> <number>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/attachments` | Planned |
+| `bl pr attachment get <id-or-key> <repo> <number> <attachment-id>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/attachments/{attachmentId}` | Planned |
+| `bl pr attachment delete <id-or-key> <repo> <number> <attachment-id>` | `DELETE /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/attachments/{attachmentId}` | Planned |
 
 ### Git Repositories
 
 | Command | API endpoint | Status |
 | --- | --- | --- |
-| `bl git repo list` | `GET /api/v2/projects/{projectIdOrKey}/repositories` | Planned |
-| `bl git repo show <repo>` | `GET /api/v2/projects/{projectIdOrKey}/repositories/{repoId}` | Planned |
+| `bl git repo list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories` | Planned |
+| `bl git repo show <id-or-key> <repo>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}` | Planned |
 
 ### Users
 
@@ -775,8 +874,16 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | `bl auth status` | `GET /api/v2/users/myself` | ✅ Implemented (internal) |
 | `bl user list` | `GET /api/v2/users` | ✅ Implemented |
 | `bl user show <id>` | `GET /api/v2/users/{userId}` | ✅ Implemented |
+| `bl user add` | `POST /api/v2/users` | Planned |
+| `bl user update <id>` | `PATCH /api/v2/users/{userId}` | Planned |
+| `bl user delete <id>` | `DELETE /api/v2/users/{userId}` | Planned |
 | `bl user activities <id>` | `GET /api/v2/users/{userId}/activities` | ✅ Implemented |
 | `bl user recently-viewed` | `GET /api/v2/users/myself/recentlyViewedIssues` | ✅ Implemented |
+| `bl user recently-viewed-projects` | `GET /api/v2/users/myself/recentlyViewedProjects` | Planned |
+| `bl user recently-viewed-wikis` | `GET /api/v2/users/myself/recentlyViewedWikis` | Planned |
+| `bl user star list <id>` | `GET /api/v2/users/{userId}/stars` | Planned |
+| `bl user star count <id>` | `GET /api/v2/users/{userId}/stars/count` | Planned |
+| — | `GET /api/v2/users/{userId}/icon` | Planned |
 
 ### Notifications
 
@@ -791,9 +898,13 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 
 | Command | API endpoint | Status |
 | --- | --- | --- |
-| `bl watch list` | `GET /api/v2/watching` | Planned |
-| `bl watch add` | `POST /api/v2/watching` | Planned |
-| `bl watch delete <id>` | `DELETE /api/v2/watching/{watchingId}` | Planned |
+| `bl watch list` | `GET /api/v2/users/{userId}/watchings` | Planned |
+| `bl watch count` | `GET /api/v2/users/{userId}/watchings/count` | Planned |
+| `bl watch show <id>` | `GET /api/v2/watchings/{watchingId}` | Planned |
+| `bl watch add` | `POST /api/v2/watchings` | Planned |
+| `bl watch update <id>` | `PATCH /api/v2/watchings/{watchingId}` | Planned |
+| `bl watch delete <id>` | `DELETE /api/v2/watchings/{watchingId}` | Planned |
+| `bl watch read <id>` | `POST /api/v2/watchings/{watchingId}/markAsRead` | Planned |
 
 ### Teams
 
@@ -801,3 +912,13 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | --- | --- | --- |
 | `bl team list` | `GET /api/v2/teams` | ✅ Implemented |
 | `bl team show <id>` | `GET /api/v2/teams/{teamId}` | ✅ Implemented |
+| `bl team add` | `POST /api/v2/teams` | Planned |
+| `bl team update <id>` | `PATCH /api/v2/teams/{teamId}` | Planned |
+| `bl team delete <id>` | `DELETE /api/v2/teams/{teamId}` | Planned |
+| — | `GET /api/v2/teams/{teamId}/icon` | Planned |
+
+### System
+
+| Command | API endpoint | Status |
+| --- | --- | --- |
+| `bl rate-limit` | `GET /api/v2/rateLimit` | Planned |
