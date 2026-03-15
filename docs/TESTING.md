@@ -17,10 +17,11 @@ fn get_space_returns_parsed_struct() {
     let server = MockServer::start();
     server.mock(|when, then| {
         when.method(GET).path("/api/v2/space");
-        then.status(200).json_body(json!({ "spaceKey": "my-space", ... }));
+            then.status(200)
+            .json_body(serde_json::json!({ "spaceKey": "my-space", "name": "My Space" }));
     });
 
-    let client = BacklogClient::new_with(&server.base_url(), "test-key");
+    let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
     let space = client.get_space().unwrap();
     assert_eq!(space.space_key, "my-space");
 }
@@ -44,13 +45,15 @@ impl BacklogApi for MockApi {
 #[test]
 fn show_with_json_output_succeeds() {
     let api = MockApi { data: Some(sample_resource()) };
-    assert!(show_with(true, &api).is_ok());
+    let args = MyArgs::new("TEST-1".to_string(), true);
+    assert!(show_with(&args, &api).is_ok());
 }
 
 #[test]
 fn show_with_propagates_api_error() {
     let api = MockApi { data: None };
-    assert!(show_with(false, &api).unwrap_err().to_string().contains("no data"));
+    let args = MyArgs::new("TEST-1".to_string(), false);
+    assert!(show_with(&args, &api).unwrap_err().to_string().contains("no data"));
 }
 ```
 
