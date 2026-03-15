@@ -1,104 +1,76 @@
 use anstream::println;
 use anyhow::{Context, Result};
 
-use crate::api::{BacklogApi, BacklogClient};
-use crate::cmd::issue::ParentChild;
+use crate::api::{BacklogApi, BacklogClient, user::RecentlyViewedWiki};
 
-pub struct IssueCountArgs {
-    project_ids: Vec<u64>,
-    status_ids: Vec<u64>,
-    assignee_ids: Vec<u64>,
-    issue_type_ids: Vec<u64>,
-    category_ids: Vec<u64>,
-    milestone_ids: Vec<u64>,
-    parent_child: Option<ParentChild>,
-    keyword: Option<String>,
+pub struct UserRecentlyViewedWikisArgs {
     json: bool,
+    pub count: u32,
+    pub offset: u64,
+    pub order: Option<String>,
 }
 
-impl IssueCountArgs {
-    #[allow(clippy::too_many_arguments)]
-    pub fn new(
-        project_ids: Vec<u64>,
-        status_ids: Vec<u64>,
-        assignee_ids: Vec<u64>,
-        issue_type_ids: Vec<u64>,
-        category_ids: Vec<u64>,
-        milestone_ids: Vec<u64>,
-        parent_child: Option<ParentChild>,
-        keyword: Option<String>,
+impl UserRecentlyViewedWikisArgs {
+    pub fn try_new(
         json: bool,
-    ) -> Self {
-        Self {
-            project_ids,
-            status_ids,
-            assignee_ids,
-            issue_type_ids,
-            category_ids,
-            milestone_ids,
-            parent_child,
-            keyword,
-            json,
+        count: u32,
+        offset: u64,
+        order: Option<String>,
+    ) -> anyhow::Result<Self> {
+        if !(1..=100).contains(&count) {
+            anyhow::bail!("count must be between 1 and 100");
         }
+        Ok(Self {
+            json,
+            count,
+            offset,
+            order,
+        })
     }
 }
 
-pub fn count(args: &IssueCountArgs) -> Result<()> {
+pub fn recently_viewed_wikis(args: &UserRecentlyViewedWikisArgs) -> Result<()> {
     let client = BacklogClient::from_config()?;
-    count_with(args, &client)
+    recently_viewed_wikis_with(args, &client)
 }
 
-pub fn count_with(args: &IssueCountArgs, api: &dyn BacklogApi) -> Result<()> {
-    let params = build_params(args);
-    let result = api.count_issues(&params)?;
+pub fn recently_viewed_wikis_with(
+    args: &UserRecentlyViewedWikisArgs,
+    api: &dyn BacklogApi,
+) -> Result<()> {
+    let mut params: Vec<(String, String)> = Vec::new();
+    params.push(("count".to_string(), args.count.to_string()));
+    params.push(("offset".to_string(), args.offset.to_string()));
+    if let Some(ref order) = args.order {
+        params.push(("order".to_string(), order.clone()));
+    }
+    let items = api.get_recently_viewed_wikis(&params)?;
     if args.json {
         println!(
             "{}",
-            serde_json::to_string_pretty(&result).context("Failed to serialize JSON")?
+            serde_json::to_string_pretty(&items).context("Failed to serialize JSON")?
         );
     } else {
-        println!("{}", result.count);
+        for item in &items {
+            println!("{}", format_row(item));
+        }
     }
     Ok(())
 }
 
-fn build_params(args: &IssueCountArgs) -> Vec<(String, String)> {
-    let mut params: Vec<(String, String)> = Vec::new();
-    for id in &args.project_ids {
-        params.push(("projectId[]".to_string(), id.to_string()));
-    }
-    for id in &args.status_ids {
-        params.push(("statusId[]".to_string(), id.to_string()));
-    }
-    for id in &args.assignee_ids {
-        params.push(("assigneeId[]".to_string(), id.to_string()));
-    }
-    for id in &args.issue_type_ids {
-        params.push(("issueTypeId[]".to_string(), id.to_string()));
-    }
-    for id in &args.category_ids {
-        params.push(("categoryId[]".to_string(), id.to_string()));
-    }
-    for id in &args.milestone_ids {
-        params.push(("milestoneId[]".to_string(), id.to_string()));
-    }
-    if let Some(pc) = &args.parent_child {
-        params.push(("parentChild".to_string(), pc.to_api_value().to_string()));
-    }
-    if let Some(kw) = &args.keyword {
-        params.push(("keyword".to_string(), kw.clone()));
-    }
-    params
+fn format_row(item: &RecentlyViewedWiki) -> String {
+    format!("[{}] {}", item.page.id, item.page.name)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::issue::{Issue, IssueAttachment, IssueComment, IssueCount};
+    use crate::api::user::{RecentlyViewedProject, Star, StarCount, WikiSummary};
     use anyhow::anyhow;
+    use std::collections::BTreeMap;
 
     struct MockApi {
-        count: Option<u64>,
+        items: Option<Vec<RecentlyViewedWiki>>,
     }
 
     impl crate::api::BacklogApi for MockApi {
@@ -190,34 +162,48 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::project::ProjectVersion>> {
             unimplemented!()
         }
-        fn get_issues(&self, _params: &[(String, String)]) -> anyhow::Result<Vec<Issue>> {
+        fn get_issues(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::issue::Issue>> {
             unimplemented!()
         }
-        fn count_issues(&self, _params: &[(String, String)]) -> anyhow::Result<IssueCount> {
-            self.count
-                .map(|c| IssueCount { count: c })
-                .ok_or_else(|| anyhow!("no count"))
-        }
-        fn get_issue(&self, _key: &str) -> anyhow::Result<Issue> {
+        fn count_issues(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::IssueCount> {
             unimplemented!()
         }
-        fn create_issue(&self, _params: &[(String, String)]) -> anyhow::Result<Issue> {
+        fn get_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
             unimplemented!()
         }
-        fn update_issue(&self, _key: &str, _params: &[(String, String)]) -> anyhow::Result<Issue> {
+        fn create_issue(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::Issue> {
             unimplemented!()
         }
-        fn delete_issue(&self, _key: &str) -> anyhow::Result<Issue> {
+        fn update_issue(
+            &self,
+            _key: &str,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::Issue> {
             unimplemented!()
         }
-        fn get_issue_comments(&self, _key: &str) -> anyhow::Result<Vec<IssueComment>> {
+        fn delete_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn get_issue_comments(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueComment>> {
             unimplemented!()
         }
         fn add_issue_comment(
             &self,
             _key: &str,
             _params: &[(String, String)],
-        ) -> anyhow::Result<IssueComment> {
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
             unimplemented!()
         }
         fn update_issue_comment(
@@ -225,17 +211,20 @@ mod tests {
             _key: &str,
             _comment_id: u64,
             _params: &[(String, String)],
-        ) -> anyhow::Result<IssueComment> {
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
             unimplemented!()
         }
         fn delete_issue_comment(
             &self,
             _key: &str,
             _comment_id: u64,
-        ) -> anyhow::Result<IssueComment> {
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
             unimplemented!()
         }
-        fn get_issue_attachments(&self, _key: &str) -> anyhow::Result<Vec<IssueAttachment>> {
+        fn get_issue_attachments(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueAttachment>> {
             unimplemented!()
         }
         fn get_wikis(
@@ -301,23 +290,23 @@ mod tests {
         fn get_recently_viewed_projects(
             &self,
             _: &[(String, String)],
-        ) -> anyhow::Result<Vec<crate::api::user::RecentlyViewedProject>> {
+        ) -> anyhow::Result<Vec<RecentlyViewedProject>> {
             unimplemented!()
         }
         fn get_recently_viewed_wikis(
             &self,
             _: &[(String, String)],
-        ) -> anyhow::Result<Vec<crate::api::user::RecentlyViewedWiki>> {
-            unimplemented!()
+        ) -> anyhow::Result<Vec<RecentlyViewedWiki>> {
+            self.items.clone().ok_or_else(|| anyhow!("no items"))
         }
         fn get_user_stars(
             &self,
             _user_id: u64,
             _: &[(String, String)],
-        ) -> anyhow::Result<Vec<crate::api::user::Star>> {
+        ) -> anyhow::Result<Vec<Star>> {
             unimplemented!()
         }
-        fn count_user_stars(&self, _user_id: u64) -> anyhow::Result<crate::api::user::StarCount> {
+        fn count_user_stars(&self, _user_id: u64) -> anyhow::Result<StarCount> {
             unimplemented!()
         }
         fn get_notifications(
@@ -341,36 +330,71 @@ mod tests {
         }
     }
 
-    fn args(json: bool) -> IssueCountArgs {
-        IssueCountArgs::new(
-            vec![],
-            vec![],
-            vec![],
-            vec![],
-            vec![],
-            vec![],
-            None,
-            None,
-            json,
+    fn sample_item() -> RecentlyViewedWiki {
+        RecentlyViewedWiki {
+            page: WikiSummary {
+                id: 42,
+                name: "Home".to_string(),
+                extra: BTreeMap::new(),
+            },
+            updated: "2024-06-01T00:00:00Z".to_string(),
+            extra: BTreeMap::new(),
+        }
+    }
+
+    #[test]
+    fn format_row_contains_fields() {
+        let text = format_row(&sample_item());
+        assert!(text.contains("[42]"));
+        assert!(text.contains("Home"));
+    }
+
+    #[test]
+    fn recently_viewed_wikis_with_text_output_succeeds() {
+        let api = MockApi {
+            items: Some(vec![sample_item()]),
+        };
+        assert!(
+            recently_viewed_wikis_with(
+                &UserRecentlyViewedWikisArgs::try_new(false, 20, 0, None).unwrap(),
+                &api
+            )
+            .is_ok()
+        );
+    }
+
+    #[test]
+    fn recently_viewed_wikis_with_json_output_succeeds() {
+        let api = MockApi {
+            items: Some(vec![sample_item()]),
+        };
+        assert!(
+            recently_viewed_wikis_with(
+                &UserRecentlyViewedWikisArgs::try_new(true, 20, 0, None).unwrap(),
+                &api
+            )
+            .is_ok()
+        );
+    }
+
+    #[test]
+    fn recently_viewed_wikis_with_propagates_api_error() {
+        let api = MockApi { items: None };
+        let err = recently_viewed_wikis_with(
+            &UserRecentlyViewedWikisArgs::try_new(false, 20, 0, None).unwrap(),
+            &api,
         )
+        .unwrap_err();
+        assert!(err.to_string().contains("no items"));
     }
 
     #[test]
-    fn count_with_text_output_succeeds() {
-        let api = MockApi { count: Some(42) };
-        assert!(count_with(&args(false), &api).is_ok());
+    fn try_new_rejects_count_over_100() {
+        assert!(UserRecentlyViewedWikisArgs::try_new(false, 101, 0, None).is_err());
     }
 
     #[test]
-    fn count_with_json_output_succeeds() {
-        let api = MockApi { count: Some(0) };
-        assert!(count_with(&args(true), &api).is_ok());
-    }
-
-    #[test]
-    fn count_with_propagates_api_error() {
-        let api = MockApi { count: None };
-        let err = count_with(&args(false), &api).unwrap_err();
-        assert!(err.to_string().contains("no count"));
+    fn try_new_rejects_count_zero() {
+        assert!(UserRecentlyViewedWikisArgs::try_new(false, 0, 0, None).is_err());
     }
 }

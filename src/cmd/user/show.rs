@@ -33,7 +33,7 @@ pub fn show_with(args: &UserShowArgs, api: &dyn BacklogApi) -> Result<()> {
     Ok(())
 }
 
-fn format_user_text(u: &User) -> String {
+pub fn format_user_text(u: &User) -> String {
     let user_id = u.user_id.as_deref().unwrap_or("-");
     let mail = u.mail_address.as_deref().unwrap_or("-");
     let lang = u.lang.as_deref().unwrap_or("-");
@@ -72,6 +72,19 @@ mod tests {
         }
         fn get_user(&self, _user_id: u64) -> anyhow::Result<User> {
             self.user.clone().ok_or_else(|| anyhow!("no user"))
+        }
+        fn add_user(&self, _params: &[(String, String)]) -> anyhow::Result<crate::api::user::User> {
+            unimplemented!()
+        }
+        fn update_user(
+            &self,
+            _user_id: u64,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::user::User> {
+            unimplemented!()
+        }
+        fn delete_user(&self, _user_id: u64) -> anyhow::Result<crate::api::user::User> {
+            unimplemented!()
         }
         fn get_space_activities(
             &self,
@@ -259,6 +272,28 @@ mod tests {
             &self,
             _: &[(String, String)],
         ) -> anyhow::Result<Vec<crate::api::user::RecentlyViewedIssue>> {
+            unimplemented!()
+        }
+        fn get_recently_viewed_projects(
+            &self,
+            _: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::user::RecentlyViewedProject>> {
+            unimplemented!()
+        }
+        fn get_recently_viewed_wikis(
+            &self,
+            _: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::user::RecentlyViewedWiki>> {
+            unimplemented!()
+        }
+        fn get_user_stars(
+            &self,
+            _user_id: u64,
+            _: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::user::Star>> {
+            unimplemented!()
+        }
+        fn count_user_stars(&self, _user_id: u64) -> anyhow::Result<crate::api::user::StarCount> {
             unimplemented!()
         }
         fn get_notifications(

@@ -1,9 +1,21 @@
 mod activities;
+mod add;
+mod delete;
 mod list;
 mod recently_viewed;
-mod show;
+mod recently_viewed_projects;
+mod recently_viewed_wikis;
+pub mod show;
+mod star;
+mod update;
 
 pub use activities::{UserActivitiesArgs, activities};
+pub use add::{UserAddArgs, add};
+pub use delete::{UserDeleteArgs, delete};
 pub use list::{UserListArgs, list};
 pub use recently_viewed::{UserRecentlyViewedArgs, recently_viewed};
+pub use recently_viewed_projects::{UserRecentlyViewedProjectsArgs, recently_viewed_projects};
+pub use recently_viewed_wikis::{UserRecentlyViewedWikisArgs, recently_viewed_wikis};
 pub use show::{UserShowArgs, show};
+pub use star::{UserStarCountArgs, UserStarListArgs, star_count, star_list};
+pub use update::{UserUpdateArgs, update};

@@ -2,129 +2,104 @@ use anstream::println;
 use anyhow::{Context, Result};
 
 use crate::api::{BacklogApi, BacklogClient};
-use crate::cmd::issue::ParentChild;
+use crate::cmd::user::show::format_user_text;
 
-pub struct IssueCountArgs {
-    project_ids: Vec<u64>,
-    status_ids: Vec<u64>,
-    assignee_ids: Vec<u64>,
-    issue_type_ids: Vec<u64>,
-    category_ids: Vec<u64>,
-    milestone_ids: Vec<u64>,
-    parent_child: Option<ParentChild>,
-    keyword: Option<String>,
+pub struct UserUpdateArgs {
+    user_id: u64,
+    name: Option<String>,
+    password: Option<String>,
+    mail_address: Option<String>,
+    role_type: Option<u8>,
     json: bool,
 }
 
-impl IssueCountArgs {
-    #[allow(clippy::too_many_arguments)]
-    pub fn new(
-        project_ids: Vec<u64>,
-        status_ids: Vec<u64>,
-        assignee_ids: Vec<u64>,
-        issue_type_ids: Vec<u64>,
-        category_ids: Vec<u64>,
-        milestone_ids: Vec<u64>,
-        parent_child: Option<ParentChild>,
-        keyword: Option<String>,
+impl UserUpdateArgs {
+    pub fn try_new(
+        user_id: u64,
+        name: Option<String>,
+        password: Option<String>,
+        mail_address: Option<String>,
+        role_type: Option<u8>,
         json: bool,
-    ) -> Self {
-        Self {
-            project_ids,
-            status_ids,
-            assignee_ids,
-            issue_type_ids,
-            category_ids,
-            milestone_ids,
-            parent_child,
-            keyword,
-            json,
+    ) -> anyhow::Result<Self> {
+        if name.is_none() && password.is_none() && mail_address.is_none() && role_type.is_none() {
+            anyhow::bail!(
+                "at least one of --name, --password, --mail-address, or --role-type must be specified"
+            );
         }
+        Ok(Self {
+            user_id,
+            name,
+            password,
+            mail_address,
+            role_type,
+            json,
+        })
     }
 }
 
-pub fn count(args: &IssueCountArgs) -> Result<()> {
+pub fn update(args: &UserUpdateArgs) -> Result<()> {
     let client = BacklogClient::from_config()?;
-    count_with(args, &client)
+    update_with(args, &client)
 }
 
-pub fn count_with(args: &IssueCountArgs, api: &dyn BacklogApi) -> Result<()> {
-    let params = build_params(args);
-    let result = api.count_issues(&params)?;
+pub fn update_with(args: &UserUpdateArgs, api: &dyn BacklogApi) -> Result<()> {
+    let mut params: Vec<(String, String)> = Vec::new();
+    if let Some(ref name) = args.name {
+        params.push(("name".to_string(), name.clone()));
+    }
+    if let Some(ref password) = args.password {
+        params.push(("password".to_string(), password.clone()));
+    }
+    if let Some(ref mail) = args.mail_address {
+        params.push(("mailAddress".to_string(), mail.clone()));
+    }
+    if let Some(role) = args.role_type {
+        params.push(("roleType".to_string(), role.to_string()));
+    }
+    let user = api.update_user(args.user_id, &params)?;
     if args.json {
         println!(
             "{}",
-            serde_json::to_string_pretty(&result).context("Failed to serialize JSON")?
+            serde_json::to_string_pretty(&user).context("Failed to serialize JSON")?
         );
     } else {
-        println!("{}", result.count);
+        println!("{}", format_user_text(&user));
     }
     Ok(())
-}
-
-fn build_params(args: &IssueCountArgs) -> Vec<(String, String)> {
-    let mut params: Vec<(String, String)> = Vec::new();
-    for id in &args.project_ids {
-        params.push(("projectId[]".to_string(), id.to_string()));
-    }
-    for id in &args.status_ids {
-        params.push(("statusId[]".to_string(), id.to_string()));
-    }
-    for id in &args.assignee_ids {
-        params.push(("assigneeId[]".to_string(), id.to_string()));
-    }
-    for id in &args.issue_type_ids {
-        params.push(("issueTypeId[]".to_string(), id.to_string()));
-    }
-    for id in &args.category_ids {
-        params.push(("categoryId[]".to_string(), id.to_string()));
-    }
-    for id in &args.milestone_ids {
-        params.push(("milestoneId[]".to_string(), id.to_string()));
-    }
-    if let Some(pc) = &args.parent_child {
-        params.push(("parentChild".to_string(), pc.to_api_value().to_string()));
-    }
-    if let Some(kw) = &args.keyword {
-        params.push(("keyword".to_string(), kw.clone()));
-    }
-    params
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::issue::{Issue, IssueAttachment, IssueComment, IssueCount};
+    use crate::api::user::User;
     use anyhow::anyhow;
+    use std::collections::BTreeMap;
 
     struct MockApi {
-        count: Option<u64>,
+        user: Option<User>,
     }
 
     impl crate::api::BacklogApi for MockApi {
         fn get_space(&self) -> anyhow::Result<crate::api::space::Space> {
             unimplemented!()
         }
-        fn get_myself(&self) -> anyhow::Result<crate::api::user::User> {
+        fn get_myself(&self) -> anyhow::Result<User> {
             unimplemented!()
         }
-        fn get_users(&self) -> anyhow::Result<Vec<crate::api::user::User>> {
+        fn get_users(&self) -> anyhow::Result<Vec<User>> {
             unimplemented!()
         }
-        fn get_user(&self, _user_id: u64) -> anyhow::Result<crate::api::user::User> {
+        fn get_user(&self, _user_id: u64) -> anyhow::Result<User> {
             unimplemented!()
         }
-        fn add_user(&self, _params: &[(String, String)]) -> anyhow::Result<crate::api::user::User> {
+        fn add_user(&self, _params: &[(String, String)]) -> anyhow::Result<User> {
             unimplemented!()
         }
-        fn update_user(
-            &self,
-            _user_id: u64,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::user::User> {
-            unimplemented!()
+        fn update_user(&self, _user_id: u64, _params: &[(String, String)]) -> anyhow::Result<User> {
+            self.user.clone().ok_or_else(|| anyhow!("no user"))
         }
-        fn delete_user(&self, _user_id: u64) -> anyhow::Result<crate::api::user::User> {
+        fn delete_user(&self, _user_id: u64) -> anyhow::Result<User> {
             unimplemented!()
         }
         fn get_space_activities(
@@ -190,34 +165,48 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::project::ProjectVersion>> {
             unimplemented!()
         }
-        fn get_issues(&self, _params: &[(String, String)]) -> anyhow::Result<Vec<Issue>> {
+        fn get_issues(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::issue::Issue>> {
             unimplemented!()
         }
-        fn count_issues(&self, _params: &[(String, String)]) -> anyhow::Result<IssueCount> {
-            self.count
-                .map(|c| IssueCount { count: c })
-                .ok_or_else(|| anyhow!("no count"))
-        }
-        fn get_issue(&self, _key: &str) -> anyhow::Result<Issue> {
+        fn count_issues(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::IssueCount> {
             unimplemented!()
         }
-        fn create_issue(&self, _params: &[(String, String)]) -> anyhow::Result<Issue> {
+        fn get_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
             unimplemented!()
         }
-        fn update_issue(&self, _key: &str, _params: &[(String, String)]) -> anyhow::Result<Issue> {
+        fn create_issue(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::Issue> {
             unimplemented!()
         }
-        fn delete_issue(&self, _key: &str) -> anyhow::Result<Issue> {
+        fn update_issue(
+            &self,
+            _key: &str,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::Issue> {
             unimplemented!()
         }
-        fn get_issue_comments(&self, _key: &str) -> anyhow::Result<Vec<IssueComment>> {
+        fn delete_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
+            unimplemented!()
+        }
+        fn get_issue_comments(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueComment>> {
             unimplemented!()
         }
         fn add_issue_comment(
             &self,
             _key: &str,
             _params: &[(String, String)],
-        ) -> anyhow::Result<IssueComment> {
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
             unimplemented!()
         }
         fn update_issue_comment(
@@ -225,17 +214,20 @@ mod tests {
             _key: &str,
             _comment_id: u64,
             _params: &[(String, String)],
-        ) -> anyhow::Result<IssueComment> {
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
             unimplemented!()
         }
         fn delete_issue_comment(
             &self,
             _key: &str,
             _comment_id: u64,
-        ) -> anyhow::Result<IssueComment> {
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
             unimplemented!()
         }
-        fn get_issue_attachments(&self, _key: &str) -> anyhow::Result<Vec<IssueAttachment>> {
+        fn get_issue_attachments(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueAttachment>> {
             unimplemented!()
         }
         fn get_wikis(
@@ -341,36 +333,60 @@ mod tests {
         }
     }
 
-    fn args(json: bool) -> IssueCountArgs {
-        IssueCountArgs::new(
-            vec![],
-            vec![],
-            vec![],
-            vec![],
-            vec![],
-            vec![],
-            None,
-            None,
-            json,
-        )
+    fn sample_user() -> User {
+        User {
+            id: 1,
+            user_id: Some("john".to_string()),
+            name: "John Doe".to_string(),
+            mail_address: Some("john@example.com".to_string()),
+            role_type: 1,
+            lang: None,
+            last_login_time: None,
+            extra: BTreeMap::new(),
+        }
     }
 
     #[test]
-    fn count_with_text_output_succeeds() {
-        let api = MockApi { count: Some(42) };
-        assert!(count_with(&args(false), &api).is_ok());
+    fn try_new_rejects_no_fields() {
+        assert!(UserUpdateArgs::try_new(1, None, None, None, None, false).is_err());
     }
 
     #[test]
-    fn count_with_json_output_succeeds() {
-        let api = MockApi { count: Some(0) };
-        assert!(count_with(&args(true), &api).is_ok());
+    fn try_new_accepts_at_least_one_field() {
+        assert!(
+            UserUpdateArgs::try_new(1, Some("New Name".to_string()), None, None, None, false)
+                .is_ok()
+        );
     }
 
     #[test]
-    fn count_with_propagates_api_error() {
-        let api = MockApi { count: None };
-        let err = count_with(&args(false), &api).unwrap_err();
-        assert!(err.to_string().contains("no count"));
+    fn update_with_text_output_succeeds() {
+        let api = MockApi {
+            user: Some(sample_user()),
+        };
+        let args =
+            UserUpdateArgs::try_new(1, Some("New Name".to_string()), None, None, None, false)
+                .unwrap();
+        assert!(update_with(&args, &api).is_ok());
+    }
+
+    #[test]
+    fn update_with_json_output_succeeds() {
+        let api = MockApi {
+            user: Some(sample_user()),
+        };
+        let args = UserUpdateArgs::try_new(1, Some("New Name".to_string()), None, None, None, true)
+            .unwrap();
+        assert!(update_with(&args, &api).is_ok());
+    }
+
+    #[test]
+    fn update_with_propagates_api_error() {
+        let api = MockApi { user: None };
+        let args =
+            UserUpdateArgs::try_new(1, Some("New Name".to_string()), None, None, None, false)
+                .unwrap();
+        let err = update_with(&args, &api).unwrap_err();
+        assert!(err.to_string().contains("no user"));
     }
 }

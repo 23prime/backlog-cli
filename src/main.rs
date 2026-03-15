@@ -26,7 +26,11 @@ use cmd::project::version::ProjectVersionListArgs;
 use cmd::project::{ProjectActivitiesArgs, ProjectDiskUsageArgs, ProjectListArgs, ProjectShowArgs};
 use cmd::space::{SpaceActivitiesArgs, SpaceDiskUsageArgs, SpaceNotificationArgs, SpaceShowArgs};
 use cmd::team::{TeamListArgs, TeamShowArgs};
-use cmd::user::{UserActivitiesArgs, UserListArgs, UserRecentlyViewedArgs, UserShowArgs};
+use cmd::user::{
+    UserActivitiesArgs, UserAddArgs, UserDeleteArgs, UserListArgs, UserRecentlyViewedArgs,
+    UserRecentlyViewedProjectsArgs, UserRecentlyViewedWikisArgs, UserShowArgs, UserStarCountArgs,
+    UserStarListArgs, UserUpdateArgs,
+};
 use cmd::wiki::attachment::WikiAttachmentListArgs;
 use cmd::wiki::{
     WikiCreateArgs, WikiDeleteArgs, WikiHistoryArgs, WikiListArgs, WikiShowArgs, WikiUpdateArgs,
@@ -604,6 +608,55 @@ enum UserCommands {
         #[arg(long)]
         json: bool,
     },
+    /// Add a new user
+    Add {
+        /// User ID (login name)
+        #[arg(long)]
+        user_id: String,
+        /// Password
+        #[arg(long)]
+        password: String,
+        /// Display name
+        #[arg(long)]
+        name: String,
+        /// Mail address
+        #[arg(long)]
+        mail_address: String,
+        /// Role type (1=admin, 2=normal, 3=reporter, 4=viewer, 5=guest viewer)
+        #[arg(long)]
+        role_type: u8,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Update a user
+    Update {
+        /// User numeric ID
+        id: u64,
+        /// New display name
+        #[arg(long)]
+        name: Option<String>,
+        /// New password
+        #[arg(long)]
+        password: Option<String>,
+        /// New mail address
+        #[arg(long)]
+        mail_address: Option<String>,
+        /// New role type (1=admin, 2=normal, 3=reporter, 4=viewer, 5=guest viewer)
+        #[arg(long)]
+        role_type: Option<u8>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Delete a user
+    Delete {
+        /// User numeric ID
+        id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
     /// Show recent activities of a user
     Activities {
         /// User numeric ID
@@ -638,6 +691,61 @@ enum UserCommands {
         /// Sort order
         #[arg(long)]
         order: Option<Order>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Show recently viewed projects (for the authenticated user)
+    RecentlyViewedProjects {
+        /// Number of items to retrieve
+        #[arg(long, default_value = "20")]
+        count: u32,
+        /// Offset for pagination
+        #[arg(long, default_value = "0")]
+        offset: u64,
+        /// Sort order
+        #[arg(long)]
+        order: Option<Order>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Show recently viewed wikis (for the authenticated user)
+    RecentlyViewedWikis {
+        /// Number of items to retrieve
+        #[arg(long, default_value = "20")]
+        count: u32,
+        /// Offset for pagination
+        #[arg(long, default_value = "0")]
+        offset: u64,
+        /// Sort order
+        #[arg(long)]
+        order: Option<Order>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Manage user stars
+    Star {
+        #[command(subcommand)]
+        action: UserStarCommands,
+    },
+}
+
+#[derive(Subcommand)]
+enum UserStarCommands {
+    /// List stars of a user
+    List {
+        /// User numeric ID
+        id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Count stars of a user
+    Count {
+        /// User numeric ID
+        id: u64,
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -1031,6 +1139,37 @@ fn run() -> Result<()> {
         Commands::User { action } => match action {
             UserCommands::List { json } => cmd::user::list(&UserListArgs::new(json)),
             UserCommands::Show { id, json } => cmd::user::show(&UserShowArgs::new(id, json)),
+            UserCommands::Add {
+                user_id,
+                password,
+                name,
+                mail_address,
+                role_type,
+                json,
+            } => cmd::user::add(&UserAddArgs::new(
+                user_id,
+                password,
+                name,
+                mail_address,
+                role_type,
+                json,
+            )),
+            UserCommands::Update {
+                id,
+                name,
+                password,
+                mail_address,
+                role_type,
+                json,
+            } => cmd::user::update(&UserUpdateArgs::try_new(
+                id,
+                name,
+                password,
+                mail_address,
+                role_type,
+                json,
+            )?),
+            UserCommands::Delete { id, json } => cmd::user::delete(&UserDeleteArgs::new(id, json)),
             UserCommands::Activities {
                 id,
                 activity_type_ids,
@@ -1059,6 +1198,36 @@ fn run() -> Result<()> {
                 offset,
                 order.map(|o| o.as_str().to_string()),
             )?),
+            UserCommands::RecentlyViewedProjects {
+                count,
+                offset,
+                order,
+                json,
+            } => cmd::user::recently_viewed_projects(&UserRecentlyViewedProjectsArgs::try_new(
+                json,
+                count,
+                offset,
+                order.map(|o| o.as_str().to_string()),
+            )?),
+            UserCommands::RecentlyViewedWikis {
+                count,
+                offset,
+                order,
+                json,
+            } => cmd::user::recently_viewed_wikis(&UserRecentlyViewedWikisArgs::try_new(
+                json,
+                count,
+                offset,
+                order.map(|o| o.as_str().to_string()),
+            )?),
+            UserCommands::Star { action } => match action {
+                UserStarCommands::List { id, json } => {
+                    cmd::user::star_list(&UserStarListArgs::new(id, json))
+                }
+                UserStarCommands::Count { id, json } => {
+                    cmd::user::star_count(&UserStarCountArgs::new(id, json))
+                }
+            },
         },
         Commands::Team { action } => match action {
             TeamCommands::List {

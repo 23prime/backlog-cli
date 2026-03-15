@@ -42,6 +42,59 @@ pub struct RecentlyViewedIssue {
     pub extra: BTreeMap<String, serde_json::Value>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProjectSummary {
+    pub id: u64,
+    pub project_key: String,
+    pub name: String,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, serde_json::Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RecentlyViewedProject {
+    pub project: ProjectSummary,
+    pub updated: String,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, serde_json::Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WikiSummary {
+    pub id: u64,
+    pub name: String,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, serde_json::Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RecentlyViewedWiki {
+    pub page: WikiSummary,
+    pub updated: String,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, serde_json::Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Star {
+    pub id: u64,
+    pub comment: Option<String>,
+    pub url: String,
+    pub title: String,
+    pub presenter: User,
+    pub created: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StarCount {
+    pub count: u64,
+}
+
 impl BacklogClient {
     pub fn get_myself(&self) -> Result<User> {
         let value = self.get("/users/myself")?;
@@ -55,6 +108,21 @@ impl BacklogClient {
 
     pub fn get_user(&self, user_id: u64) -> Result<User> {
         let value = self.get(&format!("/users/{user_id}"))?;
+        deserialize(value, "user response")
+    }
+
+    pub fn add_user(&self, params: &[(String, String)]) -> Result<User> {
+        let value = self.post_form("/users", params)?;
+        deserialize(value, "user response")
+    }
+
+    pub fn update_user(&self, user_id: u64, params: &[(String, String)]) -> Result<User> {
+        let value = self.patch_form(&format!("/users/{user_id}"), params)?;
+        deserialize(value, "user response")
+    }
+
+    pub fn delete_user(&self, user_id: u64) -> Result<User> {
+        let value = self.delete_req(&format!("/users/{user_id}"))?;
         deserialize(value, "user response")
     }
 
@@ -73,6 +141,32 @@ impl BacklogClient {
     ) -> Result<Vec<RecentlyViewedIssue>> {
         let value = self.get_with_query("/users/myself/recentlyViewedIssues", params)?;
         deserialize(value, "recently viewed issues response")
+    }
+
+    pub fn get_recently_viewed_projects(
+        &self,
+        params: &[(String, String)],
+    ) -> Result<Vec<RecentlyViewedProject>> {
+        let value = self.get_with_query("/users/myself/recentlyViewedProjects", params)?;
+        deserialize(value, "recently viewed projects response")
+    }
+
+    pub fn get_recently_viewed_wikis(
+        &self,
+        params: &[(String, String)],
+    ) -> Result<Vec<RecentlyViewedWiki>> {
+        let value = self.get_with_query("/users/myself/recentlyViewedWikis", params)?;
+        deserialize(value, "recently viewed wikis response")
+    }
+
+    pub fn get_user_stars(&self, user_id: u64, params: &[(String, String)]) -> Result<Vec<Star>> {
+        let value = self.get_with_query(&format!("/users/{user_id}/stars"), params)?;
+        deserialize(value, "user stars response")
+    }
+
+    pub fn count_user_stars(&self, user_id: u64) -> Result<StarCount> {
+        let value = self.get(&format!("/users/{user_id}/stars/count"))?;
+        deserialize(value, "star count response")
     }
 }
 
