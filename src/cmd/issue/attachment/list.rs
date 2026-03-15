@@ -43,7 +43,9 @@ pub fn list_with(args: &IssueAttachmentListArgs, api: &dyn BacklogApi) -> Result
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::issue::{Issue, IssueAttachment, IssueComment, IssueCount, IssueUser};
+    use crate::api::issue::{
+        Issue, IssueAttachment, IssueComment, IssueCommentCount, IssueCount, IssueUser,
+    };
     use anyhow::anyhow;
     use std::collections::BTreeMap;
 
@@ -196,6 +198,27 @@ mod tests {
             self.attachments
                 .clone()
                 .ok_or_else(|| anyhow!("no attachments"))
+        }
+        fn count_issue_comments(&self, _key: &str) -> anyhow::Result<IssueCommentCount> {
+            unimplemented!()
+        }
+        fn get_issue_comment(&self, _key: &str, _comment_id: u64) -> anyhow::Result<IssueComment> {
+            unimplemented!()
+        }
+        fn get_issue_comment_notifications(
+            &self,
+            _key: &str,
+            _comment_id: u64,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueCommentNotification>> {
+            unimplemented!()
+        }
+        fn add_issue_comment_notifications(
+            &self,
+            _key: &str,
+            _comment_id: u64,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueCommentNotification>> {
+            unimplemented!()
         }
         fn get_wikis(
             &self,

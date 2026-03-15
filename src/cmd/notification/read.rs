@@ -28,7 +28,7 @@ mod tests {
 
     use crate::api::activity::Activity;
     use crate::api::disk_usage::DiskUsage;
-    use crate::api::issue::{Issue, IssueAttachment, IssueComment, IssueCount};
+    use crate::api::issue::{Issue, IssueAttachment, IssueComment, IssueCommentCount, IssueCount};
     use crate::api::notification::{Notification, NotificationCount};
     use crate::api::project::{
         Project, ProjectCategory, ProjectDiskUsage, ProjectIssueType, ProjectStatus, ProjectUser,
@@ -130,6 +130,27 @@ mod tests {
             unimplemented!()
         }
         fn get_issue_attachments(&self, _: &str) -> Result<Vec<IssueAttachment>> {
+            unimplemented!()
+        }
+        fn count_issue_comments(&self, _: &str) -> Result<IssueCommentCount> {
+            unimplemented!()
+        }
+        fn get_issue_comment(&self, _: &str, _: u64) -> Result<IssueComment> {
+            unimplemented!()
+        }
+        fn get_issue_comment_notifications(
+            &self,
+            _: &str,
+            _: u64,
+        ) -> Result<Vec<crate::api::issue::IssueCommentNotification>> {
+            unimplemented!()
+        }
+        fn add_issue_comment_notifications(
+            &self,
+            _: &str,
+            _: u64,
+            _: &[(String, String)],
+        ) -> Result<Vec<crate::api::issue::IssueCommentNotification>> {
             unimplemented!()
         }
         fn get_wikis(&self, _: &[(String, String)]) -> Result<Vec<WikiListItem>> {

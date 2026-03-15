@@ -40,7 +40,7 @@ pub fn delete_with(args: &IssueCommentDeleteArgs, api: &dyn BacklogApi) -> Resul
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::issue::{Issue, IssueAttachment, IssueComment, IssueCount};
+    use crate::api::issue::{Issue, IssueAttachment, IssueComment, IssueCommentCount, IssueCount};
     use crate::cmd::issue::comment::list::sample_comment;
     use anyhow::anyhow;
 
@@ -168,6 +168,27 @@ mod tests {
             self.comment.clone().ok_or_else(|| anyhow!("delete failed"))
         }
         fn get_issue_attachments(&self, _key: &str) -> anyhow::Result<Vec<IssueAttachment>> {
+            unimplemented!()
+        }
+        fn count_issue_comments(&self, _key: &str) -> anyhow::Result<IssueCommentCount> {
+            unimplemented!()
+        }
+        fn get_issue_comment(&self, _key: &str, _comment_id: u64) -> anyhow::Result<IssueComment> {
+            unimplemented!()
+        }
+        fn get_issue_comment_notifications(
+            &self,
+            _key: &str,
+            _comment_id: u64,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueCommentNotification>> {
+            unimplemented!()
+        }
+        fn add_issue_comment_notifications(
+            &self,
+            _key: &str,
+            _comment_id: u64,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueCommentNotification>> {
             unimplemented!()
         }
         fn get_wikis(

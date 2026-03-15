@@ -19,7 +19,9 @@ pub mod wiki;
 
 use activity::Activity;
 use disk_usage::DiskUsage;
-use issue::{Issue, IssueAttachment, IssueComment, IssueCount};
+use issue::{
+    Issue, IssueAttachment, IssueComment, IssueCommentCount, IssueCommentNotification, IssueCount,
+};
 use notification::{Notification, NotificationCount};
 use project::{
     Project, ProjectCategory, ProjectDiskUsage, ProjectIssueType, ProjectStatus, ProjectUser,
@@ -68,6 +70,19 @@ pub trait BacklogApi {
     ) -> Result<IssueComment>;
     fn delete_issue_comment(&self, key: &str, comment_id: u64) -> Result<IssueComment>;
     fn get_issue_attachments(&self, key: &str) -> Result<Vec<IssueAttachment>>;
+    fn count_issue_comments(&self, key: &str) -> Result<IssueCommentCount>;
+    fn get_issue_comment(&self, key: &str, comment_id: u64) -> Result<IssueComment>;
+    fn get_issue_comment_notifications(
+        &self,
+        key: &str,
+        comment_id: u64,
+    ) -> Result<Vec<IssueCommentNotification>>;
+    fn add_issue_comment_notifications(
+        &self,
+        key: &str,
+        comment_id: u64,
+        params: &[(String, String)],
+    ) -> Result<Vec<IssueCommentNotification>>;
     fn get_wikis(&self, params: &[(String, String)]) -> Result<Vec<WikiListItem>>;
     fn get_wiki(&self, wiki_id: u64) -> Result<Wiki>;
     fn create_wiki(&self, params: &[(String, String)]) -> Result<Wiki>;
@@ -208,6 +223,31 @@ impl BacklogApi for BacklogClient {
 
     fn get_issue_attachments(&self, key: &str) -> Result<Vec<IssueAttachment>> {
         self.get_issue_attachments(key)
+    }
+
+    fn count_issue_comments(&self, key: &str) -> Result<IssueCommentCount> {
+        self.count_issue_comments(key)
+    }
+
+    fn get_issue_comment(&self, key: &str, comment_id: u64) -> Result<IssueComment> {
+        self.get_issue_comment(key, comment_id)
+    }
+
+    fn get_issue_comment_notifications(
+        &self,
+        key: &str,
+        comment_id: u64,
+    ) -> Result<Vec<IssueCommentNotification>> {
+        self.get_issue_comment_notifications(key, comment_id)
+    }
+
+    fn add_issue_comment_notifications(
+        &self,
+        key: &str,
+        comment_id: u64,
+        params: &[(String, String)],
+    ) -> Result<Vec<IssueCommentNotification>> {
+        self.add_issue_comment_notifications(key, comment_id, params)
     }
 
     fn get_wikis(&self, params: &[(String, String)]) -> Result<Vec<WikiListItem>> {

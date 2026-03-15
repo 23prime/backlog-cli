@@ -10,8 +10,12 @@ use clap::{Parser, Subcommand};
 
 use cmd::auth::AuthStatusArgs;
 use cmd::issue::attachment::IssueAttachmentListArgs;
+use cmd::issue::comment::notification::{
+    IssueCommentNotificationAddArgs, IssueCommentNotificationListArgs,
+};
 use cmd::issue::comment::{
-    IssueCommentAddArgs, IssueCommentDeleteArgs, IssueCommentListArgs, IssueCommentUpdateArgs,
+    IssueCommentAddArgs, IssueCommentCountArgs, IssueCommentDeleteArgs, IssueCommentListArgs,
+    IssueCommentShowArgs, IssueCommentUpdateArgs,
 };
 use cmd::issue::{
     IssueCountArgs, IssueCreateArgs, IssueDeleteArgs, IssueListArgs, IssueShowArgs,
@@ -446,6 +450,24 @@ enum IssueCommentCommands {
         #[arg(long)]
         json: bool,
     },
+    /// Count comments on an issue
+    Count {
+        /// Issue ID or key
+        key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Show a specific comment
+    Show {
+        /// Issue ID or key
+        key: String,
+        /// Comment ID
+        comment_id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
     /// Add a comment to an issue
     Add {
         /// Issue ID or key
@@ -476,6 +498,38 @@ enum IssueCommentCommands {
         id_or_key: String,
         /// Comment ID
         comment_id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Manage comment notifications
+    Notification {
+        #[command(subcommand)]
+        action: IssueCommentNotificationCommands,
+    },
+}
+
+#[derive(Subcommand)]
+enum IssueCommentNotificationCommands {
+    /// List notifications for a comment
+    List {
+        /// Issue ID or key
+        key: String,
+        /// Comment ID
+        comment_id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Add notifications for a comment
+    Add {
+        /// Issue ID or key
+        key: String,
+        /// Comment ID
+        comment_id: u64,
+        /// User ID to notify (repeatable)
+        #[arg(long = "notified-user-id", value_name = "ID")]
+        notified_user_ids: Vec<u64>,
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -952,6 +1006,14 @@ fn run() -> Result<()> {
                 IssueCommentCommands::List { id_or_key, json } => {
                     cmd::issue::comment::list(&IssueCommentListArgs::new(id_or_key, json))
                 }
+                IssueCommentCommands::Count { key, json } => {
+                    cmd::issue::comment::count(&IssueCommentCountArgs::new(key, json))
+                }
+                IssueCommentCommands::Show {
+                    key,
+                    comment_id,
+                    json,
+                } => cmd::issue::comment::show(&IssueCommentShowArgs::new(key, comment_id, json)),
                 IssueCommentCommands::Add {
                     id_or_key,
                     content,
@@ -972,6 +1034,28 @@ fn run() -> Result<()> {
                 } => cmd::issue::comment::delete(&IssueCommentDeleteArgs::new(
                     id_or_key, comment_id, json,
                 )),
+                IssueCommentCommands::Notification { action } => match action {
+                    IssueCommentNotificationCommands::List {
+                        key,
+                        comment_id,
+                        json,
+                    } => cmd::issue::comment::notification::list(
+                        &IssueCommentNotificationListArgs::new(key, comment_id, json),
+                    ),
+                    IssueCommentNotificationCommands::Add {
+                        key,
+                        comment_id,
+                        notified_user_ids,
+                        json,
+                    } => cmd::issue::comment::notification::add(
+                        &IssueCommentNotificationAddArgs::new(
+                            key,
+                            comment_id,
+                            notified_user_ids,
+                            json,
+                        ),
+                    ),
+                },
             },
             IssueCommands::Attachment { action } => match action {
                 IssueAttachmentCommands::List { id_or_key, json } => {

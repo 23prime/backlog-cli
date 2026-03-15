@@ -1,57 +1,66 @@
 use anstream::println;
 use anyhow::{Context, Result};
+use owo_colors::OwoColorize;
 
-use crate::api::{BacklogApi, BacklogClient};
-use crate::cmd::wiki::show::print_wiki;
+use crate::api::{BacklogApi, BacklogClient, issue::IssueComment};
 
-pub struct WikiDeleteArgs {
-    wiki_id: u64,
-    mail_notify: bool,
+pub struct IssueCommentShowArgs {
+    key: String,
+    comment_id: u64,
     json: bool,
 }
 
-impl WikiDeleteArgs {
-    pub fn new(wiki_id: u64, mail_notify: bool, json: bool) -> Self {
+impl IssueCommentShowArgs {
+    pub fn new(key: String, comment_id: u64, json: bool) -> Self {
         Self {
-            wiki_id,
-            mail_notify,
+            key,
+            comment_id,
             json,
         }
     }
 }
 
-pub fn delete(args: &WikiDeleteArgs) -> Result<()> {
+pub fn show(args: &IssueCommentShowArgs) -> Result<()> {
     let client = BacklogClient::from_config()?;
-    delete_with(args, &client)
+    show_with(args, &client)
 }
 
-pub fn delete_with(args: &WikiDeleteArgs, api: &dyn BacklogApi) -> Result<()> {
-    let mut params: Vec<(String, String)> = Vec::new();
-    if args.mail_notify {
-        params.push(("mailNotify".to_string(), "true".to_string()));
-    }
-    let wiki = api.delete_wiki(args.wiki_id, &params)?;
+pub fn show_with(args: &IssueCommentShowArgs, api: &dyn BacklogApi) -> Result<()> {
+    let comment = api.get_issue_comment(&args.key, args.comment_id)?;
     if args.json {
         println!(
             "{}",
-            serde_json::to_string_pretty(&wiki).context("Failed to serialize JSON")?
+            serde_json::to_string_pretty(&comment).context("Failed to serialize JSON")?
         );
     } else {
-        print_wiki(&wiki);
+        println!("{}", format_comment_row(&comment));
     }
     Ok(())
+}
+
+fn format_comment_row(c: &IssueComment) -> String {
+    let content = c.content.as_deref().unwrap_or("(no content)");
+    format!(
+        "[{}] {} ({}): {}",
+        c.id.to_string().cyan().bold(),
+        c.created_user.name,
+        c.created,
+        content
+    )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::wiki::{Wiki, WikiAttachment, WikiHistory, WikiListItem};
-    use crate::cmd::wiki::list::tests_helper::sample_wiki_user;
+    use crate::api::issue::{
+        Issue, IssueAttachment, IssueComment, IssueCommentCount, IssueCommentNotification,
+        IssueCount,
+    };
+    use crate::cmd::issue::comment::list::sample_comment;
     use anyhow::anyhow;
-    use std::collections::BTreeMap;
 
     struct MockApi {
-        wiki: Option<Wiki>,
+        comment: Option<IssueComment>,
     }
 
     impl crate::api::BacklogApi for MockApi {
@@ -130,48 +139,32 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::project::ProjectVersion>> {
             unimplemented!()
         }
-        fn get_issues(
-            &self,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<Vec<crate::api::issue::Issue>> {
+        fn get_issues(&self, _params: &[(String, String)]) -> anyhow::Result<Vec<Issue>> {
             unimplemented!()
         }
-        fn count_issues(
-            &self,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::issue::IssueCount> {
+        fn count_issues(&self, _params: &[(String, String)]) -> anyhow::Result<IssueCount> {
             unimplemented!()
         }
-        fn get_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
+        fn get_issue(&self, _key: &str) -> anyhow::Result<Issue> {
             unimplemented!()
         }
-        fn create_issue(
-            &self,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::issue::Issue> {
+        fn create_issue(&self, _params: &[(String, String)]) -> anyhow::Result<Issue> {
             unimplemented!()
         }
-        fn update_issue(
-            &self,
-            _key: &str,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::issue::Issue> {
+        fn update_issue(&self, _key: &str, _params: &[(String, String)]) -> anyhow::Result<Issue> {
             unimplemented!()
         }
-        fn delete_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
+        fn delete_issue(&self, _key: &str) -> anyhow::Result<Issue> {
             unimplemented!()
         }
-        fn get_issue_comments(
-            &self,
-            _key: &str,
-        ) -> anyhow::Result<Vec<crate::api::issue::IssueComment>> {
+        fn get_issue_comments(&self, _key: &str) -> anyhow::Result<Vec<IssueComment>> {
             unimplemented!()
         }
         fn add_issue_comment(
             &self,
             _key: &str,
             _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+        ) -> anyhow::Result<IssueComment> {
             unimplemented!()
         }
         fn update_issue_comment(
@@ -179,40 +172,30 @@ mod tests {
             _key: &str,
             _comment_id: u64,
             _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+        ) -> anyhow::Result<IssueComment> {
             unimplemented!()
         }
         fn delete_issue_comment(
             &self,
             _key: &str,
             _comment_id: u64,
-        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+        ) -> anyhow::Result<IssueComment> {
             unimplemented!()
         }
-        fn get_issue_attachments(
-            &self,
-            _key: &str,
-        ) -> anyhow::Result<Vec<crate::api::issue::IssueAttachment>> {
+        fn get_issue_attachments(&self, _key: &str) -> anyhow::Result<Vec<IssueAttachment>> {
             unimplemented!()
         }
-        fn count_issue_comments(
-            &self,
-            _key: &str,
-        ) -> anyhow::Result<crate::api::issue::IssueCommentCount> {
+        fn count_issue_comments(&self, _key: &str) -> anyhow::Result<IssueCommentCount> {
             unimplemented!()
         }
-        fn get_issue_comment(
-            &self,
-            _key: &str,
-            _comment_id: u64,
-        ) -> anyhow::Result<crate::api::issue::IssueComment> {
-            unimplemented!()
+        fn get_issue_comment(&self, _key: &str, _comment_id: u64) -> anyhow::Result<IssueComment> {
+            self.comment.clone().ok_or_else(|| anyhow!("no comment"))
         }
         fn get_issue_comment_notifications(
             &self,
             _key: &str,
             _comment_id: u64,
-        ) -> anyhow::Result<Vec<crate::api::issue::IssueCommentNotification>> {
+        ) -> anyhow::Result<Vec<IssueCommentNotification>> {
             unimplemented!()
         }
         fn add_issue_comment_notifications(
@@ -220,28 +203,48 @@ mod tests {
             _key: &str,
             _comment_id: u64,
             _params: &[(String, String)],
-        ) -> anyhow::Result<Vec<crate::api::issue::IssueCommentNotification>> {
+        ) -> anyhow::Result<Vec<IssueCommentNotification>> {
             unimplemented!()
         }
-        fn get_wikis(&self, _params: &[(String, String)]) -> anyhow::Result<Vec<WikiListItem>> {
+        fn get_wikis(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::wiki::WikiListItem>> {
             unimplemented!()
         }
-        fn get_wiki(&self, _wiki_id: u64) -> anyhow::Result<Wiki> {
+        fn get_wiki(&self, _wiki_id: u64) -> anyhow::Result<crate::api::wiki::Wiki> {
             unimplemented!()
         }
-        fn create_wiki(&self, _params: &[(String, String)]) -> anyhow::Result<Wiki> {
+        fn create_wiki(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::wiki::Wiki> {
             unimplemented!()
         }
-        fn update_wiki(&self, _wiki_id: u64, _params: &[(String, String)]) -> anyhow::Result<Wiki> {
+        fn update_wiki(
+            &self,
+            _wiki_id: u64,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::wiki::Wiki> {
             unimplemented!()
         }
-        fn delete_wiki(&self, _wiki_id: u64, _params: &[(String, String)]) -> anyhow::Result<Wiki> {
-            self.wiki.clone().ok_or_else(|| anyhow!("delete failed"))
-        }
-        fn get_wiki_history(&self, _wiki_id: u64) -> anyhow::Result<Vec<WikiHistory>> {
+        fn delete_wiki(
+            &self,
+            _wiki_id: u64,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::wiki::Wiki> {
             unimplemented!()
         }
-        fn get_wiki_attachments(&self, _wiki_id: u64) -> anyhow::Result<Vec<WikiAttachment>> {
+        fn get_wiki_history(
+            &self,
+            _wiki_id: u64,
+        ) -> anyhow::Result<Vec<crate::api::wiki::WikiHistory>> {
+            unimplemented!()
+        }
+        fn get_wiki_attachments(
+            &self,
+            _wiki_id: u64,
+        ) -> anyhow::Result<Vec<crate::api::wiki::WikiAttachment>> {
             unimplemented!()
         }
         fn get_teams(&self, _: &[(String, String)]) -> anyhow::Result<Vec<crate::api::team::Team>> {
@@ -284,45 +287,30 @@ mod tests {
         }
     }
 
-    fn sample_wiki() -> Wiki {
-        Wiki {
-            id: 1,
-            project_id: 1,
-            name: "Home".to_string(),
-            content: "# Home".to_string(),
-            tags: vec![],
-            created_user: sample_wiki_user(),
-            created: "2024-01-01T00:00:00Z".to_string(),
-            updated_user: sample_wiki_user(),
-            updated: "2024-01-01T00:00:00Z".to_string(),
-            extra: BTreeMap::new(),
-        }
-    }
-
-    fn args(json: bool) -> WikiDeleteArgs {
-        WikiDeleteArgs::new(1, false, json)
+    fn args(json: bool) -> IssueCommentShowArgs {
+        IssueCommentShowArgs::new("TEST-1".to_string(), 1, json)
     }
 
     #[test]
-    fn delete_with_text_output_succeeds() {
+    fn show_with_text_output_succeeds() {
         let api = MockApi {
-            wiki: Some(sample_wiki()),
+            comment: Some(sample_comment()),
         };
-        assert!(delete_with(&args(false), &api).is_ok());
+        assert!(show_with(&args(false), &api).is_ok());
     }
 
     #[test]
-    fn delete_with_json_output_succeeds() {
+    fn show_with_json_output_succeeds() {
         let api = MockApi {
-            wiki: Some(sample_wiki()),
+            comment: Some(sample_comment()),
         };
-        assert!(delete_with(&args(true), &api).is_ok());
+        assert!(show_with(&args(true), &api).is_ok());
     }
 
     #[test]
-    fn delete_with_propagates_api_error() {
-        let api = MockApi { wiki: None };
-        let err = delete_with(&args(false), &api).unwrap_err();
-        assert!(err.to_string().contains("delete failed"));
+    fn show_with_propagates_api_error() {
+        let api = MockApi { comment: None };
+        let err = show_with(&args(false), &api).unwrap_err();
+        assert!(err.to_string().contains("no comment"));
     }
 }

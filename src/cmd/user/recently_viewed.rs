@@ -219,6 +219,34 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::issue::IssueAttachment>> {
             unimplemented!()
         }
+        fn count_issue_comments(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<crate::api::issue::IssueCommentCount> {
+            unimplemented!()
+        }
+        fn get_issue_comment(
+            &self,
+            _key: &str,
+            _comment_id: u64,
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+            unimplemented!()
+        }
+        fn get_issue_comment_notifications(
+            &self,
+            _key: &str,
+            _comment_id: u64,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueCommentNotification>> {
+            unimplemented!()
+        }
+        fn add_issue_comment_notifications(
+            &self,
+            _key: &str,
+            _comment_id: u64,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueCommentNotification>> {
+            unimplemented!()
+        }
         fn get_wikis(
             &self,
             _params: &[(String, String)],
@@ -558,6 +586,34 @@ mod tests {
             &self,
             _key: &str,
         ) -> anyhow::Result<Vec<crate::api::issue::IssueAttachment>> {
+            unimplemented!()
+        }
+        fn count_issue_comments(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<crate::api::issue::IssueCommentCount> {
+            unimplemented!()
+        }
+        fn get_issue_comment(
+            &self,
+            _key: &str,
+            _comment_id: u64,
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+            unimplemented!()
+        }
+        fn get_issue_comment_notifications(
+            &self,
+            _key: &str,
+            _comment_id: u64,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueCommentNotification>> {
+            unimplemented!()
+        }
+        fn add_issue_comment_notifications(
+            &self,
+            _key: &str,
+            _comment_id: u64,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueCommentNotification>> {
             unimplemented!()
         }
         fn get_wikis(

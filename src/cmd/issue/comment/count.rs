@@ -2,42 +2,32 @@ use anstream::println;
 use anyhow::{Context, Result};
 
 use crate::api::{BacklogApi, BacklogClient};
-use crate::cmd::wiki::show::print_wiki;
 
-pub struct WikiDeleteArgs {
-    wiki_id: u64,
-    mail_notify: bool,
+pub struct IssueCommentCountArgs {
+    key: String,
     json: bool,
 }
 
-impl WikiDeleteArgs {
-    pub fn new(wiki_id: u64, mail_notify: bool, json: bool) -> Self {
-        Self {
-            wiki_id,
-            mail_notify,
-            json,
-        }
+impl IssueCommentCountArgs {
+    pub fn new(key: String, json: bool) -> Self {
+        Self { key, json }
     }
 }
 
-pub fn delete(args: &WikiDeleteArgs) -> Result<()> {
+pub fn count(args: &IssueCommentCountArgs) -> Result<()> {
     let client = BacklogClient::from_config()?;
-    delete_with(args, &client)
+    count_with(args, &client)
 }
 
-pub fn delete_with(args: &WikiDeleteArgs, api: &dyn BacklogApi) -> Result<()> {
-    let mut params: Vec<(String, String)> = Vec::new();
-    if args.mail_notify {
-        params.push(("mailNotify".to_string(), "true".to_string()));
-    }
-    let wiki = api.delete_wiki(args.wiki_id, &params)?;
+pub fn count_with(args: &IssueCommentCountArgs, api: &dyn BacklogApi) -> Result<()> {
+    let result = api.count_issue_comments(&args.key)?;
     if args.json {
         println!(
             "{}",
-            serde_json::to_string_pretty(&wiki).context("Failed to serialize JSON")?
+            serde_json::to_string_pretty(&result).context("Failed to serialize JSON")?
         );
     } else {
-        print_wiki(&wiki);
+        println!("{}", result.count);
     }
     Ok(())
 }
@@ -45,13 +35,14 @@ pub fn delete_with(args: &WikiDeleteArgs, api: &dyn BacklogApi) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::wiki::{Wiki, WikiAttachment, WikiHistory, WikiListItem};
-    use crate::cmd::wiki::list::tests_helper::sample_wiki_user;
+    use crate::api::issue::{
+        Issue, IssueAttachment, IssueComment, IssueCommentCount, IssueCommentNotification,
+        IssueCount,
+    };
     use anyhow::anyhow;
-    use std::collections::BTreeMap;
 
     struct MockApi {
-        wiki: Option<Wiki>,
+        count: Option<u64>,
     }
 
     impl crate::api::BacklogApi for MockApi {
@@ -130,48 +121,32 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::project::ProjectVersion>> {
             unimplemented!()
         }
-        fn get_issues(
-            &self,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<Vec<crate::api::issue::Issue>> {
+        fn get_issues(&self, _params: &[(String, String)]) -> anyhow::Result<Vec<Issue>> {
             unimplemented!()
         }
-        fn count_issues(
-            &self,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::issue::IssueCount> {
+        fn count_issues(&self, _params: &[(String, String)]) -> anyhow::Result<IssueCount> {
             unimplemented!()
         }
-        fn get_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
+        fn get_issue(&self, _key: &str) -> anyhow::Result<Issue> {
             unimplemented!()
         }
-        fn create_issue(
-            &self,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::issue::Issue> {
+        fn create_issue(&self, _params: &[(String, String)]) -> anyhow::Result<Issue> {
             unimplemented!()
         }
-        fn update_issue(
-            &self,
-            _key: &str,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::issue::Issue> {
+        fn update_issue(&self, _key: &str, _params: &[(String, String)]) -> anyhow::Result<Issue> {
             unimplemented!()
         }
-        fn delete_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
+        fn delete_issue(&self, _key: &str) -> anyhow::Result<Issue> {
             unimplemented!()
         }
-        fn get_issue_comments(
-            &self,
-            _key: &str,
-        ) -> anyhow::Result<Vec<crate::api::issue::IssueComment>> {
+        fn get_issue_comments(&self, _key: &str) -> anyhow::Result<Vec<IssueComment>> {
             unimplemented!()
         }
         fn add_issue_comment(
             &self,
             _key: &str,
             _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+        ) -> anyhow::Result<IssueComment> {
             unimplemented!()
         }
         fn update_issue_comment(
@@ -179,40 +154,32 @@ mod tests {
             _key: &str,
             _comment_id: u64,
             _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+        ) -> anyhow::Result<IssueComment> {
             unimplemented!()
         }
         fn delete_issue_comment(
             &self,
             _key: &str,
             _comment_id: u64,
-        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+        ) -> anyhow::Result<IssueComment> {
             unimplemented!()
         }
-        fn get_issue_attachments(
-            &self,
-            _key: &str,
-        ) -> anyhow::Result<Vec<crate::api::issue::IssueAttachment>> {
+        fn get_issue_attachments(&self, _key: &str) -> anyhow::Result<Vec<IssueAttachment>> {
             unimplemented!()
         }
-        fn count_issue_comments(
-            &self,
-            _key: &str,
-        ) -> anyhow::Result<crate::api::issue::IssueCommentCount> {
-            unimplemented!()
+        fn count_issue_comments(&self, _key: &str) -> anyhow::Result<IssueCommentCount> {
+            self.count
+                .map(|c| IssueCommentCount { count: c })
+                .ok_or_else(|| anyhow!("no count"))
         }
-        fn get_issue_comment(
-            &self,
-            _key: &str,
-            _comment_id: u64,
-        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+        fn get_issue_comment(&self, _key: &str, _comment_id: u64) -> anyhow::Result<IssueComment> {
             unimplemented!()
         }
         fn get_issue_comment_notifications(
             &self,
             _key: &str,
             _comment_id: u64,
-        ) -> anyhow::Result<Vec<crate::api::issue::IssueCommentNotification>> {
+        ) -> anyhow::Result<Vec<IssueCommentNotification>> {
             unimplemented!()
         }
         fn add_issue_comment_notifications(
@@ -220,28 +187,48 @@ mod tests {
             _key: &str,
             _comment_id: u64,
             _params: &[(String, String)],
-        ) -> anyhow::Result<Vec<crate::api::issue::IssueCommentNotification>> {
+        ) -> anyhow::Result<Vec<IssueCommentNotification>> {
             unimplemented!()
         }
-        fn get_wikis(&self, _params: &[(String, String)]) -> anyhow::Result<Vec<WikiListItem>> {
+        fn get_wikis(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::wiki::WikiListItem>> {
             unimplemented!()
         }
-        fn get_wiki(&self, _wiki_id: u64) -> anyhow::Result<Wiki> {
+        fn get_wiki(&self, _wiki_id: u64) -> anyhow::Result<crate::api::wiki::Wiki> {
             unimplemented!()
         }
-        fn create_wiki(&self, _params: &[(String, String)]) -> anyhow::Result<Wiki> {
+        fn create_wiki(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::wiki::Wiki> {
             unimplemented!()
         }
-        fn update_wiki(&self, _wiki_id: u64, _params: &[(String, String)]) -> anyhow::Result<Wiki> {
+        fn update_wiki(
+            &self,
+            _wiki_id: u64,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::wiki::Wiki> {
             unimplemented!()
         }
-        fn delete_wiki(&self, _wiki_id: u64, _params: &[(String, String)]) -> anyhow::Result<Wiki> {
-            self.wiki.clone().ok_or_else(|| anyhow!("delete failed"))
-        }
-        fn get_wiki_history(&self, _wiki_id: u64) -> anyhow::Result<Vec<WikiHistory>> {
+        fn delete_wiki(
+            &self,
+            _wiki_id: u64,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::wiki::Wiki> {
             unimplemented!()
         }
-        fn get_wiki_attachments(&self, _wiki_id: u64) -> anyhow::Result<Vec<WikiAttachment>> {
+        fn get_wiki_history(
+            &self,
+            _wiki_id: u64,
+        ) -> anyhow::Result<Vec<crate::api::wiki::WikiHistory>> {
+            unimplemented!()
+        }
+        fn get_wiki_attachments(
+            &self,
+            _wiki_id: u64,
+        ) -> anyhow::Result<Vec<crate::api::wiki::WikiAttachment>> {
             unimplemented!()
         }
         fn get_teams(&self, _: &[(String, String)]) -> anyhow::Result<Vec<crate::api::team::Team>> {
@@ -284,45 +271,26 @@ mod tests {
         }
     }
 
-    fn sample_wiki() -> Wiki {
-        Wiki {
-            id: 1,
-            project_id: 1,
-            name: "Home".to_string(),
-            content: "# Home".to_string(),
-            tags: vec![],
-            created_user: sample_wiki_user(),
-            created: "2024-01-01T00:00:00Z".to_string(),
-            updated_user: sample_wiki_user(),
-            updated: "2024-01-01T00:00:00Z".to_string(),
-            extra: BTreeMap::new(),
-        }
-    }
-
-    fn args(json: bool) -> WikiDeleteArgs {
-        WikiDeleteArgs::new(1, false, json)
+    fn args(json: bool) -> IssueCommentCountArgs {
+        IssueCommentCountArgs::new("TEST-1".to_string(), json)
     }
 
     #[test]
-    fn delete_with_text_output_succeeds() {
-        let api = MockApi {
-            wiki: Some(sample_wiki()),
-        };
-        assert!(delete_with(&args(false), &api).is_ok());
+    fn count_with_text_output_succeeds() {
+        let api = MockApi { count: Some(5) };
+        assert!(count_with(&args(false), &api).is_ok());
     }
 
     #[test]
-    fn delete_with_json_output_succeeds() {
-        let api = MockApi {
-            wiki: Some(sample_wiki()),
-        };
-        assert!(delete_with(&args(true), &api).is_ok());
+    fn count_with_json_output_succeeds() {
+        let api = MockApi { count: Some(5) };
+        assert!(count_with(&args(true), &api).is_ok());
     }
 
     #[test]
-    fn delete_with_propagates_api_error() {
-        let api = MockApi { wiki: None };
-        let err = delete_with(&args(false), &api).unwrap_err();
-        assert!(err.to_string().contains("delete failed"));
+    fn count_with_propagates_api_error() {
+        let api = MockApi { count: None };
+        let err = count_with(&args(false), &api).unwrap_err();
+        assert!(err.to_string().contains("no count"));
     }
 }
