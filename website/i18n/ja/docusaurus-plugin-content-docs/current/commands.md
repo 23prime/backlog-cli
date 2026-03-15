@@ -116,6 +116,40 @@ Updated: (not set)
 (no notification set)
 ```
 
+## `bl space licence`
+
+Backlog スペースのライセンス情報を表示します。
+
+```bash
+bl space licence
+bl space licence --json
+```
+
+出力例:
+
+```text
+Contract:  premium
+Storage:   5242880 / 1073741824 bytes
+Start:     2020-01-01
+```
+
+## `bl space update-notification`
+
+Backlog スペースの通知メッセージを更新します。
+
+```bash
+bl space update-notification --content "メンテナンスのお知らせ"
+bl space update-notification --content "Hello." --json
+```
+
+出力例:
+
+```text
+Updated: 2024-07-01T00:00:00Z
+
+メンテナンスのお知らせ
+```
+
 ## `bl project list`
 
 アクセス可能なプロジェクトを一覧表示します。
@@ -710,8 +744,8 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl space activities` | `GET /api/v2/space/activities` | ✅ 実装済み |
 | `bl space disk-usage` | `GET /api/v2/space/diskUsage` | ✅ 実装済み |
 | `bl space notification` | `GET /api/v2/space/notification` | ✅ 実装済み |
-| `bl space licence` | `GET /api/v2/space/licence` | 計画中 |
-| `bl space update-notification` | `PUT /api/v2/space/notification` | 計画中 |
+| `bl space licence` | `GET /api/v2/space/licence` | ✅ 実装済み |
+| `bl space update-notification` | `PUT /api/v2/space/notification` | ✅ 実装済み |
 | — | `GET /api/v2/space/image` | 計画中 |
 | — | `POST /api/v2/space/attachment` | 計画中 |
 
