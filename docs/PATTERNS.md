@@ -55,16 +55,29 @@ impl BacklogApi for BacklogClient {
 
 ### `src/cmd/<command>.rs`
 
+Commands use an args struct. The public entry point constructs the client; `*_with` contains the
+real logic and is directly testable.
+
 ```rust
-pub fn show(json: bool) -> Result<()> {
-    let client = BacklogClient::from_config()?;
-    show_with(json, &client)
+pub struct MyArgs {
+    key: String,
+    json: bool,
 }
 
-pub fn show_with(json: bool, api: &dyn BacklogApi) -> Result<()> {
-    let params: Vec<(String, String)> = vec![];
-    let data = api.get_my_resource(&params)?;
-    if json {
+impl MyArgs {
+    pub fn new(key: String, json: bool) -> Self {
+        Self { key, json }
+    }
+}
+
+pub fn show(args: &MyArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    show_with(args, &client)
+}
+
+pub fn show_with(args: &MyArgs, api: &dyn BacklogApi) -> Result<()> {
+    let data = api.get_my_resource(&args.key)?;
+    if args.json {
         println!("{}", serde_json::to_string_pretty(&data).context("Failed to serialize JSON")?);
     } else {
         println!("{}", format_text(&data));
@@ -73,18 +86,22 @@ pub fn show_with(json: bool, api: &dyn BacklogApi) -> Result<()> {
 }
 ```
 
+Use `try_new` instead of `new` when construction can fail (see [`docs/VALIDATION.md`](VALIDATION.md)).
+
 ### `src/main.rs`
 
-For a simple new top-level command:
+Construct the args struct and pass a reference to the command function:
 
 ```rust
-Commands::MyCmd { json } => cmd::my_cmd::show(json),
+Commands::MyCmd { key, json } => cmd::my_cmd::show(&MyArgs::new(key, json)),
 ```
 
 For a new subcommand under an existing group (e.g. `bl space <sub>`):
 
 ```rust
-Some(SpaceCommands::NewSub { json: sub_json }) => cmd::space::new_sub(sub_json),
+Some(SpaceCommands::NewSub { json: sub_json }) => {
+    cmd::space::new_sub(&NewSubArgs::new(sub_json))
+}
 ```
 
 Rename inner binding to avoid shadowing: `json: sub_json`.

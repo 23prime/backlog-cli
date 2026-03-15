@@ -80,7 +80,7 @@ See [`docs/TESTING.md`](docs/TESTING.md) for the full testing guide.
 Summary:
 
 - **`api/` layer**: Use `httpmock` to spin up a local HTTP server; construct `BacklogClient::new_with(base_url, api_key)`.
-- **`cmd/` layer**: Implement `BacklogApi` on a `MockApi` struct; call `*_with(json, &mock)` directly.
+- **`cmd/` layer**: Implement `BacklogApi` on a `MockApi` struct; call `*_with(&args, &mock)` directly.
 - Never call `BacklogClient::from_config()` in tests — it requires real credentials on disk.
 
 ### Conventions
