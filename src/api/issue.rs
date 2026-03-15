@@ -247,7 +247,7 @@ impl BacklogClient {
     ) -> Result<Vec<IssueSharedFile>> {
         let params: Vec<(String, String)> = shared_file_ids
             .iter()
-            .map(|id| ("sharedFileId[]".to_string(), id.to_string()))
+            .map(|id| ("fileId[]".to_string(), id.to_string()))
             .collect();
         let value = self.post_form(&format!("/issues/{}/sharedFiles", key), &params)?;
         deserialize(value)
