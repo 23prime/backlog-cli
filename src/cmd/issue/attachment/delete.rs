@@ -2,35 +2,37 @@ use anstream::println;
 use anyhow::{Context, Result};
 
 use crate::api::{BacklogApi, BacklogClient};
-use crate::cmd::issue::comment::list::format_comment_row;
 
-pub struct IssueCommentAddArgs {
+pub struct IssueAttachmentDeleteArgs {
     key: String,
-    content: String,
+    attachment_id: u64,
     json: bool,
 }
 
-impl IssueCommentAddArgs {
-    pub fn new(key: String, content: String, json: bool) -> Self {
-        Self { key, content, json }
+impl IssueAttachmentDeleteArgs {
+    pub fn new(key: String, attachment_id: u64, json: bool) -> Self {
+        Self {
+            key,
+            attachment_id,
+            json,
+        }
     }
 }
 
-pub fn add(args: &IssueCommentAddArgs) -> Result<()> {
+pub fn delete(args: &IssueAttachmentDeleteArgs) -> Result<()> {
     let client = BacklogClient::from_config()?;
-    add_with(args, &client)
+    delete_with(args, &client)
 }
 
-pub fn add_with(args: &IssueCommentAddArgs, api: &dyn BacklogApi) -> Result<()> {
-    let params = vec![("content".to_string(), args.content.clone())];
-    let comment = api.add_issue_comment(&args.key, &params)?;
+pub fn delete_with(args: &IssueAttachmentDeleteArgs, api: &dyn BacklogApi) -> Result<()> {
+    let attachment = api.delete_issue_attachment(&args.key, args.attachment_id)?;
     if args.json {
         println!(
             "{}",
-            serde_json::to_string_pretty(&comment).context("Failed to serialize JSON")?
+            serde_json::to_string_pretty(&attachment).context("Failed to serialize JSON")?
         );
     } else {
-        println!("{}", format_comment_row(&comment));
+        println!("Deleted: {} ({} bytes)", attachment.name, attachment.size);
     }
     Ok(())
 }
@@ -38,12 +40,34 @@ pub fn add_with(args: &IssueCommentAddArgs, api: &dyn BacklogApi) -> Result<()> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::issue::{Issue, IssueAttachment, IssueComment, IssueCount};
-    use crate::cmd::issue::comment::list::sample_comment;
+    use crate::api::issue::{Issue, IssueAttachment, IssueComment, IssueCount, IssueUser};
     use anyhow::anyhow;
+    use std::collections::BTreeMap;
+
+    fn sample_user() -> IssueUser {
+        IssueUser {
+            id: 1,
+            user_id: Some("john".to_string()),
+            name: "John Doe".to_string(),
+            role_type: 1,
+            lang: None,
+            mail_address: None,
+            extra: BTreeMap::new(),
+        }
+    }
+
+    fn sample_attachment() -> IssueAttachment {
+        IssueAttachment {
+            id: 1,
+            name: "file.txt".to_string(),
+            size: 1024,
+            created_user: sample_user(),
+            created: "2024-01-01T00:00:00Z".to_string(),
+        }
+    }
 
     struct MockApi {
-        comment: Option<IssueComment>,
+        attachment: Option<IssueAttachment>,
     }
 
     impl crate::api::BacklogApi for MockApi {
@@ -148,7 +172,7 @@ mod tests {
             _key: &str,
             _params: &[(String, String)],
         ) -> anyhow::Result<IssueComment> {
-            self.comment.clone().ok_or_else(|| anyhow!("add failed"))
+            unimplemented!()
         }
         fn update_issue_comment(
             &self,
@@ -173,7 +197,9 @@ mod tests {
             _key: &str,
             _attachment_id: u64,
         ) -> anyhow::Result<crate::api::issue::IssueAttachment> {
-            unimplemented!()
+            self.attachment
+                .clone()
+                .ok_or_else(|| anyhow!("no attachment"))
         }
         fn get_issue_participants(
             &self,
@@ -282,30 +308,30 @@ mod tests {
         }
     }
 
-    fn args(json: bool) -> IssueCommentAddArgs {
-        IssueCommentAddArgs::new("TEST-1".to_string(), "hello".to_string(), json)
+    fn args(json: bool) -> IssueAttachmentDeleteArgs {
+        IssueAttachmentDeleteArgs::new("TEST-1".to_string(), 1, json)
     }
 
     #[test]
-    fn add_with_text_output_succeeds() {
+    fn delete_with_text_output_succeeds() {
         let api = MockApi {
-            comment: Some(sample_comment()),
+            attachment: Some(sample_attachment()),
         };
-        assert!(add_with(&args(false), &api).is_ok());
+        assert!(delete_with(&args(false), &api).is_ok());
     }
 
     #[test]
-    fn add_with_json_output_succeeds() {
+    fn delete_with_json_output_succeeds() {
         let api = MockApi {
-            comment: Some(sample_comment()),
+            attachment: Some(sample_attachment()),
         };
-        assert!(add_with(&args(true), &api).is_ok());
+        assert!(delete_with(&args(true), &api).is_ok());
     }
 
     #[test]
-    fn add_with_propagates_api_error() {
-        let api = MockApi { comment: None };
-        let err = add_with(&args(false), &api).unwrap_err();
-        assert!(err.to_string().contains("add failed"));
+    fn delete_with_propagates_api_error() {
+        let api = MockApi { attachment: None };
+        let err = delete_with(&args(false), &api).unwrap_err();
+        assert!(err.to_string().contains("no attachment"));
     }
 }

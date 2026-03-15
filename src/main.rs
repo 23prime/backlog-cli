@@ -9,9 +9,13 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 
 use cmd::auth::AuthStatusArgs;
-use cmd::issue::attachment::IssueAttachmentListArgs;
+use cmd::issue::attachment::{IssueAttachmentDeleteArgs, IssueAttachmentListArgs};
 use cmd::issue::comment::{
     IssueCommentAddArgs, IssueCommentDeleteArgs, IssueCommentListArgs, IssueCommentUpdateArgs,
+};
+use cmd::issue::participant::IssueParticipantListArgs;
+use cmd::issue::shared_file::{
+    IssueSharedFileLinkArgs, IssueSharedFileListArgs, IssueSharedFileUnlinkArgs,
 };
 use cmd::issue::{
     IssueCountArgs, IssueCreateArgs, IssueDeleteArgs, IssueListArgs, IssueShowArgs,
@@ -434,6 +438,16 @@ enum IssueCommands {
         #[command(subcommand)]
         action: IssueAttachmentCommands,
     },
+    /// List participants of an issue
+    Participant {
+        #[command(subcommand)]
+        action: IssueParticipantCommands,
+    },
+    /// Manage shared files linked to an issue
+    SharedFile {
+        #[command(subcommand)]
+        action: IssueSharedFileCommands,
+    },
 }
 
 #[derive(Subcommand)]
@@ -488,6 +502,61 @@ enum IssueAttachmentCommands {
     List {
         /// Issue ID or key
         id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Delete an issue attachment
+    Delete {
+        /// Issue ID or key
+        key: String,
+        /// Attachment ID
+        attachment_id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum IssueParticipantCommands {
+    /// List participants of an issue
+    List {
+        /// Issue ID or key
+        key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum IssueSharedFileCommands {
+    /// List shared files linked to an issue
+    List {
+        /// Issue ID or key
+        key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Link shared files to an issue
+    Link {
+        /// Issue ID or key
+        key: String,
+        /// Shared file ID to link (repeatable)
+        #[arg(long = "shared-file-id", value_name = "ID")]
+        shared_file_ids: Vec<u64>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Unlink a shared file from an issue
+    Unlink {
+        /// Issue ID or key
+        key: String,
+        /// Shared file ID to unlink
+        shared_file_id: u64,
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -977,6 +1046,43 @@ fn run() -> Result<()> {
                 IssueAttachmentCommands::List { id_or_key, json } => {
                     cmd::issue::attachment::list(&IssueAttachmentListArgs::new(id_or_key, json))
                 }
+                IssueAttachmentCommands::Delete {
+                    key,
+                    attachment_id,
+                    json,
+                } => cmd::issue::attachment::delete(&IssueAttachmentDeleteArgs::new(
+                    key,
+                    attachment_id,
+                    json,
+                )),
+            },
+            IssueCommands::Participant { action } => match action {
+                IssueParticipantCommands::List { key, json } => {
+                    cmd::issue::participant::list(&IssueParticipantListArgs::new(key, json))
+                }
+            },
+            IssueCommands::SharedFile { action } => match action {
+                IssueSharedFileCommands::List { key, json } => {
+                    cmd::issue::shared_file::list(&IssueSharedFileListArgs::new(key, json))
+                }
+                IssueSharedFileCommands::Link {
+                    key,
+                    shared_file_ids,
+                    json,
+                } => cmd::issue::shared_file::link(&IssueSharedFileLinkArgs::try_new(
+                    key,
+                    shared_file_ids,
+                    json,
+                )?),
+                IssueSharedFileCommands::Unlink {
+                    key,
+                    shared_file_id,
+                    json,
+                } => cmd::issue::shared_file::unlink(&IssueSharedFileUnlinkArgs::new(
+                    key,
+                    shared_file_id,
+                    json,
+                )),
             },
         },
         Commands::Wiki { action } => match action {

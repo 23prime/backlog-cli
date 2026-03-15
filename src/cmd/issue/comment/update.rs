@@ -174,6 +174,39 @@ mod tests {
         fn get_issue_attachments(&self, _key: &str) -> anyhow::Result<Vec<IssueAttachment>> {
             unimplemented!()
         }
+        fn delete_issue_attachment(
+            &self,
+            _key: &str,
+            _attachment_id: u64,
+        ) -> anyhow::Result<crate::api::issue::IssueAttachment> {
+            unimplemented!()
+        }
+        fn get_issue_participants(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueParticipant>> {
+            unimplemented!()
+        }
+        fn get_issue_shared_files(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueSharedFile>> {
+            unimplemented!()
+        }
+        fn link_issue_shared_files(
+            &self,
+            _key: &str,
+            _shared_file_ids: &[u64],
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueSharedFile>> {
+            unimplemented!()
+        }
+        fn unlink_issue_shared_file(
+            &self,
+            _key: &str,
+            _shared_file_id: u64,
+        ) -> anyhow::Result<crate::api::issue::IssueSharedFile> {
+            unimplemented!()
+        }
         fn get_wikis(
             &self,
             _params: &[(String, String)],

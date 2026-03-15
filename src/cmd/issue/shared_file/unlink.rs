@@ -2,35 +2,37 @@ use anstream::println;
 use anyhow::{Context, Result};
 
 use crate::api::{BacklogApi, BacklogClient};
-use crate::cmd::issue::comment::list::format_comment_row;
 
-pub struct IssueCommentAddArgs {
+pub struct IssueSharedFileUnlinkArgs {
     key: String,
-    content: String,
+    shared_file_id: u64,
     json: bool,
 }
 
-impl IssueCommentAddArgs {
-    pub fn new(key: String, content: String, json: bool) -> Self {
-        Self { key, content, json }
+impl IssueSharedFileUnlinkArgs {
+    pub fn new(key: String, shared_file_id: u64, json: bool) -> Self {
+        Self {
+            key,
+            shared_file_id,
+            json,
+        }
     }
 }
 
-pub fn add(args: &IssueCommentAddArgs) -> Result<()> {
+pub fn unlink(args: &IssueSharedFileUnlinkArgs) -> Result<()> {
     let client = BacklogClient::from_config()?;
-    add_with(args, &client)
+    unlink_with(args, &client)
 }
 
-pub fn add_with(args: &IssueCommentAddArgs, api: &dyn BacklogApi) -> Result<()> {
-    let params = vec![("content".to_string(), args.content.clone())];
-    let comment = api.add_issue_comment(&args.key, &params)?;
+pub fn unlink_with(args: &IssueSharedFileUnlinkArgs, api: &dyn BacklogApi) -> Result<()> {
+    let file = api.unlink_issue_shared_file(&args.key, args.shared_file_id)?;
     if args.json {
         println!(
             "{}",
-            serde_json::to_string_pretty(&comment).context("Failed to serialize JSON")?
+            serde_json::to_string_pretty(&file).context("Failed to serialize JSON")?
         );
     } else {
-        println!("{}", format_comment_row(&comment));
+        println!("Unlinked: {}", file.name);
     }
     Ok(())
 }
@@ -38,12 +40,22 @@ pub fn add_with(args: &IssueCommentAddArgs, api: &dyn BacklogApi) -> Result<()> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::issue::{Issue, IssueAttachment, IssueComment, IssueCount};
-    use crate::cmd::issue::comment::list::sample_comment;
+    use crate::api::issue::{Issue, IssueAttachment, IssueComment, IssueCount, IssueSharedFile};
     use anyhow::anyhow;
+    use std::collections::BTreeMap;
+
+    fn sample_shared_file() -> IssueSharedFile {
+        IssueSharedFile {
+            id: 1,
+            dir: "/docs".to_string(),
+            name: "spec.pdf".to_string(),
+            size: 2048,
+            extra: BTreeMap::new(),
+        }
+    }
 
     struct MockApi {
-        comment: Option<IssueComment>,
+        file: Option<IssueSharedFile>,
     }
 
     impl crate::api::BacklogApi for MockApi {
@@ -148,7 +160,7 @@ mod tests {
             _key: &str,
             _params: &[(String, String)],
         ) -> anyhow::Result<IssueComment> {
-            self.comment.clone().ok_or_else(|| anyhow!("add failed"))
+            unimplemented!()
         }
         fn update_issue_comment(
             &self,
@@ -199,7 +211,7 @@ mod tests {
             _key: &str,
             _shared_file_id: u64,
         ) -> anyhow::Result<crate::api::issue::IssueSharedFile> {
-            unimplemented!()
+            self.file.clone().ok_or_else(|| anyhow!("unlink failed"))
         }
         fn get_wikis(
             &self,
@@ -282,30 +294,30 @@ mod tests {
         }
     }
 
-    fn args(json: bool) -> IssueCommentAddArgs {
-        IssueCommentAddArgs::new("TEST-1".to_string(), "hello".to_string(), json)
+    fn args(json: bool) -> IssueSharedFileUnlinkArgs {
+        IssueSharedFileUnlinkArgs::new("TEST-1".to_string(), 1, json)
     }
 
     #[test]
-    fn add_with_text_output_succeeds() {
+    fn unlink_with_text_output_succeeds() {
         let api = MockApi {
-            comment: Some(sample_comment()),
+            file: Some(sample_shared_file()),
         };
-        assert!(add_with(&args(false), &api).is_ok());
+        assert!(unlink_with(&args(false), &api).is_ok());
     }
 
     #[test]
-    fn add_with_json_output_succeeds() {
+    fn unlink_with_json_output_succeeds() {
         let api = MockApi {
-            comment: Some(sample_comment()),
+            file: Some(sample_shared_file()),
         };
-        assert!(add_with(&args(true), &api).is_ok());
+        assert!(unlink_with(&args(true), &api).is_ok());
     }
 
     #[test]
-    fn add_with_propagates_api_error() {
-        let api = MockApi { comment: None };
-        let err = add_with(&args(false), &api).unwrap_err();
-        assert!(err.to_string().contains("add failed"));
+    fn unlink_with_propagates_api_error() {
+        let api = MockApi { file: None };
+        let err = unlink_with(&args(false), &api).unwrap_err();
+        assert!(err.to_string().contains("unlink failed"));
     }
 }

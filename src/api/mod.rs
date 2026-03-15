@@ -19,7 +19,7 @@ pub mod wiki;
 
 use activity::Activity;
 use disk_usage::DiskUsage;
-use issue::{Issue, IssueAttachment, IssueComment, IssueCount};
+use issue::{Issue, IssueAttachment, IssueComment, IssueCount, IssueParticipant, IssueSharedFile};
 use notification::{Notification, NotificationCount};
 use project::{
     Project, ProjectCategory, ProjectDiskUsage, ProjectIssueType, ProjectStatus, ProjectUser,
@@ -68,6 +68,15 @@ pub trait BacklogApi {
     ) -> Result<IssueComment>;
     fn delete_issue_comment(&self, key: &str, comment_id: u64) -> Result<IssueComment>;
     fn get_issue_attachments(&self, key: &str) -> Result<Vec<IssueAttachment>>;
+    fn delete_issue_attachment(&self, key: &str, attachment_id: u64) -> Result<IssueAttachment>;
+    fn get_issue_participants(&self, key: &str) -> Result<Vec<IssueParticipant>>;
+    fn get_issue_shared_files(&self, key: &str) -> Result<Vec<IssueSharedFile>>;
+    fn link_issue_shared_files(
+        &self,
+        key: &str,
+        shared_file_ids: &[u64],
+    ) -> Result<Vec<IssueSharedFile>>;
+    fn unlink_issue_shared_file(&self, key: &str, shared_file_id: u64) -> Result<IssueSharedFile>;
     fn get_wikis(&self, params: &[(String, String)]) -> Result<Vec<WikiListItem>>;
     fn get_wiki(&self, wiki_id: u64) -> Result<Wiki>;
     fn create_wiki(&self, params: &[(String, String)]) -> Result<Wiki>;
@@ -208,6 +217,30 @@ impl BacklogApi for BacklogClient {
 
     fn get_issue_attachments(&self, key: &str) -> Result<Vec<IssueAttachment>> {
         self.get_issue_attachments(key)
+    }
+
+    fn delete_issue_attachment(&self, key: &str, attachment_id: u64) -> Result<IssueAttachment> {
+        self.delete_issue_attachment(key, attachment_id)
+    }
+
+    fn get_issue_participants(&self, key: &str) -> Result<Vec<IssueParticipant>> {
+        self.get_issue_participants(key)
+    }
+
+    fn get_issue_shared_files(&self, key: &str) -> Result<Vec<IssueSharedFile>> {
+        self.get_issue_shared_files(key)
+    }
+
+    fn link_issue_shared_files(
+        &self,
+        key: &str,
+        shared_file_ids: &[u64],
+    ) -> Result<Vec<IssueSharedFile>> {
+        self.link_issue_shared_files(key, shared_file_ids)
+    }
+
+    fn unlink_issue_shared_file(&self, key: &str, shared_file_id: u64) -> Result<IssueSharedFile> {
+        self.unlink_issue_shared_file(key, shared_file_id)
     }
 
     fn get_wikis(&self, params: &[(String, String)]) -> Result<Vec<WikiListItem>> {

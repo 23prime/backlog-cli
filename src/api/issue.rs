@@ -106,6 +106,30 @@ pub struct IssueAttachment {
     pub created: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IssueParticipant {
+    pub id: u64,
+    pub user_id: Option<String>,
+    pub name: String,
+    pub role_type: Option<u8>,
+    pub lang: Option<String>,
+    pub mail_address: Option<String>,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, serde_json::Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IssueSharedFile {
+    pub id: u64,
+    pub dir: String,
+    pub name: String,
+    pub size: u64,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, serde_json::Value>,
+}
+
 fn deserialize<T: serde::de::DeserializeOwned>(value: serde_json::Value) -> Result<T> {
     let pretty = serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string());
     serde_json::from_value(value).map_err(|e| {
@@ -179,6 +203,47 @@ impl BacklogClient {
 
     pub fn get_issue_attachments(&self, key: &str) -> Result<Vec<IssueAttachment>> {
         let value = self.get(&format!("/issues/{}/attachments", key))?;
+        deserialize(value)
+    }
+
+    pub fn delete_issue_attachment(
+        &self,
+        key: &str,
+        attachment_id: u64,
+    ) -> Result<IssueAttachment> {
+        let value = self.delete_req(&format!("/issues/{}/attachments/{}", key, attachment_id))?;
+        deserialize(value)
+    }
+
+    pub fn get_issue_participants(&self, key: &str) -> Result<Vec<IssueParticipant>> {
+        let value = self.get(&format!("/issues/{}/participants", key))?;
+        deserialize(value)
+    }
+
+    pub fn get_issue_shared_files(&self, key: &str) -> Result<Vec<IssueSharedFile>> {
+        let value = self.get(&format!("/issues/{}/sharedFiles", key))?;
+        deserialize(value)
+    }
+
+    pub fn link_issue_shared_files(
+        &self,
+        key: &str,
+        shared_file_ids: &[u64],
+    ) -> Result<Vec<IssueSharedFile>> {
+        let params: Vec<(String, String)> = shared_file_ids
+            .iter()
+            .map(|id| ("sharedFileId[]".to_string(), id.to_string()))
+            .collect();
+        let value = self.post_form(&format!("/issues/{}/sharedFiles", key), &params)?;
+        deserialize(value)
+    }
+
+    pub fn unlink_issue_shared_file(
+        &self,
+        key: &str,
+        shared_file_id: u64,
+    ) -> Result<IssueSharedFile> {
+        let value = self.delete_req(&format!("/issues/{}/sharedFiles/{}", key, shared_file_id))?;
         deserialize(value)
     }
 }

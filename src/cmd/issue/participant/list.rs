@@ -1,36 +1,41 @@
 use anstream::println;
 use anyhow::{Context, Result};
+use owo_colors::OwoColorize;
 
 use crate::api::{BacklogApi, BacklogClient};
-use crate::cmd::issue::comment::list::format_comment_row;
 
-pub struct IssueCommentAddArgs {
+pub struct IssueParticipantListArgs {
     key: String,
-    content: String,
     json: bool,
 }
 
-impl IssueCommentAddArgs {
-    pub fn new(key: String, content: String, json: bool) -> Self {
-        Self { key, content, json }
+impl IssueParticipantListArgs {
+    pub fn new(key: String, json: bool) -> Self {
+        Self { key, json }
     }
 }
 
-pub fn add(args: &IssueCommentAddArgs) -> Result<()> {
+pub fn list(args: &IssueParticipantListArgs) -> Result<()> {
     let client = BacklogClient::from_config()?;
-    add_with(args, &client)
+    list_with(args, &client)
 }
 
-pub fn add_with(args: &IssueCommentAddArgs, api: &dyn BacklogApi) -> Result<()> {
-    let params = vec![("content".to_string(), args.content.clone())];
-    let comment = api.add_issue_comment(&args.key, &params)?;
+pub fn list_with(args: &IssueParticipantListArgs, api: &dyn BacklogApi) -> Result<()> {
+    let participants = api.get_issue_participants(&args.key)?;
     if args.json {
         println!(
             "{}",
-            serde_json::to_string_pretty(&comment).context("Failed to serialize JSON")?
+            serde_json::to_string_pretty(&participants).context("Failed to serialize JSON")?
         );
     } else {
-        println!("{}", format_comment_row(&comment));
+        for p in &participants {
+            let uid = p
+                .user_id
+                .as_deref()
+                .map(|s| s.to_string())
+                .unwrap_or_else(|| p.id.to_string());
+            println!("[{}] {}", uid.cyan().bold(), p.name);
+        }
     }
     Ok(())
 }
@@ -38,12 +43,36 @@ pub fn add_with(args: &IssueCommentAddArgs, api: &dyn BacklogApi) -> Result<()> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::issue::{Issue, IssueAttachment, IssueComment, IssueCount};
-    use crate::cmd::issue::comment::list::sample_comment;
+    use crate::api::issue::{Issue, IssueAttachment, IssueComment, IssueCount, IssueParticipant};
     use anyhow::anyhow;
+    use std::collections::BTreeMap;
+
+    fn sample_participant() -> IssueParticipant {
+        IssueParticipant {
+            id: 1,
+            user_id: Some("alice".to_string()),
+            name: "Alice".to_string(),
+            role_type: Some(1),
+            lang: None,
+            mail_address: None,
+            extra: BTreeMap::new(),
+        }
+    }
+
+    fn bot_participant() -> IssueParticipant {
+        IssueParticipant {
+            id: 99,
+            user_id: None,
+            name: "Bot".to_string(),
+            role_type: None,
+            lang: None,
+            mail_address: None,
+            extra: BTreeMap::new(),
+        }
+    }
 
     struct MockApi {
-        comment: Option<IssueComment>,
+        participants: Option<Vec<IssueParticipant>>,
     }
 
     impl crate::api::BacklogApi for MockApi {
@@ -148,7 +177,7 @@ mod tests {
             _key: &str,
             _params: &[(String, String)],
         ) -> anyhow::Result<IssueComment> {
-            self.comment.clone().ok_or_else(|| anyhow!("add failed"))
+            unimplemented!()
         }
         fn update_issue_comment(
             &self,
@@ -179,7 +208,9 @@ mod tests {
             &self,
             _key: &str,
         ) -> anyhow::Result<Vec<crate::api::issue::IssueParticipant>> {
-            unimplemented!()
+            self.participants
+                .clone()
+                .ok_or_else(|| anyhow!("no participants"))
         }
         fn get_issue_shared_files(
             &self,
@@ -282,30 +313,38 @@ mod tests {
         }
     }
 
-    fn args(json: bool) -> IssueCommentAddArgs {
-        IssueCommentAddArgs::new("TEST-1".to_string(), "hello".to_string(), json)
+    fn args(json: bool) -> IssueParticipantListArgs {
+        IssueParticipantListArgs::new("TEST-1".to_string(), json)
     }
 
     #[test]
-    fn add_with_text_output_succeeds() {
+    fn list_with_text_output_succeeds() {
         let api = MockApi {
-            comment: Some(sample_comment()),
+            participants: Some(vec![sample_participant()]),
         };
-        assert!(add_with(&args(false), &api).is_ok());
+        assert!(list_with(&args(false), &api).is_ok());
     }
 
     #[test]
-    fn add_with_json_output_succeeds() {
+    fn list_with_bot_user_id_falls_back_to_numeric_id() {
         let api = MockApi {
-            comment: Some(sample_comment()),
+            participants: Some(vec![bot_participant()]),
         };
-        assert!(add_with(&args(true), &api).is_ok());
+        assert!(list_with(&args(false), &api).is_ok());
     }
 
     #[test]
-    fn add_with_propagates_api_error() {
-        let api = MockApi { comment: None };
-        let err = add_with(&args(false), &api).unwrap_err();
-        assert!(err.to_string().contains("add failed"));
+    fn list_with_json_output_succeeds() {
+        let api = MockApi {
+            participants: Some(vec![sample_participant()]),
+        };
+        assert!(list_with(&args(true), &api).is_ok());
+    }
+
+    #[test]
+    fn list_with_propagates_api_error() {
+        let api = MockApi { participants: None };
+        let err = list_with(&args(false), &api).unwrap_err();
+        assert!(err.to_string().contains("no participants"));
     }
 }
