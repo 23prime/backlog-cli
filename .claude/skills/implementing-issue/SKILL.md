@@ -150,3 +150,29 @@ gh pr view <PR_NUMBER> --json reviews | jq '[.reviews[].author.login]'
 - If the array is empty, reviews have not arrived yet. Wait ~2–3 minutes and check again.
 - If still empty after ~5 minutes, automated reviews are likely disabled — skip this step.
 - If `copilot-pull-request-reviewer` or `coderabbitai` appear, invoke the `implementing-pr-review` skill to evaluate and apply valid suggestions.
+
+## Step 11 — Reflect learnings into `docs/PATTERNS.md`
+
+After the PR is merged, review what was encountered during implementation and PR review.
+If anything is **generalizable** — useful for future implementations in this project — add it to `docs/PATTERNS.md`.
+
+Sources to review:
+
+- **Accepted review comments**: patterns or pitfalls that reviewers pointed out (e.g. clap flag conventions, validation boundaries, httpmock gotchas)
+- **User corrections**: when the user said "no, not that — do X instead", consider whether X is a project-wide rule worth documenting
+- **Compilation/check failures**: if `mise run check` failed for a non-obvious reason, note the fix
+
+Criteria for adding to `docs/PATTERNS.md`:
+
+- Would a future implementer likely make the same mistake?
+- Is it specific to this codebase (not just "read the Rust docs")?
+- Is it concrete enough to be actionable?
+
+If any of the above apply, append to the relevant section of `docs/PATTERNS.md` and commit directly to `main`:
+
+```bash
+git add docs/PATTERNS.md
+git commit -m "docs: add patterns from <issue-N> implementation"
+```
+
+If nothing generalizable was found, skip this step.

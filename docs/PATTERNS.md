@@ -107,6 +107,64 @@ Some(SpaceCommands::NewSub { json: sub_json }) => {
 
 Rename inner binding to avoid shadowing: `json: sub_json`.
 
+#### clap bool flags
+
+`bool` fields in clap derive become **presence flags** (no value needed).
+`default_value = "false"` is redundant — do not add it:
+
+```rust
+// ✅ correct
+#[arg(long)]
+chart_enabled: bool,
+
+// ❌ redundant — clap already defaults bool to false
+#[arg(long, default_value = "false")]
+chart_enabled: bool,
+```
+
+#### Constrained string options — use `clap::ValueEnum`
+
+When a flag accepts only a fixed set of values, define a `ValueEnum` enum
+instead of `String`. Follow the `Order` enum pattern already in `main.rs`:
+
+```rust
+#[derive(clap::ValueEnum, Clone)]
+enum TextFormattingRule {
+    Backlog,
+    Markdown,
+}
+
+impl TextFormattingRule {
+    fn as_str(&self) -> &'static str {
+        match self {
+            TextFormattingRule::Backlog => "backlog",
+            TextFormattingRule::Markdown => "markdown",
+        }
+    }
+}
+```
+
+Use with a default:
+
+```rust
+#[arg(long, default_value = "markdown")]
+text_formatting_rule: TextFormattingRule,
+```
+
+For optional fields (e.g. update commands):
+
+```rust
+#[arg(long)]
+text_formatting_rule: Option<TextFormattingRule>,
+```
+
+Convert to `String` in the match arm before passing to the args struct:
+
+```rust
+text_formatting_rule.as_str().to_string()          // required field
+text_formatting_rule.map(|r| r.as_str().to_string()) // optional field
+```
+
 ## Test MockApi pattern
 
 `BacklogApi` has default `unimplemented!()` bodies for all methods, so a
