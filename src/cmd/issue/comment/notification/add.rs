@@ -4,6 +4,7 @@ use anyhow::{Context, Result};
 use crate::api::{BacklogApi, BacklogClient};
 use crate::cmd::issue::comment::notification::list::format_notification_row;
 
+#[derive(Debug)]
 pub struct IssueCommentNotificationAddArgs {
     key: String,
     comment_id: u64,
@@ -12,13 +13,21 @@ pub struct IssueCommentNotificationAddArgs {
 }
 
 impl IssueCommentNotificationAddArgs {
-    pub fn new(key: String, comment_id: u64, notified_user_ids: Vec<u64>, json: bool) -> Self {
-        Self {
+    pub fn try_new(
+        key: String,
+        comment_id: u64,
+        notified_user_ids: Vec<u64>,
+        json: bool,
+    ) -> anyhow::Result<Self> {
+        if notified_user_ids.is_empty() {
+            anyhow::bail!("at least one --notified-user-id is required");
+        }
+        Ok(Self {
             key,
             comment_id,
             notified_user_ids,
             json,
-        }
+        })
     }
 }
 
@@ -54,8 +63,20 @@ mod tests {
     use crate::cmd::issue::comment::notification::list::sample_notification;
     use anyhow::anyhow;
 
+    use std::cell::RefCell;
+
     struct MockApi {
         notifications: Option<Vec<IssueCommentNotification>>,
+        captured_params: RefCell<Vec<(String, String)>>,
+    }
+
+    impl MockApi {
+        fn new(notifications: Option<Vec<IssueCommentNotification>>) -> Self {
+            Self {
+                notifications,
+                captured_params: RefCell::new(vec![]),
+            }
+        }
     }
 
     impl crate::api::BacklogApi for MockApi {
@@ -63,8 +84,9 @@ mod tests {
             &self,
             _key: &str,
             _comment_id: u64,
-            _params: &[(String, String)],
+            params: &[(String, String)],
         ) -> anyhow::Result<Vec<IssueCommentNotification>> {
+            *self.captured_params.borrow_mut() = params.to_vec();
             self.notifications
                 .clone()
                 .ok_or_else(|| anyhow!("no notifications"))
@@ -72,31 +94,49 @@ mod tests {
     }
 
     fn args(json: bool) -> IssueCommentNotificationAddArgs {
-        IssueCommentNotificationAddArgs::new("TEST-1".to_string(), 1, vec![2], json)
+        IssueCommentNotificationAddArgs::try_new("TEST-1".to_string(), 1, vec![2], json).unwrap()
     }
 
     #[test]
     fn add_with_text_output_succeeds() {
-        let api = MockApi {
-            notifications: Some(vec![sample_notification()]),
-        };
+        let api = MockApi::new(Some(vec![sample_notification()]));
         assert!(add_with(&args(false), &api).is_ok());
     }
 
     #[test]
     fn add_with_json_output_succeeds() {
-        let api = MockApi {
-            notifications: Some(vec![sample_notification()]),
-        };
+        let api = MockApi::new(Some(vec![sample_notification()]));
         assert!(add_with(&args(true), &api).is_ok());
     }
 
     #[test]
     fn add_with_propagates_api_error() {
-        let api = MockApi {
-            notifications: None,
-        };
+        let api = MockApi::new(None);
         let err = add_with(&args(false), &api).unwrap_err();
         assert!(err.to_string().contains("no notifications"));
+    }
+
+    #[test]
+    fn add_with_builds_correct_params() {
+        let api = MockApi::new(Some(vec![sample_notification()]));
+        let a =
+            IssueCommentNotificationAddArgs::try_new("TEST-1".to_string(), 1, vec![1, 2], false)
+                .unwrap();
+        add_with(&a, &api).unwrap();
+        let params = api.captured_params.borrow();
+        assert_eq!(
+            *params,
+            vec![
+                ("notifiedUserId[]".to_string(), "1".to_string()),
+                ("notifiedUserId[]".to_string(), "2".to_string()),
+            ]
+        );
+    }
+
+    #[test]
+    fn try_new_rejects_empty_user_ids() {
+        let err = IssueCommentNotificationAddArgs::try_new("TEST-1".to_string(), 1, vec![], false)
+            .unwrap_err();
+        assert!(err.to_string().contains("at least one"));
     }
 }

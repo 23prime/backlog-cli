@@ -1068,12 +1068,12 @@ fn run() -> Result<()> {
                         notified_user_ids,
                         json,
                     } => cmd::issue::comment::notification::add(
-                        &IssueCommentNotificationAddArgs::new(
+                        &IssueCommentNotificationAddArgs::try_new(
                             id_or_key,
                             comment_id,
                             notified_user_ids,
                             json,
-                        ),
+                        )?,
                     ),
                 },
             },
