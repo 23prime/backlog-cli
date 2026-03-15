@@ -33,67 +33,170 @@ use team::Team;
 use user::{RecentlyViewedIssue, User};
 use wiki::{Wiki, WikiAttachment, WikiHistory, WikiListItem};
 
+/// Abstraction over the Backlog HTTP API.
+///
+/// All methods have a default body of `unimplemented!()` so that test
+/// `MockApi` structs only need to override the methods actually exercised
+/// by the test.  `impl BacklogApi for BacklogClient` overrides every method
+/// with a real HTTP call.
+///
+/// # Adding a new method
+///
+/// 1. Add the method signature with a default `{ unimplemented!() }` body
+///    here (using `_`-prefixed parameter names to suppress unused-variable
+///    warnings in the default).
+/// 2. Override it in `impl BacklogApi for BacklogClient` below.
+/// 3. Test `MockApi` structs **do not** need to be updated — the default
+///    `unimplemented!()` fires automatically if an untested method is called.
 pub trait BacklogApi {
-    fn get_space(&self) -> Result<Space>;
-    fn get_myself(&self) -> Result<User>;
-    fn get_users(&self) -> Result<Vec<User>>;
-    fn get_user(&self, user_id: u64) -> Result<User>;
-    fn get_space_activities(&self, params: &[(String, String)]) -> Result<Vec<Activity>>;
-    fn get_space_disk_usage(&self) -> Result<DiskUsage>;
-    fn get_space_notification(&self) -> Result<SpaceNotification>;
-    fn get_projects(&self) -> Result<Vec<Project>>;
-    fn get_project(&self, key: &str) -> Result<Project>;
+    fn get_space(&self) -> Result<Space> {
+        unimplemented!()
+    }
+    fn get_myself(&self) -> Result<User> {
+        unimplemented!()
+    }
+    fn get_users(&self) -> Result<Vec<User>> {
+        unimplemented!()
+    }
+    fn get_user(&self, _user_id: u64) -> Result<User> {
+        unimplemented!()
+    }
+    fn get_space_activities(&self, _params: &[(String, String)]) -> Result<Vec<Activity>> {
+        unimplemented!()
+    }
+    fn get_space_disk_usage(&self) -> Result<DiskUsage> {
+        unimplemented!()
+    }
+    fn get_space_notification(&self) -> Result<SpaceNotification> {
+        unimplemented!()
+    }
+    fn get_projects(&self) -> Result<Vec<Project>> {
+        unimplemented!()
+    }
+    fn get_project(&self, _key: &str) -> Result<Project> {
+        unimplemented!()
+    }
     fn get_project_activities(
         &self,
-        key: &str,
-        params: &[(String, String)],
-    ) -> Result<Vec<Activity>>;
-    fn get_project_disk_usage(&self, key: &str) -> Result<ProjectDiskUsage>;
-    fn get_project_users(&self, key: &str) -> Result<Vec<ProjectUser>>;
-    fn get_project_statuses(&self, key: &str) -> Result<Vec<ProjectStatus>>;
-    fn get_project_issue_types(&self, key: &str) -> Result<Vec<ProjectIssueType>>;
-    fn get_project_categories(&self, key: &str) -> Result<Vec<ProjectCategory>>;
-    fn get_project_versions(&self, key: &str) -> Result<Vec<ProjectVersion>>;
-    fn get_issues(&self, params: &[(String, String)]) -> Result<Vec<Issue>>;
-    fn count_issues(&self, params: &[(String, String)]) -> Result<IssueCount>;
-    fn get_issue(&self, key: &str) -> Result<Issue>;
-    fn create_issue(&self, params: &[(String, String)]) -> Result<Issue>;
-    fn update_issue(&self, key: &str, params: &[(String, String)]) -> Result<Issue>;
-    fn delete_issue(&self, key: &str) -> Result<Issue>;
-    fn get_issue_comments(&self, key: &str) -> Result<Vec<IssueComment>>;
-    fn add_issue_comment(&self, key: &str, params: &[(String, String)]) -> Result<IssueComment>;
+        _key: &str,
+        _params: &[(String, String)],
+    ) -> Result<Vec<Activity>> {
+        unimplemented!()
+    }
+    fn get_project_disk_usage(&self, _key: &str) -> Result<ProjectDiskUsage> {
+        unimplemented!()
+    }
+    fn get_project_users(&self, _key: &str) -> Result<Vec<ProjectUser>> {
+        unimplemented!()
+    }
+    fn get_project_statuses(&self, _key: &str) -> Result<Vec<ProjectStatus>> {
+        unimplemented!()
+    }
+    fn get_project_issue_types(&self, _key: &str) -> Result<Vec<ProjectIssueType>> {
+        unimplemented!()
+    }
+    fn get_project_categories(&self, _key: &str) -> Result<Vec<ProjectCategory>> {
+        unimplemented!()
+    }
+    fn get_project_versions(&self, _key: &str) -> Result<Vec<ProjectVersion>> {
+        unimplemented!()
+    }
+    fn get_issues(&self, _params: &[(String, String)]) -> Result<Vec<Issue>> {
+        unimplemented!()
+    }
+    fn count_issues(&self, _params: &[(String, String)]) -> Result<IssueCount> {
+        unimplemented!()
+    }
+    fn get_issue(&self, _key: &str) -> Result<Issue> {
+        unimplemented!()
+    }
+    fn create_issue(&self, _params: &[(String, String)]) -> Result<Issue> {
+        unimplemented!()
+    }
+    fn update_issue(&self, _key: &str, _params: &[(String, String)]) -> Result<Issue> {
+        unimplemented!()
+    }
+    fn delete_issue(&self, _key: &str) -> Result<Issue> {
+        unimplemented!()
+    }
+    fn get_issue_comments(&self, _key: &str) -> Result<Vec<IssueComment>> {
+        unimplemented!()
+    }
+    fn add_issue_comment(&self, _key: &str, _params: &[(String, String)]) -> Result<IssueComment> {
+        unimplemented!()
+    }
     fn update_issue_comment(
         &self,
-        key: &str,
-        comment_id: u64,
-        params: &[(String, String)],
-    ) -> Result<IssueComment>;
-    fn delete_issue_comment(&self, key: &str, comment_id: u64) -> Result<IssueComment>;
-    fn get_issue_attachments(&self, key: &str) -> Result<Vec<IssueAttachment>>;
-    fn get_wikis(&self, params: &[(String, String)]) -> Result<Vec<WikiListItem>>;
-    fn get_wiki(&self, wiki_id: u64) -> Result<Wiki>;
-    fn create_wiki(&self, params: &[(String, String)]) -> Result<Wiki>;
-    fn update_wiki(&self, wiki_id: u64, params: &[(String, String)]) -> Result<Wiki>;
-    fn delete_wiki(&self, wiki_id: u64, params: &[(String, String)]) -> Result<Wiki>;
-    fn get_wiki_history(&self, wiki_id: u64) -> Result<Vec<WikiHistory>>;
-    fn get_wiki_attachments(&self, wiki_id: u64) -> Result<Vec<WikiAttachment>>;
-    fn get_teams(&self, params: &[(String, String)]) -> Result<Vec<Team>>;
-    fn get_team(&self, team_id: u64) -> Result<Team>;
+        _key: &str,
+        _comment_id: u64,
+        _params: &[(String, String)],
+    ) -> Result<IssueComment> {
+        unimplemented!()
+    }
+    fn delete_issue_comment(&self, _key: &str, _comment_id: u64) -> Result<IssueComment> {
+        unimplemented!()
+    }
+    fn get_issue_attachments(&self, _key: &str) -> Result<Vec<IssueAttachment>> {
+        unimplemented!()
+    }
+    fn get_wikis(&self, _params: &[(String, String)]) -> Result<Vec<WikiListItem>> {
+        unimplemented!()
+    }
+    fn get_wiki(&self, _wiki_id: u64) -> Result<Wiki> {
+        unimplemented!()
+    }
+    fn create_wiki(&self, _params: &[(String, String)]) -> Result<Wiki> {
+        unimplemented!()
+    }
+    fn update_wiki(&self, _wiki_id: u64, _params: &[(String, String)]) -> Result<Wiki> {
+        unimplemented!()
+    }
+    fn delete_wiki(&self, _wiki_id: u64, _params: &[(String, String)]) -> Result<Wiki> {
+        unimplemented!()
+    }
+    fn get_wiki_history(&self, _wiki_id: u64) -> Result<Vec<WikiHistory>> {
+        unimplemented!()
+    }
+    fn get_wiki_attachments(&self, _wiki_id: u64) -> Result<Vec<WikiAttachment>> {
+        unimplemented!()
+    }
+    fn get_teams(&self, _params: &[(String, String)]) -> Result<Vec<Team>> {
+        unimplemented!()
+    }
+    fn get_team(&self, _team_id: u64) -> Result<Team> {
+        unimplemented!()
+    }
     fn get_user_activities(
         &self,
-        user_id: u64,
-        params: &[(String, String)],
-    ) -> Result<Vec<Activity>>;
+        _user_id: u64,
+        _params: &[(String, String)],
+    ) -> Result<Vec<Activity>> {
+        unimplemented!()
+    }
     fn get_recently_viewed_issues(
         &self,
-        params: &[(String, String)],
-    ) -> Result<Vec<RecentlyViewedIssue>>;
-    fn get_notifications(&self, params: &[(String, String)]) -> Result<Vec<Notification>>;
-    fn count_notifications(&self) -> Result<NotificationCount>;
-    fn read_notification(&self, id: u64) -> Result<()>;
-    fn reset_unread_notifications(&self) -> Result<NotificationCount>;
-    fn get_space_licence(&self) -> Result<Licence>;
-    fn put_space_notification(&self, content: &str) -> Result<SpaceNotification>;
+        _params: &[(String, String)],
+    ) -> Result<Vec<RecentlyViewedIssue>> {
+        unimplemented!()
+    }
+    fn get_notifications(&self, _params: &[(String, String)]) -> Result<Vec<Notification>> {
+        unimplemented!()
+    }
+    fn count_notifications(&self) -> Result<NotificationCount> {
+        unimplemented!()
+    }
+    fn read_notification(&self, _id: u64) -> Result<()> {
+        unimplemented!()
+    }
+    fn reset_unread_notifications(&self) -> Result<NotificationCount> {
+        unimplemented!()
+    }
+    fn get_space_licence(&self) -> Result<Licence> {
+        unimplemented!()
+    }
+    fn put_space_notification(&self, _content: &str) -> Result<SpaceNotification> {
+        unimplemented!()
+    }
 }
 
 impl BacklogApi for BacklogClient {
