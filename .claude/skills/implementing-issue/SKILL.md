@@ -17,18 +17,23 @@ gh issue view <N> -R 23prime/backlog-cli
 
 Read the title, body, and comments to understand the task fully before proceeding.
 
+The Issue body follows `.github/ISSUE_TEMPLATE/default.md`. Extract the **Type** field
+from the `## Type` section if present.
+
 ## Step 1 — Clarify task type
 
-Determine which type applies:
+Use the Type extracted from the Issue body. If the `## Type` section is missing or unclear,
+determine the type from context:
 
 | Type | Branch prefix | Commit type |
 | ---- | ------------- | ----------- |
-| New feature | `feature/` | `feat` |
-| Refactoring | `feature/` | `refactor` |
-| Performance | `feature/` | `perf` |
-| Bug fix | `feature/` | `fix` |
-| AI config | `feature/` | `ai` |
-| Docs | `feature/` | `docs` |
+| `feat` | `feature/` | `feat` |
+| `fix` | `feature/` | `fix` |
+| `refactor` | `feature/` | `refactor` |
+| `perf` | `feature/` | `perf` |
+| `docs` | `feature/` | `docs` |
+| `ai` | `feature/` | `ai` |
+| `chore` | `feature/` | `chore` |
 
 Confirm the task and type with the user before proceeding.
 
