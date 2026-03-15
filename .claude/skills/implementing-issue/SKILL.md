@@ -51,7 +51,7 @@ git switch -c feature/<N>-<short-description>
 Read `website/docs/commands.md` and pick the first "Planned" entry from the command coverage table.
 Confirm the selection with the user before proceeding.
 
-For feature tasks, also read `docs/PATTERNS.md` for code patterns and known gotchas (pending Issue #66; until then, consult `AGENTS.md`), and check the official API docs before writing structs:
+For feature tasks, also read `AGENTS.md` for code patterns and known gotchas, and check the official API docs before writing structs:
 
 - **API docs**: <https://developer.nulab.com/docs/backlog/>
 - **Official SDK**: <https://github.com/nulab/backlog-js/> (ground truth for field names and types)
