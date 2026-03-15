@@ -912,7 +912,7 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl issue participant list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/participants` | ✅ 実装済み |
 | `bl issue shared-file list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/sharedFiles` | ✅ 実装済み |
 | `bl issue shared-file link <id-or-key>` | `POST /api/v2/issues/{issueIdOrKey}/sharedFiles` | ✅ 実装済み |
-| `bl issue shared-file unlink <id-or-key> <id>` | `DELETE /api/v2/issues/{issueIdOrKey}/sharedFiles/{id}` | ✅ 実装済み |
+| `bl issue shared-file unlink <id-or-key> <shared-file-id>` | `DELETE /api/v2/issues/{issueIdOrKey}/sharedFiles/{id}` | ✅ 実装済み |
 
 ### Documents
 
