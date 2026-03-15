@@ -308,6 +308,80 @@ bl project version list <id-or-key> --json
 [4] Version 0.2 [archived]
 ```
 
+## `bl project create`
+
+新しいプロジェクトを作成します。
+
+```bash
+bl project create --name "My Project" --key MYPRJ
+bl project create --name "My Project" --key MYPRJ --chart-enabled --subtasking-enabled
+bl project create --name "My Project" --key MYPRJ --text-formatting-rule backlog --json
+```
+
+| フラグ | デフォルト | 説明 |
+| --- | --- | --- |
+| `--name` | — | プロジェクト名（必須） |
+| `--key` | — | プロジェクトキー：大文字・数字・アンダースコア、2〜10文字（必須） |
+| `--chart-enabled` | `false` | バーンダウンチャート機能を有効化 |
+| `--subtasking-enabled` | `false` | サブタスク機能を有効化 |
+| `--text-formatting-rule` | `markdown` | `backlog` または `markdown` |
+| `--json` | — | JSON 形式で出力 |
+
+出力例:
+
+```text
+ID:         1
+Key:        MYPRJ
+Name:       My Project
+Formatting: markdown
+Archived:   false
+```
+
+## `bl project update`
+
+既存のプロジェクトを更新します。少なくとも 1 つのフィールドを指定する必要があります。
+
+```bash
+bl project update <id-or-key> --name "New Name"
+bl project update <id-or-key> --key NEWKEY --chart-enabled true
+bl project update <id-or-key> --archived true --json
+```
+
+| フラグ | 説明 |
+| --- | --- |
+| `--name` | 新しいプロジェクト名 |
+| `--key` | 新しいプロジェクトキー |
+| `--chart-enabled` | `true` または `false` |
+| `--subtasking-enabled` | `true` または `false` |
+| `--text-formatting-rule` | `backlog` または `markdown` |
+| `--archived` | `true` または `false` |
+| `--json` | JSON 形式で出力 |
+
+出力例:
+
+```text
+ID:         1
+Key:        MYPRJ
+Name:       New Name
+Formatting: markdown
+Archived:   false
+```
+
+## `bl project delete`
+
+プロジェクトを完全に削除します。
+
+```bash
+bl project delete <id-or-key>
+bl project delete <id-or-key> --json
+```
+
+出力例:
+
+```text
+Deleted: My Project (MYPRJ)
+```
+
 ## `bl issue list`
 
 オプションのフィルターで課題を一覧表示します。
@@ -836,9 +910,9 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | --- | --- | --- |
 | `bl project list` | `GET /api/v2/projects` | ✅ 実装済み |
 | `bl project show <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}` | ✅ 実装済み |
-| `bl project create` | `POST /api/v2/projects` | 計画中 |
-| `bl project update <id-or-key>` | `PATCH /api/v2/projects/{projectIdOrKey}` | 計画中 |
-| `bl project delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}` | 計画中 |
+| `bl project create` | `POST /api/v2/projects` | ✅ 実装済み |
+| `bl project update <id-or-key>` | `PATCH /api/v2/projects/{projectIdOrKey}` | ✅ 実装済み |
+| `bl project delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}` | ✅ 実装済み |
 | `bl project activities <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/activities` | ✅ 実装済み |
 | `bl project disk-usage <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/diskUsage` | ✅ 実装済み |
 | `bl project user list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/users` | ✅ 実装済み |

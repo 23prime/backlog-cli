@@ -194,6 +194,39 @@ impl BacklogClient {
             )
         })
     }
+
+    pub fn create_project(&self, params: &[(String, String)]) -> Result<Project> {
+        let value = self.post_form("/projects", params)?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize create project response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn update_project(&self, key: &str, params: &[(String, String)]) -> Result<Project> {
+        let value = self.patch_form(&format!("/projects/{}", key), params)?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize update project response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn delete_project(&self, key: &str) -> Result<Project> {
+        let value = self.delete_req(&format!("/projects/{}", key))?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize delete project response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
 }
 
 #[cfg(test)]
@@ -496,5 +529,97 @@ mod tests {
         let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
         let versions = client.get_project_versions("TEST").unwrap();
         assert!(versions[0].description.is_none());
+    }
+
+    #[test]
+    fn create_project_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST).path("/projects");
+            then.status(201).json_body(project_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let params = vec![
+            ("name".to_string(), "Test Project".to_string()),
+            ("key".to_string(), "TEST".to_string()),
+            ("chartEnabled".to_string(), "false".to_string()),
+            ("subtaskingEnabled".to_string(), "false".to_string()),
+            ("textFormattingRule".to_string(), "markdown".to_string()),
+        ];
+        let project = client.create_project(&params).unwrap();
+        assert_eq!(project.id, 1);
+        assert_eq!(project.project_key, "TEST");
+    }
+
+    #[test]
+    fn create_project_returns_error_on_api_failure() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST).path("/projects");
+            then.status(403)
+                .json_body(json!({"errors": [{"message": "Forbidden"}]}));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let err = client.create_project(&[]).unwrap_err();
+        assert!(err.to_string().contains("Forbidden"));
+    }
+
+    #[test]
+    fn update_project_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(httpmock::Method::PATCH).path("/projects/TEST");
+            then.status(200).json_body(project_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let params = vec![("name".to_string(), "New Name".to_string())];
+        let project = client.update_project("TEST", &params).unwrap();
+        assert_eq!(project.id, 1);
+    }
+
+    #[test]
+    fn update_project_returns_error_on_not_found() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(httpmock::Method::PATCH)
+                .path("/projects/UNKNOWN");
+            then.status(404)
+                .json_body(json!({"errors": [{"message": "No project"}]}));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let err = client.update_project("UNKNOWN", &[]).unwrap_err();
+        assert!(err.to_string().contains("No project"));
+    }
+
+    #[test]
+    fn delete_project_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(DELETE).path("/projects/TEST");
+            then.status(200).json_body(project_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let project = client.delete_project("TEST").unwrap();
+        assert_eq!(project.id, 1);
+        assert_eq!(project.project_key, "TEST");
+    }
+
+    #[test]
+    fn delete_project_returns_error_on_not_found() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(DELETE).path("/projects/UNKNOWN");
+            then.status(404)
+                .json_body(json!({"errors": [{"message": "No project"}]}));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let err = client.delete_project("UNKNOWN").unwrap_err();
+        assert!(err.to_string().contains("No project"));
     }
 }

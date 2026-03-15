@@ -104,6 +104,15 @@ pub trait BacklogApi {
     fn get_project_versions(&self, _key: &str) -> Result<Vec<ProjectVersion>> {
         unimplemented!()
     }
+    fn create_project(&self, _params: &[(String, String)]) -> Result<Project> {
+        unimplemented!()
+    }
+    fn update_project(&self, _key: &str, _params: &[(String, String)]) -> Result<Project> {
+        unimplemented!()
+    }
+    fn delete_project(&self, _key: &str) -> Result<Project> {
+        unimplemented!()
+    }
     fn get_issues(&self, _params: &[(String, String)]) -> Result<Vec<Issue>> {
         unimplemented!()
     }
@@ -313,6 +322,18 @@ impl BacklogApi for BacklogClient {
 
     fn get_project_versions(&self, key: &str) -> Result<Vec<ProjectVersion>> {
         self.get_project_versions(key)
+    }
+
+    fn create_project(&self, params: &[(String, String)]) -> Result<Project> {
+        self.create_project(params)
+    }
+
+    fn update_project(&self, key: &str, params: &[(String, String)]) -> Result<Project> {
+        self.update_project(key, params)
+    }
+
+    fn delete_project(&self, key: &str) -> Result<Project> {
+        self.delete_project(key)
     }
 
     fn get_issues(&self, params: &[(String, String)]) -> Result<Vec<Issue>> {

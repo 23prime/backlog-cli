@@ -1,14 +1,20 @@
 mod activities;
 pub mod category;
+mod create;
+mod delete;
 mod disk_usage;
 pub mod issue_type;
 mod list;
 mod show;
 pub mod status;
+mod update;
 pub mod user;
 pub mod version;
 
 pub use activities::{ProjectActivitiesArgs, activities};
+pub use create::{ProjectCreateArgs, create};
+pub use delete::{ProjectDeleteArgs, delete};
 pub use disk_usage::{ProjectDiskUsageArgs, disk_usage};
 pub use list::{ProjectListArgs, list};
 pub use show::{ProjectShowArgs, show};
+pub use update::{ProjectUpdateArgs, update};

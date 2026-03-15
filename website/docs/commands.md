@@ -308,6 +308,80 @@ Example output:
 [4] Version 0.2 [archived]
 ```
 
+## `bl project create`
+
+Create a new project.
+
+```bash
+bl project create --name "My Project" --key MYPRJ
+bl project create --name "My Project" --key MYPRJ --chart-enabled --subtasking-enabled
+bl project create --name "My Project" --key MYPRJ --text-formatting-rule backlog --json
+```
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--name` | — | Project name (required) |
+| `--key` | — | Project key: uppercase letters, numbers, underscore; 2–10 chars (required) |
+| `--chart-enabled` | `false` | Enable burndown chart feature |
+| `--subtasking-enabled` | `false` | Enable subtasking |
+| `--text-formatting-rule` | `markdown` | `backlog` or `markdown` |
+| `--json` | — | Output as JSON |
+
+Example output:
+
+```text
+ID:         1
+Key:        MYPRJ
+Name:       My Project
+Formatting: markdown
+Archived:   false
+```
+
+## `bl project update`
+
+Update an existing project. At least one field must be specified.
+
+```bash
+bl project update <id-or-key> --name "New Name"
+bl project update <id-or-key> --key NEWKEY --chart-enabled true
+bl project update <id-or-key> --archived true --json
+```
+
+| Flag | Description |
+| --- | --- |
+| `--name` | New project name |
+| `--key` | New project key |
+| `--chart-enabled` | `true` or `false` |
+| `--subtasking-enabled` | `true` or `false` |
+| `--text-formatting-rule` | `backlog` or `markdown` |
+| `--archived` | `true` or `false` |
+| `--json` | Output as JSON |
+
+Example output:
+
+```text
+ID:         1
+Key:        MYPRJ
+Name:       New Name
+Formatting: markdown
+Archived:   false
+```
+
+## `bl project delete`
+
+Delete a project permanently.
+
+```bash
+bl project delete <id-or-key>
+bl project delete <id-or-key> --json
+```
+
+Example output:
+
+```text
+Deleted: My Project (MYPRJ)
+```
+
 ## `bl issue list`
 
 List issues with optional filters.
@@ -832,9 +906,9 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | --- | --- | --- |
 | `bl project list` | `GET /api/v2/projects` | ✅ Implemented |
 | `bl project show <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}` | ✅ Implemented |
-| `bl project create` | `POST /api/v2/projects` | Planned |
-| `bl project update <id-or-key>` | `PATCH /api/v2/projects/{projectIdOrKey}` | Planned |
-| `bl project delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}` | Planned |
+| `bl project create` | `POST /api/v2/projects` | ✅ Implemented |
+| `bl project update <id-or-key>` | `PATCH /api/v2/projects/{projectIdOrKey}` | ✅ Implemented |
+| `bl project delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}` | ✅ Implemented |
 | `bl project activities <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/activities` | ✅ Implemented |
 | `bl project disk-usage <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/diskUsage` | ✅ Implemented |
 | `bl project user list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/users` | ✅ Implemented |
