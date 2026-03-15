@@ -496,6 +496,51 @@ Example output:
 [2] log.txt (1024 bytes)
 ```
 
+## `bl issue attachment delete`
+
+Delete an attachment from an issue.
+
+```bash
+bl issue attachment delete TEST-1 1
+bl issue attachment delete TEST-1 1 --json
+```
+
+## `bl issue participant list`
+
+List participants of an issue.
+
+```bash
+bl issue participant list TEST-1
+bl issue participant list TEST-1 --json
+```
+
+## `bl issue shared-file list`
+
+List shared files linked to an issue.
+
+```bash
+bl issue shared-file list TEST-1
+bl issue shared-file list TEST-1 --json
+```
+
+## `bl issue shared-file link`
+
+Link shared files to an issue.
+
+```bash
+bl issue shared-file link TEST-1 --shared-file-id 1
+bl issue shared-file link TEST-1 --shared-file-id 1 --shared-file-id 2 --json
+```
+
+## `bl issue shared-file unlink`
+
+Unlink a shared file from an issue.
+
+```bash
+bl issue shared-file unlink TEST-1 1
+bl issue shared-file unlink TEST-1 1 --json
+```
+
 ## `bl wiki list`
 
 List wiki pages in a project.
@@ -859,11 +904,11 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | `bl issue comment notification add <id-or-key> <comment-id>` | `POST /api/v2/issues/{issueIdOrKey}/comments/{commentId}/notifications` | ✅ Implemented |
 | `bl issue attachment list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/attachments` | ✅ Implemented |
 | `bl issue attachment get <id-or-key> <attachment-id>` | `GET /api/v2/issues/{issueIdOrKey}/attachments/{attachmentId}` | Planned |
-| `bl issue attachment delete <id-or-key> <attachment-id>` | `DELETE /api/v2/issues/{issueIdOrKey}/attachments/{attachmentId}` | Planned |
-| `bl issue participant list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/participants` | Planned |
-| `bl issue shared-file list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/sharedFiles` | Planned |
-| `bl issue shared-file link <id-or-key>` | `POST /api/v2/issues/{issueIdOrKey}/sharedFiles` | Planned |
-| `bl issue shared-file unlink <id-or-key> <id>` | `DELETE /api/v2/issues/{issueIdOrKey}/sharedFiles/{id}` | Planned |
+| `bl issue attachment delete <id-or-key> <attachment-id>` | `DELETE /api/v2/issues/{issueIdOrKey}/attachments/{attachmentId}` | ✅ Implemented |
+| `bl issue participant list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/participants` | ✅ Implemented |
+| `bl issue shared-file list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/sharedFiles` | ✅ Implemented |
+| `bl issue shared-file link <id-or-key>` | `POST /api/v2/issues/{issueIdOrKey}/sharedFiles` | ✅ Implemented |
+| `bl issue shared-file unlink <id-or-key> <id>` | `DELETE /api/v2/issues/{issueIdOrKey}/sharedFiles/{id}` | ✅ Implemented |
 
 ### Documents
 
