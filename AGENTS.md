@@ -75,6 +75,10 @@ Commands are organized as directories (`src/cmd/<resource>/`) with one file per 
 
 #### Testing strategy
 
+See [`docs/TESTING.md`](docs/TESTING.md) for the full testing guide.
+
+Summary:
+
 - **`api/` layer**: Use `httpmock` to spin up a local HTTP server; construct `BacklogClient::new_with(base_url, api_key)`.
 - **`cmd/` layer**: Implement `BacklogApi` on a `MockApi` struct; call `*_with(json, &mock)` directly.
 - Never call `BacklogClient::from_config()` in tests — it requires real credentials on disk.
@@ -91,16 +95,13 @@ Commands are organized as directories (`src/cmd/<resource>/`) with one file per 
 
 #### Validation layer boundaries
 
-Validation is split by responsibility:
+See [`docs/VALIDATION.md`](docs/VALIDATION.md) for the full validation guide.
+
+Summary:
 
 - **`main.rs` (clap)** — Syntactic/type-level checks only (e.g. "cannot parse as u64").
-- **`Args::try_new`** — Domain invariants that must hold before any logic runs
-  (e.g. "at least one of --name or --content must be specified", `count <= 100`).
-  Use a fallible constructor `try_new(...) -> Result<Self>` so errors propagate
-  naturally to `main` via `?`. Do **not** duplicate these checks in `*_with`.
-- **`cmd/*_with`** — API call logic and output formatting only. No validation that
-  belongs in `try_new`. Place API-spec constraints (e.g. field limits) here only
-  when they cannot be known at construction time.
+- **`Args::try_new`** — Domain invariants that must hold before any logic runs.
+- **`cmd/*_with`** — API call logic and output formatting only.
 - **`api/`** — HTTP-level error translation only.
 
 ### Build, lint, and test
