@@ -253,7 +253,10 @@ mod tests {
         fn get_space_licence(&self) -> Result<crate::api::licence::Licence> {
             unimplemented!()
         }
-        fn put_space_notification(&self, _content: &str) -> Result<crate::api::space_notification::SpaceNotification> {
+        fn put_space_notification(
+            &self,
+            _content: &str,
+        ) -> Result<crate::api::space_notification::SpaceNotification> {
             unimplemented!()
         }
     }
@@ -542,7 +545,10 @@ mod tests {
         fn get_space_licence(&self) -> Result<crate::api::licence::Licence> {
             unimplemented!()
         }
-        fn put_space_notification(&self, _content: &str) -> Result<crate::api::space_notification::SpaceNotification> {
+        fn put_space_notification(
+            &self,
+            _content: &str,
+        ) -> Result<crate::api::space_notification::SpaceNotification> {
             unimplemented!()
         }
     }
