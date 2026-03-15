@@ -19,7 +19,9 @@ pub fn licence(args: &SpaceLicenceArgs) -> Result<()> {
 }
 
 pub fn licence_with(args: &SpaceLicenceArgs, api: &dyn BacklogApi) -> Result<()> {
-    let l = api.get_space_licence()?;
+    let l = api
+        .get_space_licence()
+        .context("Failed to fetch space licence")?;
     if args.json {
         println!(
             "{}",
@@ -32,10 +34,7 @@ pub fn licence_with(args: &SpaceLicenceArgs, api: &dyn BacklogApi) -> Result<()>
 }
 
 fn format_licence_text(l: &Licence) -> String {
-    let contract = l
-        .contract_type
-        .as_deref()
-        .unwrap_or("(not set)");
+    let contract = l.contract_type.as_deref().unwrap_or("(not set)");
     format!(
         "Contract:  {}\nStorage:   {} / {} bytes\nStart:     {}",
         contract, l.storage_usage, l.storage_limit, l.start_date
@@ -310,7 +309,7 @@ mod tests {
     fn licence_with_propagates_api_error() {
         let api = MockApi { licence: None };
         let err = licence_with(&SpaceLicenceArgs::new(false), &api).unwrap_err();
-        assert!(err.to_string().contains("no licence"));
+        assert!(err.to_string().contains("Failed to fetch space licence"));
     }
 
     #[test]

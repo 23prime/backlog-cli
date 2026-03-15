@@ -82,8 +82,10 @@ mod tests {
     #[test]
     fn put_space_notification_returns_updated_struct() {
         let server = MockServer::start();
-        server.mock(|when, then| {
-            when.method(PUT).path("/space/notification");
+        let put_mock = server.mock(|when, then| {
+            when.method(PUT)
+                .path("/space/notification")
+                .body_contains("content=New+notification+text.");
             then.status(200).json_body(json!({
                 "content": "New notification text.",
                 "updated": "2024-07-01T00:00:00Z"
@@ -91,7 +93,10 @@ mod tests {
         });
 
         let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
-        let n = client.put_space_notification("New notification text.").unwrap();
+        let n = client
+            .put_space_notification("New notification text.")
+            .unwrap();
+        put_mock.assert();
         assert_eq!(n.content, "New notification text.");
         assert_eq!(n.updated, Some("2024-07-01T00:00:00Z".to_string()));
     }

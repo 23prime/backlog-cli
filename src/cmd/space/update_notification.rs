@@ -50,8 +50,20 @@ mod tests {
     use super::*;
     use anyhow::anyhow;
 
+    use std::cell::RefCell;
+
     struct MockApi {
         result: Option<SpaceNotification>,
+        captured_content: RefCell<Option<String>>,
+    }
+
+    impl MockApi {
+        fn new(result: Option<SpaceNotification>) -> Self {
+            Self {
+                result,
+                captured_content: RefCell::new(None),
+            }
+        }
     }
 
     impl crate::api::BacklogApi for MockApi {
@@ -272,7 +284,8 @@ mod tests {
         fn get_space_licence(&self) -> Result<crate::api::licence::Licence> {
             unimplemented!()
         }
-        fn put_space_notification(&self, _content: &str) -> Result<SpaceNotification> {
+        fn put_space_notification(&self, content: &str) -> Result<SpaceNotification> {
+            *self.captured_content.borrow_mut() = Some(content.to_string());
             self.result
                 .clone()
                 .ok_or_else(|| anyhow!("put notification failed"))
@@ -288,9 +301,7 @@ mod tests {
 
     #[test]
     fn update_notification_with_text_output_succeeds() {
-        let api = MockApi {
-            result: Some(sample_notification()),
-        };
+        let api = MockApi::new(Some(sample_notification()));
         assert!(
             update_notification_with(
                 &SpaceUpdateNotificationArgs::new("Hello world.".to_string(), false),
@@ -298,13 +309,15 @@ mod tests {
             )
             .is_ok()
         );
+        assert_eq!(
+            api.captured_content.borrow().as_deref(),
+            Some("Hello world.")
+        );
     }
 
     #[test]
     fn update_notification_with_json_output_succeeds() {
-        let api = MockApi {
-            result: Some(sample_notification()),
-        };
+        let api = MockApi::new(Some(sample_notification()));
         assert!(
             update_notification_with(
                 &SpaceUpdateNotificationArgs::new("Hello world.".to_string(), true),
@@ -312,11 +325,15 @@ mod tests {
             )
             .is_ok()
         );
+        assert_eq!(
+            api.captured_content.borrow().as_deref(),
+            Some("Hello world.")
+        );
     }
 
     #[test]
     fn update_notification_with_propagates_api_error() {
-        let api = MockApi { result: None };
+        let api = MockApi::new(None);
         let err = update_notification_with(
             &SpaceUpdateNotificationArgs::new("text".to_string(), false),
             &api,
