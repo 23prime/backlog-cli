@@ -117,6 +117,40 @@ Updated: (not set)
 (no notification set)
 ```
 
+## `bl space licence`
+
+Show the licence information for your Backlog space.
+
+```bash
+bl space licence
+bl space licence --json
+```
+
+Example output:
+
+```text
+Contract:  premium
+Storage:   5242880 / 1073741824 bytes
+Start:     2020-01-01
+```
+
+## `bl space update-notification`
+
+Update the notification message set for your Backlog space.
+
+```bash
+bl space update-notification --content "Scheduled maintenance on 2024-07-01."
+bl space update-notification --content "Hello." --json
+```
+
+Example output:
+
+```text
+Updated: 2024-07-01T00:00:00Z
+
+Scheduled maintenance on 2024-07-01.
+```
+
 ## `bl project list`
 
 List all projects you have access to.
@@ -706,8 +740,8 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | `bl space activities` | `GET /api/v2/space/activities` | ✅ Implemented |
 | `bl space disk-usage` | `GET /api/v2/space/diskUsage` | ✅ Implemented |
 | `bl space notification` | `GET /api/v2/space/notification` | ✅ Implemented |
-| `bl space licence` | `GET /api/v2/space/licence` | Planned |
-| `bl space update-notification` | `PUT /api/v2/space/notification` | Planned |
+| `bl space licence` | `GET /api/v2/space/licence` | ✅ Implemented |
+| `bl space update-notification` | `PUT /api/v2/space/notification` | ✅ Implemented |
 | — | `GET /api/v2/space/image` | Planned |
 | — | `POST /api/v2/space/attachment` | Planned |
 

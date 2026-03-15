@@ -24,7 +24,10 @@ use cmd::project::status::ProjectStatusListArgs;
 use cmd::project::user::ProjectUserListArgs;
 use cmd::project::version::ProjectVersionListArgs;
 use cmd::project::{ProjectActivitiesArgs, ProjectDiskUsageArgs, ProjectListArgs, ProjectShowArgs};
-use cmd::space::{SpaceActivitiesArgs, SpaceDiskUsageArgs, SpaceNotificationArgs, SpaceShowArgs};
+use cmd::space::{
+    SpaceActivitiesArgs, SpaceDiskUsageArgs, SpaceLicenceArgs, SpaceNotificationArgs,
+    SpaceShowArgs, SpaceUpdateNotificationArgs,
+};
 use cmd::team::{TeamListArgs, TeamShowArgs};
 use cmd::user::{UserActivitiesArgs, UserListArgs, UserRecentlyViewedArgs, UserShowArgs};
 use cmd::wiki::attachment::WikiAttachmentListArgs;
@@ -144,6 +147,21 @@ enum SpaceCommands {
     },
     /// Show space notification
     Notification {
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Show space licence information
+    Licence {
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Update the space notification message
+    UpdateNotification {
+        /// Notification content
+        #[arg(long)]
+        content: String,
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -1123,6 +1141,16 @@ fn run() -> Result<()> {
             Some(SpaceCommands::Notification { json: sub_json }) => {
                 cmd::space::notification(&SpaceNotificationArgs::new(json || sub_json))
             }
+            Some(SpaceCommands::Licence { json: sub_json }) => {
+                cmd::space::licence(&SpaceLicenceArgs::new(json || sub_json))
+            }
+            Some(SpaceCommands::UpdateNotification {
+                content,
+                json: sub_json,
+            }) => cmd::space::update_notification(&SpaceUpdateNotificationArgs::new(
+                content,
+                json || sub_json,
+            )),
         },
     }
 }

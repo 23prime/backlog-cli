@@ -1,47 +1,48 @@
 use anstream::println;
 use anyhow::{Context, Result};
 
-use crate::api::{BacklogApi, BacklogClient, space::Space};
+use crate::api::{BacklogApi, BacklogClient, space_notification::SpaceNotification};
 
-pub struct SpaceShowArgs {
+pub struct SpaceUpdateNotificationArgs {
+    pub content: String,
     json: bool,
 }
 
-impl SpaceShowArgs {
-    pub fn new(json: bool) -> Self {
-        Self { json }
+impl SpaceUpdateNotificationArgs {
+    pub fn new(content: String, json: bool) -> Self {
+        Self { content, json }
     }
 }
 
-pub fn show(args: &SpaceShowArgs) -> Result<()> {
+pub fn update_notification(args: &SpaceUpdateNotificationArgs) -> Result<()> {
     let client = BacklogClient::from_config()?;
-    show_with(args, &client)
+    update_notification_with(args, &client)
 }
 
-pub fn show_with(args: &SpaceShowArgs, api: &dyn BacklogApi) -> Result<()> {
-    let space = api.get_space()?;
+pub fn update_notification_with(
+    args: &SpaceUpdateNotificationArgs,
+    api: &dyn BacklogApi,
+) -> Result<()> {
+    let n = api.put_space_notification(&args.content)?;
     if args.json {
         println!(
             "{}",
-            serde_json::to_string_pretty(&space).context("Failed to serialize JSON")?
+            serde_json::to_string_pretty(&n).context("Failed to serialize JSON")?
         );
     } else {
-        println!("{}", format_space_text(&space));
+        println!("{}", format_notification_text(&n));
     }
     Ok(())
 }
 
-fn format_space_text(space: &Space) -> String {
-    format!(
-        "Space key:  {}\nName:       {}\nLanguage:   {}\nTimezone:   {}\nFormatting: {}\nCreated:    {}\nUpdated:    {}",
-        space.space_key,
-        space.name,
-        space.lang,
-        space.timezone,
-        space.text_formatting_rule,
-        space.created,
-        space.updated,
-    )
+fn format_notification_text(n: &SpaceNotification) -> String {
+    let updated = n.updated.as_deref().unwrap_or("(not set)");
+    let content = if n.content.trim().is_empty() {
+        "(no notification set)"
+    } else {
+        n.content.as_str()
+    };
+    format!("Updated: {}\n\n{}", updated, content)
 }
 
 #[cfg(test)]
@@ -49,13 +50,25 @@ mod tests {
     use super::*;
     use anyhow::anyhow;
 
+    use std::cell::RefCell;
+
     struct MockApi {
-        space: Option<Space>,
+        result: Option<SpaceNotification>,
+        captured_content: RefCell<Option<String>>,
+    }
+
+    impl MockApi {
+        fn new(result: Option<SpaceNotification>) -> Self {
+            Self {
+                result,
+                captured_content: RefCell::new(None),
+            }
+        }
     }
 
     impl crate::api::BacklogApi for MockApi {
-        fn get_space(&self) -> Result<Space> {
-            self.space.clone().ok_or_else(|| anyhow!("no space"))
+        fn get_space(&self) -> Result<crate::api::space::Space> {
+            unimplemented!()
         }
         fn get_myself(&self) -> Result<crate::api::user::User> {
             unimplemented!()
@@ -75,9 +88,7 @@ mod tests {
         fn get_space_disk_usage(&self) -> Result<crate::api::disk_usage::DiskUsage> {
             unimplemented!()
         }
-        fn get_space_notification(
-            &self,
-        ) -> Result<crate::api::space_notification::SpaceNotification> {
+        fn get_space_notification(&self) -> Result<SpaceNotification> {
             unimplemented!()
         }
         fn get_projects(&self) -> Result<Vec<crate::api::project::Project>> {
@@ -270,69 +281,71 @@ mod tests {
         ) -> anyhow::Result<crate::api::notification::NotificationCount> {
             unimplemented!()
         }
-        fn get_space_licence(&self) -> anyhow::Result<crate::api::licence::Licence> {
+        fn get_space_licence(&self) -> Result<crate::api::licence::Licence> {
             unimplemented!()
         }
-        fn put_space_notification(
-            &self,
-            _content: &str,
-        ) -> anyhow::Result<crate::api::space_notification::SpaceNotification> {
-            unimplemented!()
+        fn put_space_notification(&self, content: &str) -> Result<SpaceNotification> {
+            *self.captured_content.borrow_mut() = Some(content.to_string());
+            self.result
+                .clone()
+                .ok_or_else(|| anyhow!("put notification failed"))
         }
     }
 
-    fn sample_space() -> Space {
-        Space {
-            space_key: "mycompany".to_string(),
-            name: "My Company".to_string(),
-            owner_id: 1,
-            lang: "ja".to_string(),
-            timezone: "Asia/Tokyo".to_string(),
-            text_formatting_rule: "markdown".to_string(),
-            created: "2020-01-01T00:00:00Z".to_string(),
-            updated: "2024-06-01T00:00:00Z".to_string(),
+    fn sample_notification() -> SpaceNotification {
+        SpaceNotification {
+            content: "Hello world.".to_string(),
+            updated: Some("2024-07-01T00:00:00Z".to_string()),
         }
     }
 
     #[test]
-    fn show_with_text_output_succeeds() {
-        let api = MockApi {
-            space: Some(sample_space()),
-        };
-        assert!(show_with(&SpaceShowArgs::new(false), &api).is_ok());
+    fn update_notification_with_text_output_succeeds() {
+        let api = MockApi::new(Some(sample_notification()));
+        assert!(
+            update_notification_with(
+                &SpaceUpdateNotificationArgs::new("Hello world.".to_string(), false),
+                &api
+            )
+            .is_ok()
+        );
+        assert_eq!(
+            api.captured_content.borrow().as_deref(),
+            Some("Hello world.")
+        );
     }
 
     #[test]
-    fn show_with_json_output_succeeds() {
-        let api = MockApi {
-            space: Some(sample_space()),
-        };
-        assert!(show_with(&SpaceShowArgs::new(true), &api).is_ok());
+    fn update_notification_with_json_output_succeeds() {
+        let api = MockApi::new(Some(sample_notification()));
+        assert!(
+            update_notification_with(
+                &SpaceUpdateNotificationArgs::new("Hello world.".to_string(), true),
+                &api
+            )
+            .is_ok()
+        );
+        assert_eq!(
+            api.captured_content.borrow().as_deref(),
+            Some("Hello world.")
+        );
     }
 
     #[test]
-    fn show_with_propagates_api_error() {
-        let api = MockApi { space: None };
-        let err = show_with(&SpaceShowArgs::new(false), &api).unwrap_err();
-        assert!(err.to_string().contains("no space"));
+    fn update_notification_with_propagates_api_error() {
+        let api = MockApi::new(None);
+        let err = update_notification_with(
+            &SpaceUpdateNotificationArgs::new("text".to_string(), false),
+            &api,
+        )
+        .unwrap_err();
+        assert!(err.to_string().contains("put notification failed"));
     }
 
     #[test]
-    fn format_space_text_contains_all_fields() {
-        let text = format_space_text(&sample_space());
-        assert!(text.contains("mycompany"));
-        assert!(text.contains("My Company"));
-        assert!(text.contains("ja"));
-        assert!(text.contains("Asia/Tokyo"));
-        assert!(text.contains("markdown"));
-        assert!(text.contains("2020-01-01T00:00:00Z"));
-        assert!(text.contains("2024-06-01T00:00:00Z"));
-    }
-
-    #[test]
-    fn format_space_text_label_alignment() {
-        let text = format_space_text(&sample_space());
-        assert!(text.contains("Space key:  mycompany"));
-        assert!(text.contains("Name:       My Company"));
+    fn format_notification_text_contains_fields() {
+        let text = format_notification_text(&sample_notification());
+        assert!(text.contains("2024-07-01T00:00:00Z"));
+        assert!(text.contains("Hello world."));
     }
 }
