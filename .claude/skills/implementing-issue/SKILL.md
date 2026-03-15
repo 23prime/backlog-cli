@@ -1,46 +1,64 @@
 ---
-name: developing
-description: "General development workflow for backlog-cli: branch → implement → fix → coderabbit review → (API test) → commit → push → PR. Covers feature additions, refactoring, performance tuning, and bug fixes. Use when the user asks to implement, refactor, tune, or fix something in the codebase."
+name: implementing-issue
+description: "Issue-driven development workflow for backlog-cli: reads a GitHub Issue, implements the change, and opens a PR that closes the Issue. Use when the user references a GitHub Issue number and asks to implement or fix it."
 ---
 
-# Development Workflow
+# Implementing Issue
 
 Read `AGENTS.md` for architecture conventions and `docs/CONTRIBUTING.md` for branch/commit/PR rules.
 
+## Step 0 — Read the Issue
+
+Determine the issue number from the user's message or context. Fetch the Issue:
+
+```bash
+REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
+gh issue view <N> -R "$REPO"
+```
+
+Read the title, body, and comments to understand the task fully before proceeding.
+
+The Issue body follows `.github/ISSUE_TEMPLATE/default.md`. Extract the **Type** field
+from the `## Type` section if present.
+
 ## Step 1 — Clarify task type
 
-Determine which type applies:
+Use the Type extracted from the Issue body. If the `## Type` section is missing or unclear,
+determine the type from context:
 
 | Type | Branch prefix | Commit type |
 | ---- | ------------- | ----------- |
-| New feature | `feature/` | `feat` |
-| Refactoring | `feature/` | `refactor` |
-| Performance | `feature/` | `perf` |
-| Bug fix | `feature/` | `fix` |
+| `feat` | `feature/` | `feat` |
+| `fix` | `feature/` | `fix` |
+| `refactor` | `feature/` | `refactor` |
+| `perf` | `feature/` | `perf` |
+| `docs` | `feature/` | `docs` |
+| `ai` | `feature/` | `ai` |
+| `chore` | `feature/` | `chore` |
 
 Confirm the task and type with the user before proceeding.
 
 ## Step 2 — Create branch
 
-Follow `docs/CONTRIBUTING.md`:
+Include the Issue number in the branch name:
 
 ```bash
-git switch -c feature/<name>
+git switch -c feature/<N>-<short-description>
 ```
 
-## Step 3 — Pick a feature (feature tasks only)
+## Step 3 — Pick a feature (Backlog CLI feature tasks only)
 
 Read `website/docs/commands.md` and pick the first "Planned" entry from the command coverage table.
 Confirm the selection with the user before proceeding.
 
-For feature tasks, also read `references/patterns.md` for code patterns and known gotchas, and check the official API docs before writing structs:
+For feature tasks, also read `AGENTS.md` for code patterns and known gotchas, and check the official API docs before writing structs:
 
 - **API docs**: <https://developer.nulab.com/docs/backlog/>
 - **Official SDK**: <https://github.com/nulab/backlog-js/> (ground truth for field names and types)
 
 ## Step 4 — Implement
 
-Follow `AGENTS.md` conventions. For feature tasks, the typical file order is:
+Follow `AGENTS.md` conventions. For Backlog CLI feature tasks, the typical file order is:
 
 1. `src/api/<resource>.rs` — response struct + `BacklogClient` method
 2. `src/api/mod.rs` — trait declaration + impl
@@ -67,7 +85,7 @@ Repeat until clean.
 
 Invoke the `coderabbit` skill. Fix each actionable finding and re-review until clean.
 
-## Step 7 — Test against real API (feature / fix: required; refactor / perf: confirm with user)
+## Step 7 — Test against real API (feature / fix: required; refactor / perf / docs / ai: confirm with user)
 
 ```bash
 mise run rs-run <subcommand args>
@@ -78,7 +96,7 @@ If deserialization fails, the raw JSON is printed — use it to identify the exa
 
 **For POST / PATCH / DELETE commands: always confirm with the user before running — these affect real data.**
 
-For refactor and perf tasks, ask the user whether a real API test is needed before running.
+For non-feature tasks (refactor, perf, docs, ai), ask the user whether a real API test is needed.
 
 ## Step 8 — Commit
 
@@ -95,10 +113,10 @@ git commit -m "<type>: <description>"
 ## Step 9 — Push and open PR
 
 ```bash
-git push -u origin feature/<name>
+git push -u origin feature/<N>-<short-description>
 ```
 
-Create a PR following `.github/PULL_REQUEST_TEMPLATE.md`. PR body must be in English.
+Create a PR following `.github/PULL_REQUEST_TEMPLATE.md`. PR body must be in English and include `Closes #<N>`.
 
 ```bash
 gh pr create --title "<type>: ..." --body "$(cat <<'EOF'
@@ -106,6 +124,7 @@ gh pr create --title "<type>: ..." --body "$(cat <<'EOF'
 
 - [ ] Target branch is `main`
 - [ ] Status checks are passing
+- [ ] Documentation updated if user-visible behavior changed (`website/docs/`, `website/i18n/ja/`, `README.md`)
 
 ## Summary
 
@@ -114,6 +133,8 @@ gh pr create --title "<type>: ..." --body "$(cat <<'EOF'
 ## Changes
 
 ## Notes
+
+Closes #<N>
 EOF
 )"
 ```
