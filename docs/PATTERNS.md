@@ -76,7 +76,8 @@ pub fn show(args: &MyArgs) -> Result<()> {
 }
 
 pub fn show_with(args: &MyArgs, api: &dyn BacklogApi) -> Result<()> {
-    let data = api.get_my_resource(&args.key)?;
+    let params: Vec<(String, String)> = vec![];
+    let data = api.get_my_resource(&params)?;
     if args.json {
         println!("{}", serde_json::to_string_pretty(&data).context("Failed to serialize JSON")?);
     } else {
