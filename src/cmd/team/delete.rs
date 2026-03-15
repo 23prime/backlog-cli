@@ -3,36 +3,31 @@ use anyhow::{Context, Result};
 
 use crate::api::{BacklogApi, BacklogClient};
 
-pub struct IssueCommentDeleteArgs {
-    key: String,
-    comment_id: u64,
-    json: bool,
+pub struct TeamDeleteArgs {
+    pub team_id: u64,
+    pub json: bool,
 }
 
-impl IssueCommentDeleteArgs {
-    pub fn new(key: String, comment_id: u64, json: bool) -> Self {
-        Self {
-            key,
-            comment_id,
-            json,
-        }
+impl TeamDeleteArgs {
+    pub fn new(team_id: u64, json: bool) -> Self {
+        Self { team_id, json }
     }
 }
 
-pub fn delete(args: &IssueCommentDeleteArgs) -> Result<()> {
+pub fn delete(args: &TeamDeleteArgs) -> Result<()> {
     let client = BacklogClient::from_config()?;
     delete_with(args, &client)
 }
 
-pub fn delete_with(args: &IssueCommentDeleteArgs, api: &dyn BacklogApi) -> Result<()> {
-    let comment = api.delete_issue_comment(&args.key, args.comment_id)?;
+pub fn delete_with(args: &TeamDeleteArgs, api: &dyn BacklogApi) -> Result<()> {
+    let team = api.delete_team(args.team_id)?;
     if args.json {
         println!(
             "{}",
-            serde_json::to_string_pretty(&comment).context("Failed to serialize JSON")?
+            serde_json::to_string_pretty(&team).context("Failed to serialize JSON")?
         );
     } else {
-        println!("Deleted comment {} from {}", comment.id, args.key);
+        println!("Deleted: {}", team.name);
     }
     Ok(())
 }
@@ -40,12 +35,13 @@ pub fn delete_with(args: &IssueCommentDeleteArgs, api: &dyn BacklogApi) -> Resul
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::issue::{Issue, IssueAttachment, IssueComment, IssueCount};
-    use crate::cmd::issue::comment::list::sample_comment;
     use anyhow::anyhow;
+    use std::collections::BTreeMap;
+
+    use crate::api::team::{Team, TeamMember};
 
     struct MockApi {
-        comment: Option<IssueComment>,
+        team: Option<Team>,
     }
 
     impl crate::api::BacklogApi for MockApi {
@@ -124,32 +120,48 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::project::ProjectVersion>> {
             unimplemented!()
         }
-        fn get_issues(&self, _params: &[(String, String)]) -> anyhow::Result<Vec<Issue>> {
+        fn get_issues(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<Vec<crate::api::issue::Issue>> {
             unimplemented!()
         }
-        fn count_issues(&self, _params: &[(String, String)]) -> anyhow::Result<IssueCount> {
+        fn count_issues(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::IssueCount> {
             unimplemented!()
         }
-        fn get_issue(&self, _key: &str) -> anyhow::Result<Issue> {
+        fn get_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
             unimplemented!()
         }
-        fn create_issue(&self, _params: &[(String, String)]) -> anyhow::Result<Issue> {
+        fn create_issue(
+            &self,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::Issue> {
             unimplemented!()
         }
-        fn update_issue(&self, _key: &str, _params: &[(String, String)]) -> anyhow::Result<Issue> {
+        fn update_issue(
+            &self,
+            _key: &str,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::issue::Issue> {
             unimplemented!()
         }
-        fn delete_issue(&self, _key: &str) -> anyhow::Result<Issue> {
+        fn delete_issue(&self, _key: &str) -> anyhow::Result<crate::api::issue::Issue> {
             unimplemented!()
         }
-        fn get_issue_comments(&self, _key: &str) -> anyhow::Result<Vec<IssueComment>> {
+        fn get_issue_comments(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueComment>> {
             unimplemented!()
         }
         fn add_issue_comment(
             &self,
             _key: &str,
             _params: &[(String, String)],
-        ) -> anyhow::Result<IssueComment> {
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
             unimplemented!()
         }
         fn update_issue_comment(
@@ -157,17 +169,20 @@ mod tests {
             _key: &str,
             _comment_id: u64,
             _params: &[(String, String)],
-        ) -> anyhow::Result<IssueComment> {
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
             unimplemented!()
         }
         fn delete_issue_comment(
             &self,
             _key: &str,
             _comment_id: u64,
-        ) -> anyhow::Result<IssueComment> {
-            self.comment.clone().ok_or_else(|| anyhow!("delete failed"))
+        ) -> anyhow::Result<crate::api::issue::IssueComment> {
+            unimplemented!()
         }
-        fn get_issue_attachments(&self, _key: &str) -> anyhow::Result<Vec<IssueAttachment>> {
+        fn get_issue_attachments(
+            &self,
+            _key: &str,
+        ) -> anyhow::Result<Vec<crate::api::issue::IssueAttachment>> {
             unimplemented!()
         }
         fn get_wikis(
@@ -211,24 +226,20 @@ mod tests {
         ) -> anyhow::Result<Vec<crate::api::wiki::WikiAttachment>> {
             unimplemented!()
         }
-        fn get_teams(&self, _: &[(String, String)]) -> anyhow::Result<Vec<crate::api::team::Team>> {
+        fn get_teams(&self, _: &[(String, String)]) -> anyhow::Result<Vec<Team>> {
             unimplemented!()
         }
-        fn get_team(&self, _team_id: u64) -> anyhow::Result<crate::api::team::Team> {
+        fn get_team(&self, _team_id: u64) -> anyhow::Result<Team> {
             unimplemented!()
         }
-        fn add_team(&self, _params: &[(String, String)]) -> anyhow::Result<crate::api::team::Team> {
+        fn add_team(&self, _params: &[(String, String)]) -> anyhow::Result<Team> {
             unimplemented!()
         }
-        fn update_team(
-            &self,
-            _team_id: u64,
-            _params: &[(String, String)],
-        ) -> anyhow::Result<crate::api::team::Team> {
+        fn update_team(&self, _team_id: u64, _params: &[(String, String)]) -> anyhow::Result<Team> {
             unimplemented!()
         }
-        fn delete_team(&self, _team_id: u64) -> anyhow::Result<crate::api::team::Team> {
-            unimplemented!()
+        fn delete_team(&self, _team_id: u64) -> anyhow::Result<Team> {
+            self.team.clone().ok_or_else(|| anyhow!("no team"))
         }
         fn get_user_activities(
             &self,
@@ -264,30 +275,51 @@ mod tests {
         }
     }
 
-    fn args(json: bool) -> IssueCommentDeleteArgs {
-        IssueCommentDeleteArgs::new("TEST-1".to_string(), 1, json)
+    fn sample_member() -> TeamMember {
+        TeamMember {
+            id: 2,
+            user_id: Some("dev".to_string()),
+            name: "Developer".to_string(),
+            role_type: 2,
+            lang: None,
+            mail_address: None,
+            last_login_time: None,
+            extra: BTreeMap::new(),
+        }
+    }
+
+    fn sample_team() -> Team {
+        Team {
+            id: 1,
+            name: "dev-team".to_string(),
+            members: vec![sample_member()],
+            display_order: None,
+            created: "2024-01-01T00:00:00Z".to_string(),
+            updated: "2024-06-01T00:00:00Z".to_string(),
+            extra: BTreeMap::new(),
+        }
     }
 
     #[test]
     fn delete_with_text_output_succeeds() {
         let api = MockApi {
-            comment: Some(sample_comment()),
+            team: Some(sample_team()),
         };
-        assert!(delete_with(&args(false), &api).is_ok());
+        assert!(delete_with(&TeamDeleteArgs::new(1, false), &api).is_ok());
     }
 
     #[test]
     fn delete_with_json_output_succeeds() {
         let api = MockApi {
-            comment: Some(sample_comment()),
+            team: Some(sample_team()),
         };
-        assert!(delete_with(&args(true), &api).is_ok());
+        assert!(delete_with(&TeamDeleteArgs::new(1, true), &api).is_ok());
     }
 
     #[test]
     fn delete_with_propagates_api_error() {
-        let api = MockApi { comment: None };
-        let err = delete_with(&args(false), &api).unwrap_err();
-        assert!(err.to_string().contains("delete failed"));
+        let api = MockApi { team: None };
+        let err = delete_with(&TeamDeleteArgs::new(999, false), &api).unwrap_err();
+        assert!(err.to_string().contains("no team"));
     }
 }

@@ -25,7 +25,7 @@ use cmd::project::user::ProjectUserListArgs;
 use cmd::project::version::ProjectVersionListArgs;
 use cmd::project::{ProjectActivitiesArgs, ProjectDiskUsageArgs, ProjectListArgs, ProjectShowArgs};
 use cmd::space::{SpaceActivitiesArgs, SpaceDiskUsageArgs, SpaceNotificationArgs, SpaceShowArgs};
-use cmd::team::{TeamListArgs, TeamShowArgs};
+use cmd::team::{TeamAddArgs, TeamDeleteArgs, TeamListArgs, TeamShowArgs, TeamUpdateArgs};
 use cmd::user::{UserActivitiesArgs, UserListArgs, UserRecentlyViewedArgs, UserShowArgs};
 use cmd::wiki::attachment::WikiAttachmentListArgs;
 use cmd::wiki::{
@@ -669,6 +669,37 @@ enum TeamCommands {
         #[arg(long)]
         json: bool,
     },
+    /// Add a new team
+    Add {
+        /// Team name
+        #[arg(long)]
+        name: String,
+        /// Member user IDs (repeatable)
+        #[arg(long = "member-id", value_name = "ID")]
+        member_ids: Vec<u64>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Update a team
+    Update {
+        /// Team ID
+        id: u64,
+        /// New team name
+        #[arg(long)]
+        name: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Delete a team
+    Delete {
+        /// Team ID
+        id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -1073,6 +1104,15 @@ fn run() -> Result<()> {
                 offset,
             )?),
             TeamCommands::Show { id, json } => cmd::team::show(&TeamShowArgs::new(id, json)),
+            TeamCommands::Add {
+                name,
+                member_ids,
+                json,
+            } => cmd::team::add(&TeamAddArgs::new(name, member_ids, json)),
+            TeamCommands::Update { id, name, json } => {
+                cmd::team::update(&TeamUpdateArgs::new(id, name, json))
+            }
+            TeamCommands::Delete { id, json } => cmd::team::delete(&TeamDeleteArgs::new(id, json)),
         },
         Commands::Notification { action } => match action {
             NotificationCommands::List {

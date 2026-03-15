@@ -272,6 +272,19 @@ mod tests {
         fn get_team(&self, _team_id: u64) -> anyhow::Result<crate::api::team::Team> {
             unimplemented!()
         }
+        fn add_team(&self, _params: &[(String, String)]) -> anyhow::Result<crate::api::team::Team> {
+            unimplemented!()
+        }
+        fn update_team(
+            &self,
+            _team_id: u64,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::team::Team> {
+            unimplemented!()
+        }
+        fn delete_team(&self, _team_id: u64) -> anyhow::Result<crate::api::team::Team> {
+            unimplemented!()
+        }
         fn get_user_activities(
             &self,
             _user_id: u64,

@@ -229,6 +229,19 @@ mod tests {
         fn get_team(&self, _: u64) -> Result<Team> {
             unimplemented!()
         }
+        fn add_team(&self, _params: &[(String, String)]) -> anyhow::Result<crate::api::team::Team> {
+            unimplemented!()
+        }
+        fn update_team(
+            &self,
+            _team_id: u64,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::team::Team> {
+            unimplemented!()
+        }
+        fn delete_team(&self, _team_id: u64) -> anyhow::Result<crate::api::team::Team> {
+            unimplemented!()
+        }
         fn get_user_activities(&self, _: u64, _: &[(String, String)]) -> Result<Vec<Activity>> {
             unimplemented!()
         }
@@ -509,6 +522,19 @@ mod tests {
             unimplemented!()
         }
         fn get_team(&self, _: u64) -> Result<Team> {
+            unimplemented!()
+        }
+        fn add_team(&self, _params: &[(String, String)]) -> anyhow::Result<crate::api::team::Team> {
+            unimplemented!()
+        }
+        fn update_team(
+            &self,
+            _team_id: u64,
+            _params: &[(String, String)],
+        ) -> anyhow::Result<crate::api::team::Team> {
+            unimplemented!()
+        }
+        fn delete_team(&self, _team_id: u64) -> anyhow::Result<crate::api::team::Team> {
             unimplemented!()
         }
         fn get_user_activities(&self, _: u64, _: &[(String, String)]) -> Result<Vec<Activity>> {

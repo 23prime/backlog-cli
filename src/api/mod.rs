@@ -77,6 +77,9 @@ pub trait BacklogApi {
     fn get_wiki_attachments(&self, wiki_id: u64) -> Result<Vec<WikiAttachment>>;
     fn get_teams(&self, params: &[(String, String)]) -> Result<Vec<Team>>;
     fn get_team(&self, team_id: u64) -> Result<Team>;
+    fn add_team(&self, params: &[(String, String)]) -> Result<Team>;
+    fn update_team(&self, team_id: u64, params: &[(String, String)]) -> Result<Team>;
+    fn delete_team(&self, team_id: u64) -> Result<Team>;
     fn get_user_activities(
         &self,
         user_id: u64,
@@ -244,6 +247,18 @@ impl BacklogApi for BacklogClient {
 
     fn get_team(&self, team_id: u64) -> Result<Team> {
         self.get_team(team_id)
+    }
+
+    fn add_team(&self, params: &[(String, String)]) -> Result<Team> {
+        self.add_team(params)
+    }
+
+    fn update_team(&self, team_id: u64, params: &[(String, String)]) -> Result<Team> {
+        self.update_team(team_id, params)
+    }
+
+    fn delete_team(&self, team_id: u64) -> Result<Team> {
+        self.delete_team(team_id)
     }
 
     fn get_user_activities(
