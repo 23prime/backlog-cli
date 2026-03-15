@@ -166,13 +166,16 @@ mod tests {
             unimplemented!()
         }
         fn reset_unread_notifications(&self) -> Result<NotificationCount> {
-            Ok(NotificationCount { count: 0 }
+            Ok(NotificationCount { count: 0 })
+        }
         fn get_space_licence(&self) -> Result<crate::api::licence::Licence> {
             unimplemented!()
         }
-        fn put_space_notification(&self, _content: &str) -> Result<crate::api::space_notification::SpaceNotification> {
+        fn put_space_notification(
+            &self,
+            _content: &str,
+        ) -> Result<crate::api::space_notification::SpaceNotification> {
             unimplemented!()
-        })
         }
     }
 
