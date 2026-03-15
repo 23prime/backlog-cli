@@ -29,3 +29,6 @@ peaceiris
 worktrees
 licence
 watchings
+MYPRJ
+NEWKEY
+burndown

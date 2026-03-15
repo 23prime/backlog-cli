@@ -31,7 +31,10 @@ use cmd::project::issue_type::ProjectIssueTypeListArgs;
 use cmd::project::status::ProjectStatusListArgs;
 use cmd::project::user::ProjectUserListArgs;
 use cmd::project::version::ProjectVersionListArgs;
-use cmd::project::{ProjectActivitiesArgs, ProjectDiskUsageArgs, ProjectListArgs, ProjectShowArgs};
+use cmd::project::{
+    ProjectActivitiesArgs, ProjectCreateArgs, ProjectDeleteArgs, ProjectDiskUsageArgs,
+    ProjectListArgs, ProjectShowArgs, ProjectUpdateArgs,
+};
 use cmd::space::{
     SpaceActivitiesArgs, SpaceDiskUsageArgs, SpaceLicenceArgs, SpaceNotificationArgs,
     SpaceShowArgs, SpaceUpdateNotificationArgs,
@@ -217,6 +220,61 @@ enum ProjectCommands {
     },
     /// Show disk usage for a project
     DiskUsage {
+        /// Project ID or key
+        id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Create a new project
+    Create {
+        /// Project name
+        #[arg(long)]
+        name: String,
+        /// Project key (uppercase letters, numbers, underscore; 2–10 chars)
+        #[arg(long)]
+        key: String,
+        /// Enable chart feature
+        #[arg(long, default_value = "false")]
+        chart_enabled: bool,
+        /// Enable subtasking
+        #[arg(long, default_value = "false")]
+        subtasking_enabled: bool,
+        /// Text formatting rule ("backlog" or "markdown")
+        #[arg(long, default_value = "markdown")]
+        text_formatting_rule: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Update a project
+    Update {
+        /// Project ID or key
+        id_or_key: String,
+        /// New project name
+        #[arg(long)]
+        name: Option<String>,
+        /// New project key
+        #[arg(long)]
+        key: Option<String>,
+        /// Enable or disable chart feature
+        #[arg(long)]
+        chart_enabled: Option<bool>,
+        /// Enable or disable subtasking
+        #[arg(long)]
+        subtasking_enabled: Option<bool>,
+        /// Text formatting rule ("backlog" or "markdown")
+        #[arg(long)]
+        text_formatting_rule: Option<String>,
+        /// Archive or unarchive the project
+        #[arg(long)]
+        archived: Option<bool>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Delete a project
+    Delete {
         /// Project ID or key
         id_or_key: String,
         /// Output as JSON
@@ -969,6 +1027,43 @@ fn run() -> Result<()> {
             )?),
             ProjectCommands::DiskUsage { id_or_key, json } => {
                 cmd::project::disk_usage(&ProjectDiskUsageArgs::new(id_or_key, json))
+            }
+            ProjectCommands::Create {
+                name,
+                key,
+                chart_enabled,
+                subtasking_enabled,
+                text_formatting_rule,
+                json,
+            } => cmd::project::create(&ProjectCreateArgs::new(
+                name,
+                key,
+                chart_enabled,
+                subtasking_enabled,
+                text_formatting_rule,
+                json,
+            )),
+            ProjectCommands::Update {
+                id_or_key,
+                name,
+                key,
+                chart_enabled,
+                subtasking_enabled,
+                text_formatting_rule,
+                archived,
+                json,
+            } => cmd::project::update(&ProjectUpdateArgs::try_new(
+                id_or_key,
+                name,
+                key,
+                chart_enabled,
+                subtasking_enabled,
+                text_formatting_rule,
+                archived,
+                json,
+            )?),
+            ProjectCommands::Delete { id_or_key, json } => {
+                cmd::project::delete(&ProjectDeleteArgs::new(id_or_key, json))
             }
             ProjectCommands::User { action } => match action {
                 ProjectUserCommands::List { id_or_key, json } => {
