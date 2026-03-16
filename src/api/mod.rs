@@ -782,6 +782,8 @@ impl BacklogClient {
 }
 
 fn parse_content_disposition_filename(header: &str) -> Option<String> {
+    let mut ext_filename: Option<String> = None;
+    let mut plain_filename: Option<String> = None;
     for part in header.split(';') {
         let part = part.trim();
         if let Some(rest) = part.strip_prefix("filename*=") {
@@ -789,18 +791,17 @@ fn parse_content_disposition_filename(header: &str) -> Option<String> {
             if let Some(encoded) = rest.splitn(3, '\'').nth(2) {
                 let decoded = percent_decode(encoded);
                 if !decoded.is_empty() {
-                    return Some(decoded);
+                    ext_filename = Some(decoded);
                 }
             }
-        }
-        if let Some(rest) = part.strip_prefix("filename=") {
+        } else if let Some(rest) = part.strip_prefix("filename=") {
             let name = rest.trim_matches('"');
             if !name.is_empty() {
-                return Some(name.to_string());
+                plain_filename = Some(name.to_string());
             }
         }
     }
-    None
+    ext_filename.or(plain_filename)
 }
 
 fn percent_decode(s: &str) -> String {
