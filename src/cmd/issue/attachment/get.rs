@@ -81,6 +81,14 @@ mod tests {
         let original_dir = std::env::current_dir().unwrap();
         std::env::set_current_dir(&dir).unwrap();
 
+        struct DirGuard(std::path::PathBuf);
+        impl Drop for DirGuard {
+            fn drop(&mut self) {
+                let _ = std::env::set_current_dir(&self.0);
+            }
+        }
+        let _guard = DirGuard(original_dir);
+
         let api = MockApi {
             result: Some((b"world".to_vec(), "response.txt".to_string())),
         };
@@ -89,8 +97,6 @@ mod tests {
             std::fs::read(dir.path().join("response.txt")).unwrap(),
             b"world"
         );
-
-        std::env::set_current_dir(original_dir).unwrap();
     }
 
     #[test]
