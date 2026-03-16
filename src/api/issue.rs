@@ -230,6 +230,14 @@ impl BacklogClient {
         deserialize(value)
     }
 
+    pub fn download_issue_attachment(
+        &self,
+        key: &str,
+        attachment_id: u64,
+    ) -> Result<(Vec<u8>, String)> {
+        self.download(&format!("/issues/{}/attachments/{}", key, attachment_id))
+    }
+
     pub fn get_issue_participants(&self, key: &str) -> Result<Vec<IssueParticipant>> {
         let value = self.get(&format!("/issues/{}/participants", key))?;
         deserialize(value)
@@ -675,5 +683,35 @@ mod tests {
         });
         let issue: Issue = serde_json::from_value(v).unwrap();
         assert!(issue.created_user.user_id.is_none());
+    }
+
+    #[test]
+    fn download_issue_attachment_returns_bytes_and_filename() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET)
+                .path("/issues/TEST-1/attachments/1")
+                .query_param("apiKey", TEST_KEY);
+            then.status(200)
+                .header("Content-Disposition", "attachment; filename=\"file.txt\"")
+                .body(b"hello world");
+        });
+        let client = super::super::BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let (bytes, filename) = client.download_issue_attachment("TEST-1", 1).unwrap();
+        assert_eq!(bytes, b"hello world");
+        assert_eq!(filename, "file.txt");
+    }
+
+    #[test]
+    fn download_issue_attachment_returns_error_on_not_found() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/issues/TEST-1/attachments/99");
+            then.status(404)
+                .json_body(json!({"errors": [{"message": "No attachment"}]}));
+        });
+        let client = super::super::BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let err = client.download_issue_attachment("TEST-1", 99).unwrap_err();
+        assert!(err.to_string().contains("No attachment"));
     }
 }

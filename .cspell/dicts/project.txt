@@ -32,3 +32,4 @@ watchings
 MYPRJ
 NEWKEY
 burndown
+splitn
