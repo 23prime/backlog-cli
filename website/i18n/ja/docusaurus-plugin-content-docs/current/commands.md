@@ -896,6 +896,7 @@ bl user recently-viewed-wikis --json
 ```bash
 bl user star list <id>
 bl user star list <id> --count 50 --order asc --json
+bl user star list <id> --min-id 100 --max-id 200 --json
 ```
 
 出力例:

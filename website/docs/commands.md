@@ -893,6 +893,7 @@ List stars given by a user.
 ```bash
 bl user star list <id>
 bl user star list <id> --count 50 --order asc --json
+bl user star list <id> --min-id 100 --max-id 200 --json
 ```
 
 Example output:
