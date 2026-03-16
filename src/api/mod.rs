@@ -154,6 +154,13 @@ pub trait BacklogApi {
     fn delete_issue_attachment(&self, _key: &str, _attachment_id: u64) -> Result<IssueAttachment> {
         unimplemented!()
     }
+    fn download_issue_attachment(
+        &self,
+        _key: &str,
+        _attachment_id: u64,
+    ) -> Result<(Vec<u8>, String)> {
+        unimplemented!()
+    }
     fn get_issue_participants(&self, _key: &str) -> Result<Vec<IssueParticipant>> {
         unimplemented!()
     }
@@ -387,6 +394,14 @@ impl BacklogApi for BacklogClient {
 
     fn delete_issue_attachment(&self, key: &str, attachment_id: u64) -> Result<IssueAttachment> {
         self.delete_issue_attachment(key, attachment_id)
+    }
+
+    fn download_issue_attachment(
+        &self,
+        key: &str,
+        attachment_id: u64,
+    ) -> Result<(Vec<u8>, String)> {
+        self.download_issue_attachment(key, attachment_id)
     }
 
     fn get_issue_participants(&self, key: &str) -> Result<Vec<IssueParticipant>> {
@@ -713,6 +728,48 @@ impl BacklogClient {
         })
     }
 
+    /// Send a download request and retry once on 401.
+    fn execute_download<F>(&self, factory: F) -> Result<(Vec<u8>, String)>
+    where
+        F: Fn() -> Result<reqwest::blocking::Response>,
+    {
+        let response = factory()?;
+        if response.status() == reqwest::StatusCode::UNAUTHORIZED && self.try_refresh()? {
+            return Self::finish_download(factory()?);
+        }
+        Self::finish_download(response)
+    }
+
+    fn finish_download(response: reqwest::blocking::Response) -> Result<(Vec<u8>, String)> {
+        let status = response.status();
+        if !status.is_success() {
+            let body: serde_json::Value =
+                response.json().context("Failed to parse error response")?;
+            anyhow::bail!("API error ({}): {}", status, extract_error_message(&body));
+        }
+        let filename = response
+            .headers()
+            .get("content-disposition")
+            .and_then(|v| v.to_str().ok())
+            .and_then(parse_content_disposition_filename)
+            .unwrap_or_else(|| "attachment".to_string());
+        let bytes = response
+            .bytes()
+            .context("Failed to read response bytes")?
+            .to_vec();
+        Ok((bytes, filename))
+    }
+
+    pub fn download(&self, path: &str) -> Result<(Vec<u8>, String)> {
+        let url = format!("{}{}", self.base_url, path);
+        self.execute_download(|| {
+            crate::logger::verbose(&format!("→ GET {url}"));
+            self.apply_auth(self.client.get(&url))
+                .send()
+                .with_context(|| format!("Failed to GET {url}"))
+        })
+    }
+
     pub fn delete_req(&self, path: &str) -> Result<serde_json::Value> {
         let url = format!("{}{}", self.base_url, path);
         self.execute(|| {
@@ -722,6 +779,65 @@ impl BacklogClient {
                 .with_context(|| format!("Failed to DELETE {url}"))
         })
     }
+}
+
+fn parse_content_disposition_filename(header: &str) -> Option<String> {
+    let mut ext_filename: Option<String> = None;
+    let mut plain_filename: Option<String> = None;
+    for part in header.split(';') {
+        let part = part.trim();
+        if let Some(rest) = part.strip_prefix("filename*=") {
+            // RFC 5987: charset'language'percent-encoded-value
+            if let Some(encoded) = rest.splitn(3, '\'').nth(2) {
+                let decoded = percent_decode(encoded);
+                if !decoded.is_empty() {
+                    ext_filename = Some(decoded);
+                }
+            }
+        } else if let Some(rest) = part.strip_prefix("filename=") {
+            let name = rest.trim_matches('"');
+            if !name.is_empty() {
+                plain_filename = Some(name.to_string());
+            }
+        }
+    }
+    ext_filename.or(plain_filename)
+}
+
+fn percent_decode(s: &str) -> String {
+    let mut bytes: Vec<u8> = Vec::with_capacity(s.len());
+    let mut chars = s.chars().peekable();
+    while let Some(c) = chars.next() {
+        if c == '%' {
+            let h1 = chars.next();
+            let h2 = chars.next();
+            if let (Some(h1), Some(h2)) = (h1, h2) {
+                if let Ok(b) = u8::from_str_radix(&format!("{h1}{h2}"), 16) {
+                    bytes.push(b);
+                    continue;
+                }
+                // Invalid hex — push literal characters
+                bytes.push(b'%');
+                for byte in h1.to_string().bytes().chain(h2.to_string().bytes()) {
+                    bytes.push(byte);
+                }
+                continue;
+            } else {
+                // Truncated — push '%' and any consumed char
+                bytes.push(b'%');
+                if let Some(h1) = h1 {
+                    for byte in h1.to_string().bytes() {
+                        bytes.push(byte);
+                    }
+                }
+                continue;
+            }
+        }
+        for byte in c.to_string().bytes() {
+            bytes.push(byte);
+        }
+    }
+    String::from_utf8_lossy(&bytes).into_owned()
 }
 
 fn extract_error_message(body: &serde_json::Value) -> &str {

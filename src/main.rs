@@ -9,7 +9,9 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 
 use cmd::auth::AuthStatusArgs;
-use cmd::issue::attachment::{IssueAttachmentDeleteArgs, IssueAttachmentListArgs};
+use cmd::issue::attachment::{
+    IssueAttachmentDeleteArgs, IssueAttachmentGetArgs, IssueAttachmentListArgs,
+};
 use cmd::issue::comment::notification::{
     IssueCommentNotificationAddArgs, IssueCommentNotificationListArgs,
 };
@@ -651,6 +653,16 @@ enum IssueAttachmentCommands {
         #[arg(long)]
         json: bool,
     },
+    /// Download an issue attachment
+    Get {
+        /// Issue ID or key
+        id_or_key: String,
+        /// Attachment ID
+        attachment_id: u64,
+        /// Output file path (defaults to original filename)
+        #[arg(long, short)]
+        output: Option<std::path::PathBuf>,
+    },
     /// Delete an issue attachment
     Delete {
         /// Issue ID or key
@@ -1260,6 +1272,15 @@ fn run() -> Result<()> {
                 IssueAttachmentCommands::List { id_or_key, json } => {
                     cmd::issue::attachment::list(&IssueAttachmentListArgs::new(id_or_key, json))
                 }
+                IssueAttachmentCommands::Get {
+                    id_or_key,
+                    attachment_id,
+                    output,
+                } => cmd::issue::attachment::get(&IssueAttachmentGetArgs::new(
+                    id_or_key,
+                    attachment_id,
+                    output,
+                )),
                 IssueAttachmentCommands::Delete {
                     id_or_key,
                     attachment_id,
