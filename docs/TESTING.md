@@ -101,6 +101,27 @@ but **not `PATCH`**. Use the fully-qualified path for PATCH requests:
 when.method(httpmock::Method::PATCH).path("/projects/TEST");
 ```
 
+## Tests that change the working directory
+
+When a test must call `std::env::set_current_dir`, always restore with a Drop guard so the
+original directory is recovered even if the test panics:
+
+```rust
+struct DirGuard(std::path::PathBuf);
+impl Drop for DirGuard {
+    fn drop(&mut self) {
+        let _ = std::env::set_current_dir(&self.0);
+    }
+}
+
+let original = std::env::current_dir().unwrap();
+std::env::set_current_dir(&tmp_dir).unwrap();
+let _guard = DirGuard(original); // restored on drop, even on panic
+```
+
+Without this, a panicking test leaves the process in the wrong directory and breaks
+subsequent tests that write relative paths.
+
 ## Rules
 
 - **Never** call `BacklogClient::from_config()` in tests — it requires real credentials on disk.

@@ -186,6 +186,16 @@ When a test calls a method that isn't overridden, it will panic with
 `not implemented` — which is the desired behavior (it means the test is
 exercising an unexpected code path).
 
+## Binary file download
+
+For endpoints that return a binary file (e.g. `GET /issues/{key}/attachments/{id}`), use
+`BacklogClient::download` rather than `BacklogClient::get`. It returns `(Vec<u8>, String)` where
+the second element is the filename extracted from the `Content-Disposition` response header.
+
+The filename is parsed according to RFC 5987: `filename*=` (percent-encoded, supports non-ASCII)
+takes precedence over `filename=`. Path traversal is prevented by stripping directory components
+with `Path::file_name()`, which also returns `None` for `.` and `..`, falling back to `"attachment"`.
+
 ## Known Backlog API gotchas
 
 - **Bot/system users**: `userId` is `null` → declare as `Option<String>`
