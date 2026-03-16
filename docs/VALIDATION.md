@@ -53,6 +53,32 @@ impl MyArgs {
 
 Errors propagate naturally to `main` via `?`. Do **not** duplicate these checks in `*_with`.
 
+### Update commands — require at least one optional field
+
+`update` subcommands take all optional fields and should reject calls where every
+field is `None`, because an empty PATCH request is meaningless and the API will error:
+
+```rust
+pub fn try_new(id: u64, name: Option<String>, /* … */, json: bool) -> anyhow::Result<Self> {
+    if name.is_none() && /* all other fields */ .is_none() {
+        anyhow::bail!("at least one of --name, … must be specified");
+    }
+    Ok(Self { id, name, /* … */, json })
+}
+```
+
+### ID range validation (`min_id` / `max_id`)
+
+When both `min_id` and `max_id` are provided, verify that `min_id <= max_id`:
+
+```rust
+if let (Some(min), Some(max)) = (min_id, max_id)
+    && min > max
+{
+    anyhow::bail!("min-id must be less than or equal to max-id");
+}
+```
+
 ### When to use `try_new` vs plain `new`
 
 Use `try_new` when construction can fail due to a domain invariant. Use `new` when all
