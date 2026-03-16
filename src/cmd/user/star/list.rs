@@ -24,6 +24,11 @@ impl UserStarListArgs {
         if !(1..=100).contains(&count) {
             anyhow::bail!("count must be between 1 and 100");
         }
+        if let (Some(min), Some(max)) = (min_id, max_id)
+            && min > max
+        {
+            anyhow::bail!("min-id must be less than or equal to max-id");
+        }
         Ok(Self {
             user_id,
             min_id,
@@ -143,5 +148,10 @@ mod tests {
     #[test]
     fn try_new_rejects_count_zero() {
         assert!(UserStarListArgs::try_new(1, None, None, 0, None, false).is_err());
+    }
+
+    #[test]
+    fn try_new_rejects_min_id_greater_than_max_id() {
+        assert!(UserStarListArgs::try_new(1, Some(200), Some(100), 20, None, false).is_err());
     }
 }
