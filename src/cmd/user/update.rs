@@ -13,22 +13,27 @@ pub struct UserUpdateArgs {
 }
 
 impl UserUpdateArgs {
-    pub fn new(
+    pub fn try_new(
         user_id: u64,
         name: Option<String>,
         password: Option<String>,
         mail_address: Option<String>,
         role_type: Option<u8>,
         json: bool,
-    ) -> Self {
-        Self {
+    ) -> anyhow::Result<Self> {
+        if name.is_none() && password.is_none() && mail_address.is_none() && role_type.is_none() {
+            anyhow::bail!(
+                "at least one of --name, --password, --mail-address, --role-type must be specified"
+            );
+        }
+        Ok(Self {
             user_id,
             name,
             password,
             mail_address,
             role_type,
             json,
-        }
+        })
     }
 }
 
@@ -99,7 +104,7 @@ mod tests {
     }
 
     fn args(json: bool) -> UserUpdateArgs {
-        UserUpdateArgs::new(1, Some("John Doe".to_string()), None, None, None, json)
+        UserUpdateArgs::try_new(1, Some("John Doe".to_string()), None, None, None, json).unwrap()
     }
 
     #[test]
@@ -123,5 +128,10 @@ mod tests {
         let api = MockApi { user: None };
         let err = update_with(&args(false), &api).unwrap_err();
         assert!(err.to_string().contains("update failed"));
+    }
+
+    #[test]
+    fn try_new_rejects_all_none_fields() {
+        assert!(UserUpdateArgs::try_new(1, None, None, None, None, false).is_err());
     }
 }

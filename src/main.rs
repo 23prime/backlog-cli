@@ -1571,14 +1571,14 @@ fn run() -> Result<()> {
                 mail_address,
                 role_type,
                 json,
-            } => cmd::user::update(&UserUpdateArgs::new(
+            } => cmd::user::update(&UserUpdateArgs::try_new(
                 id,
                 name,
                 password,
                 mail_address,
                 role_type.map(|r| r.as_u8()),
                 json,
-            )),
+            )?),
             UserCommands::Delete { id, json } => cmd::user::delete(&UserDeleteArgs::new(id, json)),
             UserCommands::RecentlyViewedProjects {
                 count,
