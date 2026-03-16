@@ -5,6 +5,8 @@ use std::collections::BTreeMap;
 use super::BacklogClient;
 use crate::api::activity::Activity;
 use crate::api::issue::Issue;
+use crate::api::project::Project;
+use crate::api::wiki::WikiListItem;
 
 fn deserialize<T: serde::de::DeserializeOwned>(value: serde_json::Value, ctx: &str) -> Result<T> {
     serde_json::from_value(value.clone()).map_err(|e| {
@@ -42,6 +44,42 @@ pub struct RecentlyViewedIssue {
     pub extra: BTreeMap<String, serde_json::Value>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RecentlyViewedProject {
+    pub project: Project,
+    pub updated: String,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, serde_json::Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RecentlyViewedWiki {
+    pub page: WikiListItem,
+    pub updated: String,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, serde_json::Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Star {
+    pub id: u64,
+    pub comment: Option<String>,
+    pub url: String,
+    pub title: String,
+    pub presenter: User,
+    pub created: String,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, serde_json::Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StarCount {
+    pub count: u64,
+}
+
 impl BacklogClient {
     pub fn get_myself(&self) -> Result<User> {
         let value = self.get("/users/myself")?;
@@ -74,6 +112,47 @@ impl BacklogClient {
         let value = self.get_with_query("/users/myself/recentlyViewedIssues", params)?;
         deserialize(value, "recently viewed issues response")
     }
+
+    pub fn add_user(&self, params: &[(String, String)]) -> Result<User> {
+        let value = self.post_form("/users", params)?;
+        deserialize(value, "user response")
+    }
+
+    pub fn update_user(&self, user_id: u64, params: &[(String, String)]) -> Result<User> {
+        let value = self.patch_form(&format!("/users/{user_id}"), params)?;
+        deserialize(value, "user response")
+    }
+
+    pub fn delete_user(&self, user_id: u64) -> Result<User> {
+        let value = self.delete_req(&format!("/users/{user_id}"))?;
+        deserialize(value, "user response")
+    }
+
+    pub fn get_recently_viewed_projects(
+        &self,
+        params: &[(String, String)],
+    ) -> Result<Vec<RecentlyViewedProject>> {
+        let value = self.get_with_query("/users/myself/recentlyViewedProjects", params)?;
+        deserialize(value, "recently viewed projects response")
+    }
+
+    pub fn get_recently_viewed_wikis(
+        &self,
+        params: &[(String, String)],
+    ) -> Result<Vec<RecentlyViewedWiki>> {
+        let value = self.get_with_query("/users/myself/recentlyViewedWikis", params)?;
+        deserialize(value, "recently viewed wikis response")
+    }
+
+    pub fn get_user_stars(&self, user_id: u64, params: &[(String, String)]) -> Result<Vec<Star>> {
+        let value = self.get_with_query(&format!("/users/{user_id}/stars"), params)?;
+        deserialize(value, "user stars response")
+    }
+
+    pub fn count_user_stars(&self, user_id: u64, params: &[(String, String)]) -> Result<StarCount> {
+        let value = self.get_with_query(&format!("/users/{user_id}/stars/count"), params)?;
+        deserialize(value, "star count response")
+    }
 }
 
 #[cfg(test)]
@@ -81,6 +160,8 @@ mod tests {
     use super::*;
     use httpmock::prelude::*;
     use serde_json::json;
+
+    const TEST_KEY: &str = "test-key";
 
     fn user_json() -> serde_json::Value {
         json!({
@@ -286,5 +367,169 @@ mod tests {
         let user: User = serde_json::from_value(v).unwrap();
         assert_eq!(user.user_id, None);
         assert_eq!(user.mail_address, None);
+    }
+
+    #[test]
+    fn add_user_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST).path("/users");
+            then.status(201).json_body(user_json());
+        });
+        let client = BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let user = client
+            .add_user(&[
+                ("userId".to_string(), "john".to_string()),
+                ("password".to_string(), "secret".to_string()),
+                ("name".to_string(), "John Doe".to_string()),
+                ("mailAddress".to_string(), "john@example.com".to_string()),
+                ("roleType".to_string(), "1".to_string()),
+            ])
+            .unwrap();
+        assert_eq!(user.id, 123);
+        assert_eq!(user.name, "John Doe");
+    }
+
+    #[test]
+    fn add_user_returns_error_on_api_failure() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST).path("/users");
+            then.status(403)
+                .json_body(json!({"errors": [{"message": "Forbidden"}]}));
+        });
+        let client = BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let err = client.add_user(&[]).unwrap_err();
+        assert!(err.to_string().contains("Forbidden"));
+    }
+
+    #[test]
+    fn update_user_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(httpmock::Method::PATCH).path("/users/123");
+            then.status(200).json_body(user_json());
+        });
+        let client = BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let user = client
+            .update_user(123, &[("name".to_string(), "New Name".to_string())])
+            .unwrap();
+        assert_eq!(user.id, 123);
+    }
+
+    #[test]
+    fn update_user_returns_error_on_not_found() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(httpmock::Method::PATCH).path("/users/999");
+            then.status(404)
+                .json_body(json!({"errors": [{"message": "No user"}]}));
+        });
+        let client = BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let err = client.update_user(999, &[]).unwrap_err();
+        assert!(err.to_string().contains("No user"));
+    }
+
+    #[test]
+    fn delete_user_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(DELETE).path("/users/123");
+            then.status(200).json_body(user_json());
+        });
+        let client = BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let user = client.delete_user(123).unwrap();
+        assert_eq!(user.id, 123);
+    }
+
+    #[test]
+    fn delete_user_returns_error_on_not_found() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(DELETE).path("/users/999");
+            then.status(404)
+                .json_body(json!({"errors": [{"message": "No user"}]}));
+        });
+        let client = BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let err = client.delete_user(999).unwrap_err();
+        assert!(err.to_string().contains("No user"));
+    }
+
+    #[test]
+    fn get_recently_viewed_projects_returns_list() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET)
+                .path("/users/myself/recentlyViewedProjects");
+            then.status(200).json_body(json!([{
+                "project": {
+                    "id": 1, "projectKey": "TEST", "name": "Test Project",
+                    "chartEnabled": false, "subtaskingEnabled": false,
+                    "projectLeaderCanEditProjectLeader": false,
+                    "textFormattingRule": "markdown", "archived": false
+                },
+                "updated": "2024-06-01T00:00:00Z"
+            }]));
+        });
+        let client = BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let items = client.get_recently_viewed_projects(&[]).unwrap();
+        assert_eq!(items.len(), 1);
+        assert_eq!(items[0].project.project_key, "TEST");
+    }
+
+    #[test]
+    fn get_recently_viewed_wikis_returns_list() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/users/myself/recentlyViewedWikis");
+            then.status(200).json_body(json!([{
+                "page": {
+                    "id": 1, "projectId": 1, "name": "Home",
+                    "tags": [],
+                    "createdUser": {"id": 1, "userId": "admin", "name": "Admin", "roleType": 1},
+                    "created": "2024-01-01T00:00:00Z",
+                    "updatedUser": {"id": 1, "userId": "admin", "name": "Admin", "roleType": 1},
+                    "updated": "2024-06-01T00:00:00Z"
+                },
+                "updated": "2024-06-01T00:00:00Z"
+            }]));
+        });
+        let client = BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let items = client.get_recently_viewed_wikis(&[]).unwrap();
+        assert_eq!(items.len(), 1);
+        assert_eq!(items[0].page.name, "Home");
+    }
+
+    #[test]
+    fn get_user_stars_returns_list() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/users/123/stars");
+            then.status(200).json_body(json!([{
+                "id": 1,
+                "comment": null,
+                "url": "https://example.com/issue/1",
+                "title": "Issue title",
+                "presenter": {"id": 2, "userId": "alice", "name": "Alice", "roleType": 1},
+                "created": "2024-01-01T00:00:00Z"
+            }]));
+        });
+        let client = BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let stars = client.get_user_stars(123, &[]).unwrap();
+        assert_eq!(stars.len(), 1);
+        assert_eq!(stars[0].title, "Issue title");
+        assert_eq!(stars[0].comment, None);
+    }
+
+    #[test]
+    fn count_user_stars_returns_count() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/users/123/stars/count");
+            then.status(200).json_body(json!({"count": 42}));
+        });
+        let client = BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let result = client.count_user_stars(123, &[]).unwrap();
+        assert_eq!(result.count, 42);
     }
 }

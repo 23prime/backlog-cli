@@ -808,6 +808,118 @@ bl user recently-viewed --offset 10
 [BLG-2] Add dark mode (In Progress, John Doe)
 ```
 
+## `bl user add`
+
+新しいユーザーを追加します。スペース管理者権限が必要です。
+
+```bash
+bl user add --user-id john --password secret --name "John Doe" --mail-address john@example.com --role-type normal
+bl user add --user-id john --password secret --name "John Doe" --mail-address john@example.com --role-type normal --json
+```
+
+ロールタイプ: `administrator`, `normal`, `reporter`, `viewer`, `guest-reporter`, `guest-viewer`
+
+出力例:
+
+```text
+Added: john (John Doe) [roleType: 2]
+```
+
+## `bl user update`
+
+既存のユーザーを更新します。スペース管理者権限が必要です。
+
+```bash
+bl user update <id> --name "New Name"
+bl user update <id> --mail-address new@example.com --role-type viewer --json
+```
+
+出力例:
+
+```text
+Updated: john (New Name) [roleType: 4]
+```
+
+## `bl user delete`
+
+ユーザーを削除します。スペース管理者権限が必要です。
+
+```bash
+bl user delete <id>
+bl user delete <id> --json
+```
+
+出力例:
+
+```text
+Deleted: john (John Doe)
+```
+
+## `bl user recently-viewed-projects`
+
+認証ユーザーが最近閲覧したプロジェクトを表示します。
+
+```bash
+bl user recently-viewed-projects
+bl user recently-viewed-projects --count 50 --offset 20 --order asc
+bl user recently-viewed-projects --json
+```
+
+出力例:
+
+```text
+[MYPRJ] My Project
+[TEST] Test Project
+```
+
+## `bl user recently-viewed-wikis`
+
+認証ユーザーが最近閲覧したWikiページを表示します。
+
+```bash
+bl user recently-viewed-wikis
+bl user recently-viewed-wikis --count 50 --offset 20 --order asc
+bl user recently-viewed-wikis --json
+```
+
+出力例:
+
+```text
+[1] Home (project: 1)
+[2] API Reference (project: 2)
+```
+
+## `bl user star list`
+
+ユーザーがスターをつけた一覧を表示します。
+
+```bash
+bl user star list <id>
+bl user star list <id> --count 50 --order asc --json
+```
+
+出力例:
+
+```text
+[1] Fix login bug
+[2] Add dark mode feature
+```
+
+## `bl user star count`
+
+ユーザーがつけたスターの数を表示します。
+
+```bash
+bl user star count <id>
+bl user star count <id> --since 2024-01-01 --until 2024-12-31 --json
+```
+
+出力例:
+
+```text
+42
+```
+
 ## `bl user list`
 
 スペース内のユーザーを一覧表示します。
@@ -1050,8 +1162,8 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | --- | --- | --- |
 | `bl star add` | `POST /api/v2/stars` | 計画中 |
 | `bl star delete <id>` | `DELETE /api/v2/stars/{starId}` | 計画中 |
-| `bl user star list <id>` | `GET /api/v2/users/{userId}/stars` | 計画中 |
-| `bl user star count <id>` | `GET /api/v2/users/{userId}/stars/count` | 計画中 |
+| `bl user star list <id>` | `GET /api/v2/users/{userId}/stars` | ✅ 実装済み |
+| `bl user star count <id>` | `GET /api/v2/users/{userId}/stars/count` | ✅ 実装済み |
 
 ### Pull Requests
 
@@ -1084,15 +1196,15 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl auth status` | `GET /api/v2/users/myself` | ✅ 実装済み（内部） |
 | `bl user list` | `GET /api/v2/users` | ✅ 実装済み |
 | `bl user show <id>` | `GET /api/v2/users/{userId}` | ✅ 実装済み |
-| `bl user add` | `POST /api/v2/users` | 計画中 |
-| `bl user update <id>` | `PATCH /api/v2/users/{userId}` | 計画中 |
-| `bl user delete <id>` | `DELETE /api/v2/users/{userId}` | 計画中 |
+| `bl user add` | `POST /api/v2/users` | ✅ 実装済み |
+| `bl user update <id>` | `PATCH /api/v2/users/{userId}` | ✅ 実装済み |
+| `bl user delete <id>` | `DELETE /api/v2/users/{userId}` | ✅ 実装済み |
 | `bl user activities <id>` | `GET /api/v2/users/{userId}/activities` | ✅ 実装済み |
 | `bl user recently-viewed` | `GET /api/v2/users/myself/recentlyViewedIssues` | ✅ 実装済み |
-| `bl user recently-viewed-projects` | `GET /api/v2/users/myself/recentlyViewedProjects` | 計画中 |
-| `bl user recently-viewed-wikis` | `GET /api/v2/users/myself/recentlyViewedWikis` | 計画中 |
-| `bl user star list <id>` | `GET /api/v2/users/{userId}/stars` | 計画中 |
-| `bl user star count <id>` | `GET /api/v2/users/{userId}/stars/count` | 計画中 |
+| `bl user recently-viewed-projects` | `GET /api/v2/users/myself/recentlyViewedProjects` | ✅ 実装済み |
+| `bl user recently-viewed-wikis` | `GET /api/v2/users/myself/recentlyViewedWikis` | ✅ 実装済み |
+| `bl user star list <id>` | `GET /api/v2/users/{userId}/stars` | ✅ 実装済み |
+| `bl user star count <id>` | `GET /api/v2/users/{userId}/stars/count` | ✅ 実装済み |
 | — | `GET /api/v2/users/{userId}/icon` | 計画中 |
 
 ### Notifications
