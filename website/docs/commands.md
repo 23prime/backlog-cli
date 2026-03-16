@@ -570,6 +570,23 @@ Example output:
 [2] log.txt (1024 bytes)
 ```
 
+## `bl issue attachment get`
+
+Download an attachment from an issue.
+
+```bash
+bl issue attachment get TEST-1 1
+bl issue attachment get TEST-1 1 --output ./downloaded.png
+```
+
+Saves the file to the specified path (`--output`) or to the original filename in the current directory.
+
+Example output:
+
+```text
+Saved: screenshot.png (204800 bytes)
+```
+
 ## `bl issue attachment delete`
 
 Delete an attachment from an issue.
@@ -977,7 +994,7 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | `bl issue comment notification list <id-or-key> <comment-id>` | `GET /api/v2/issues/{issueIdOrKey}/comments/{commentId}/notifications` | ✅ Implemented |
 | `bl issue comment notification add <id-or-key> <comment-id>` | `POST /api/v2/issues/{issueIdOrKey}/comments/{commentId}/notifications` | ✅ Implemented |
 | `bl issue attachment list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/attachments` | ✅ Implemented |
-| `bl issue attachment get <id-or-key> <attachment-id>` | `GET /api/v2/issues/{issueIdOrKey}/attachments/{attachmentId}` | Planned |
+| `bl issue attachment get <id-or-key> <attachment-id>` | `GET /api/v2/issues/{issueIdOrKey}/attachments/{attachmentId}` | ✅ Implemented |
 | `bl issue attachment delete <id-or-key> <attachment-id>` | `DELETE /api/v2/issues/{issueIdOrKey}/attachments/{attachmentId}` | ✅ Implemented |
 | `bl issue participant list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/participants` | ✅ Implemented |
 | `bl issue shared-file list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/sharedFiles` | ✅ Implemented |

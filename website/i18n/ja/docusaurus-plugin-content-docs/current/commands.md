@@ -570,6 +570,23 @@ bl issue attachment list TEST-1 --json
 [2] log.txt (1024 bytes)
 ```
 
+## `bl issue attachment get`
+
+課題の添付ファイルをダウンロードします。
+
+```bash
+bl issue attachment get TEST-1 1
+bl issue attachment get TEST-1 1 --output ./downloaded.png
+```
+
+`--output` で指定したパス、または現在のディレクトリに元のファイル名で保存します。
+
+出力例:
+
+```text
+Saved: screenshot.png (204800 bytes)
+```
+
 ## `bl issue attachment delete`
 
 課題の添付ファイルを削除します。
@@ -981,7 +998,7 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl issue comment notification list <id-or-key> <comment-id>` | `GET /api/v2/issues/{issueIdOrKey}/comments/{commentId}/notifications` | ✅ 実装済み |
 | `bl issue comment notification add <id-or-key> <comment-id>` | `POST /api/v2/issues/{issueIdOrKey}/comments/{commentId}/notifications` | ✅ 実装済み |
 | `bl issue attachment list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/attachments` | ✅ 実装済み |
-| `bl issue attachment get <id-or-key> <attachment-id>` | `GET /api/v2/issues/{issueIdOrKey}/attachments/{attachmentId}` | 計画中 |
+| `bl issue attachment get <id-or-key> <attachment-id>` | `GET /api/v2/issues/{issueIdOrKey}/attachments/{attachmentId}` | ✅ 実装済み |
 | `bl issue attachment delete <id-or-key> <attachment-id>` | `DELETE /api/v2/issues/{issueIdOrKey}/attachments/{attachmentId}` | ✅ 実装済み |
 | `bl issue participant list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/participants` | ✅ 実装済み |
 | `bl issue shared-file list <id-or-key>` | `GET /api/v2/issues/{issueIdOrKey}/sharedFiles` | ✅ 実装済み |
