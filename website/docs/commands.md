@@ -805,6 +805,119 @@ Example output:
 [BLG-2] Add dark mode (In Progress, John Doe)
 ```
 
+## `bl user add`
+
+Add a new user. Requires Space Administrator privileges.
+
+```bash
+bl user add --user-id john --password secret --name "John Doe" --mail-address john@example.com --role-type normal
+bl user add --user-id john --password secret --name "John Doe" --mail-address john@example.com --role-type normal --json
+```
+
+Role types: `administrator`, `normal`, `reporter`, `viewer`, `guest-reporter`, `guest-viewer`.
+
+Example output:
+
+```text
+Added: john (John Doe) [roleType: 2]
+```
+
+## `bl user update`
+
+Update an existing user. Requires Space Administrator privileges.
+
+```bash
+bl user update <id> --name "New Name"
+bl user update <id> --mail-address new@example.com --role-type viewer --json
+```
+
+Example output:
+
+```text
+Updated: john (New Name) [roleType: 4]
+```
+
+## `bl user delete`
+
+Delete a user. Requires Space Administrator privileges.
+
+```bash
+bl user delete <id>
+bl user delete <id> --json
+```
+
+Example output:
+
+```text
+Deleted: john (John Doe)
+```
+
+## `bl user recently-viewed-projects`
+
+Show projects recently viewed by the authenticated user.
+
+```bash
+bl user recently-viewed-projects
+bl user recently-viewed-projects --count 50 --offset 20 --order asc
+bl user recently-viewed-projects --json
+```
+
+Example output:
+
+```text
+[MYPRJ] My Project
+[TEST] Test Project
+```
+
+## `bl user recently-viewed-wikis`
+
+Show wiki pages recently viewed by the authenticated user.
+
+```bash
+bl user recently-viewed-wikis
+bl user recently-viewed-wikis --count 50 --offset 20 --order asc
+bl user recently-viewed-wikis --json
+```
+
+Example output:
+
+```text
+[1] Home (project: 1)
+[2] API Reference (project: 2)
+```
+
+## `bl user star list`
+
+List stars given by a user.
+
+```bash
+bl user star list <id>
+bl user star list <id> --count 50 --order asc --json
+bl user star list <id> --min-id 100 --max-id 200 --json
+```
+
+Example output:
+
+```text
+[1] Fix login bug
+[2] Add dark mode feature
+```
+
+## `bl user star count`
+
+Count stars given by a user.
+
+```bash
+bl user star count <id>
+bl user star count <id> --since 2024-01-01 --until 2024-12-31 --json
+```
+
+Example output:
+
+```text
+42
+```
+
 ## `bl user list`
 
 List all users in the space.
@@ -1046,8 +1159,8 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | --- | --- | --- |
 | `bl star add` | `POST /api/v2/stars` | Planned |
 | `bl star delete <id>` | `DELETE /api/v2/stars/{starId}` | Planned |
-| `bl user star list <id>` | `GET /api/v2/users/{userId}/stars` | Planned |
-| `bl user star count <id>` | `GET /api/v2/users/{userId}/stars/count` | Planned |
+| `bl user star list <id>` | `GET /api/v2/users/{userId}/stars` | ✅ Implemented |
+| `bl user star count <id>` | `GET /api/v2/users/{userId}/stars/count` | ✅ Implemented |
 
 ### Pull Requests
 
@@ -1080,15 +1193,15 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | `bl auth status` | `GET /api/v2/users/myself` | ✅ Implemented (internal) |
 | `bl user list` | `GET /api/v2/users` | ✅ Implemented |
 | `bl user show <id>` | `GET /api/v2/users/{userId}` | ✅ Implemented |
-| `bl user add` | `POST /api/v2/users` | Planned |
-| `bl user update <id>` | `PATCH /api/v2/users/{userId}` | Planned |
-| `bl user delete <id>` | `DELETE /api/v2/users/{userId}` | Planned |
+| `bl user add` | `POST /api/v2/users` | ✅ Implemented |
+| `bl user update <id>` | `PATCH /api/v2/users/{userId}` | ✅ Implemented |
+| `bl user delete <id>` | `DELETE /api/v2/users/{userId}` | ✅ Implemented |
 | `bl user activities <id>` | `GET /api/v2/users/{userId}/activities` | ✅ Implemented |
 | `bl user recently-viewed` | `GET /api/v2/users/myself/recentlyViewedIssues` | ✅ Implemented |
-| `bl user recently-viewed-projects` | `GET /api/v2/users/myself/recentlyViewedProjects` | Planned |
-| `bl user recently-viewed-wikis` | `GET /api/v2/users/myself/recentlyViewedWikis` | Planned |
-| `bl user star list <id>` | `GET /api/v2/users/{userId}/stars` | Planned |
-| `bl user star count <id>` | `GET /api/v2/users/{userId}/stars/count` | Planned |
+| `bl user recently-viewed-projects` | `GET /api/v2/users/myself/recentlyViewedProjects` | ✅ Implemented |
+| `bl user recently-viewed-wikis` | `GET /api/v2/users/myself/recentlyViewedWikis` | ✅ Implemented |
+| `bl user star list <id>` | `GET /api/v2/users/{userId}/stars` | ✅ Implemented |
+| `bl user star count <id>` | `GET /api/v2/users/{userId}/stars/count` | ✅ Implemented |
 | — | `GET /api/v2/users/{userId}/icon` | Planned |
 
 ### Notifications

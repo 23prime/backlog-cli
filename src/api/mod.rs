@@ -33,7 +33,7 @@ use project::{
 use space::Space;
 use space_notification::SpaceNotification;
 use team::Team;
-use user::{RecentlyViewedIssue, User};
+use user::{RecentlyViewedIssue, RecentlyViewedProject, RecentlyViewedWiki, Star, StarCount, User};
 use wiki::{Wiki, WikiAttachment, WikiHistory, WikiListItem};
 
 /// Abstraction over the Backlog HTTP API.
@@ -240,6 +240,33 @@ pub trait BacklogApi {
         &self,
         _params: &[(String, String)],
     ) -> Result<Vec<RecentlyViewedIssue>> {
+        unimplemented!()
+    }
+    fn add_user(&self, _params: &[(String, String)]) -> Result<User> {
+        unimplemented!()
+    }
+    fn update_user(&self, _user_id: u64, _params: &[(String, String)]) -> Result<User> {
+        unimplemented!()
+    }
+    fn delete_user(&self, _user_id: u64) -> Result<User> {
+        unimplemented!()
+    }
+    fn get_recently_viewed_projects(
+        &self,
+        _params: &[(String, String)],
+    ) -> Result<Vec<RecentlyViewedProject>> {
+        unimplemented!()
+    }
+    fn get_recently_viewed_wikis(
+        &self,
+        _params: &[(String, String)],
+    ) -> Result<Vec<RecentlyViewedWiki>> {
+        unimplemented!()
+    }
+    fn get_user_stars(&self, _user_id: u64, _params: &[(String, String)]) -> Result<Vec<Star>> {
+        unimplemented!()
+    }
+    fn count_user_stars(&self, _user_id: u64, _params: &[(String, String)]) -> Result<StarCount> {
         unimplemented!()
     }
     fn get_notifications(&self, _params: &[(String, String)]) -> Result<Vec<Notification>> {
@@ -498,6 +525,40 @@ impl BacklogApi for BacklogClient {
         params: &[(String, String)],
     ) -> Result<Vec<RecentlyViewedIssue>> {
         self.get_recently_viewed_issues(params)
+    }
+
+    fn add_user(&self, params: &[(String, String)]) -> Result<User> {
+        self.add_user(params)
+    }
+
+    fn update_user(&self, user_id: u64, params: &[(String, String)]) -> Result<User> {
+        self.update_user(user_id, params)
+    }
+
+    fn delete_user(&self, user_id: u64) -> Result<User> {
+        self.delete_user(user_id)
+    }
+
+    fn get_recently_viewed_projects(
+        &self,
+        params: &[(String, String)],
+    ) -> Result<Vec<RecentlyViewedProject>> {
+        self.get_recently_viewed_projects(params)
+    }
+
+    fn get_recently_viewed_wikis(
+        &self,
+        params: &[(String, String)],
+    ) -> Result<Vec<RecentlyViewedWiki>> {
+        self.get_recently_viewed_wikis(params)
+    }
+
+    fn get_user_stars(&self, user_id: u64, params: &[(String, String)]) -> Result<Vec<Star>> {
+        self.get_user_stars(user_id, params)
+    }
+
+    fn count_user_stars(&self, user_id: u64, params: &[(String, String)]) -> Result<StarCount> {
+        self.count_user_stars(user_id, params)
     }
 
     fn get_notifications(&self, params: &[(String, String)]) -> Result<Vec<Notification>> {

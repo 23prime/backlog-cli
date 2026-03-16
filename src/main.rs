@@ -42,7 +42,11 @@ use cmd::space::{
     SpaceShowArgs, SpaceUpdateNotificationArgs,
 };
 use cmd::team::{TeamListArgs, TeamShowArgs};
-use cmd::user::{UserActivitiesArgs, UserListArgs, UserRecentlyViewedArgs, UserShowArgs};
+use cmd::user::star::{UserStarCountArgs, UserStarListArgs};
+use cmd::user::{
+    UserActivitiesArgs, UserAddArgs, UserDeleteArgs, UserListArgs, UserRecentlyViewedArgs,
+    UserRecentlyViewedProjectsArgs, UserRecentlyViewedWikisArgs, UserShowArgs, UserUpdateArgs,
+};
 use cmd::wiki::attachment::WikiAttachmentListArgs;
 use cmd::wiki::{
     WikiCreateArgs, WikiDeleteArgs, WikiHistoryArgs, WikiListArgs, WikiShowArgs, WikiUpdateArgs,
@@ -140,6 +144,29 @@ impl TextFormattingRule {
         match self {
             TextFormattingRule::Backlog => "backlog",
             TextFormattingRule::Markdown => "markdown",
+        }
+    }
+}
+
+#[derive(clap::ValueEnum, Clone)]
+enum RoleType {
+    Administrator,
+    Normal,
+    Reporter,
+    Viewer,
+    GuestReporter,
+    GuestViewer,
+}
+
+impl RoleType {
+    fn as_u8(&self) -> u8 {
+        match self {
+            RoleType::Administrator => 1,
+            RoleType::Normal => 2,
+            RoleType::Reporter => 3,
+            RoleType::Viewer => 4,
+            RoleType::GuestReporter => 5,
+            RoleType::GuestViewer => 6,
         }
     }
 }
@@ -868,6 +895,128 @@ enum UserCommands {
         #[arg(long)]
         json: bool,
     },
+    /// Add a new user
+    Add {
+        /// User ID (login name)
+        #[arg(long)]
+        user_id: String,
+        /// Password
+        #[arg(long)]
+        password: String,
+        /// Display name
+        #[arg(long)]
+        name: String,
+        /// Email address
+        #[arg(long)]
+        mail_address: String,
+        /// Role type
+        #[arg(long)]
+        role_type: RoleType,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Update a user
+    Update {
+        /// User numeric ID
+        id: u64,
+        /// Display name
+        #[arg(long)]
+        name: Option<String>,
+        /// Password
+        #[arg(long)]
+        password: Option<String>,
+        /// Email address
+        #[arg(long)]
+        mail_address: Option<String>,
+        /// Role type
+        #[arg(long)]
+        role_type: Option<RoleType>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Delete a user
+    Delete {
+        /// User numeric ID
+        id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Show recently viewed projects (for the authenticated user)
+    RecentlyViewedProjects {
+        /// Number of items to retrieve
+        #[arg(long, default_value = "20")]
+        count: u32,
+        /// Offset for pagination
+        #[arg(long, default_value = "0")]
+        offset: u64,
+        /// Sort order
+        #[arg(long)]
+        order: Option<Order>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Show recently viewed wikis (for the authenticated user)
+    RecentlyViewedWikis {
+        /// Number of items to retrieve
+        #[arg(long, default_value = "20")]
+        count: u32,
+        /// Offset for pagination
+        #[arg(long, default_value = "0")]
+        offset: u64,
+        /// Sort order
+        #[arg(long)]
+        order: Option<Order>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Manage user stars
+    Star {
+        #[command(subcommand)]
+        action: UserStarCommands,
+    },
+}
+
+#[derive(Subcommand)]
+enum UserStarCommands {
+    /// List stars of a user
+    List {
+        /// User numeric ID
+        id: u64,
+        /// Minimum star ID
+        #[arg(long)]
+        min_id: Option<u64>,
+        /// Maximum star ID
+        #[arg(long)]
+        max_id: Option<u64>,
+        /// Number of stars to retrieve
+        #[arg(long, default_value = "20")]
+        count: u32,
+        /// Sort order
+        #[arg(long)]
+        order: Option<Order>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Count stars of a user
+    Count {
+        /// User numeric ID
+        id: u64,
+        /// Start date (YYYY-MM-DD)
+        #[arg(long)]
+        since: Option<String>,
+        /// End date (YYYY-MM-DD)
+        #[arg(long)]
+        until: Option<String>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -1400,6 +1549,82 @@ fn run() -> Result<()> {
                 offset,
                 order.map(|o| o.as_str().to_string()),
             )?),
+            UserCommands::Add {
+                user_id,
+                password,
+                name,
+                mail_address,
+                role_type,
+                json,
+            } => cmd::user::add(&UserAddArgs::new(
+                user_id,
+                password,
+                name,
+                mail_address,
+                role_type.as_u8(),
+                json,
+            )),
+            UserCommands::Update {
+                id,
+                name,
+                password,
+                mail_address,
+                role_type,
+                json,
+            } => cmd::user::update(&UserUpdateArgs::try_new(
+                id,
+                name,
+                password,
+                mail_address,
+                role_type.map(|r| r.as_u8()),
+                json,
+            )?),
+            UserCommands::Delete { id, json } => cmd::user::delete(&UserDeleteArgs::new(id, json)),
+            UserCommands::RecentlyViewedProjects {
+                count,
+                offset,
+                order,
+                json,
+            } => cmd::user::recently_viewed_projects(&UserRecentlyViewedProjectsArgs::try_new(
+                json,
+                count,
+                offset,
+                order.map(|o| o.as_str().to_string()),
+            )?),
+            UserCommands::RecentlyViewedWikis {
+                count,
+                offset,
+                order,
+                json,
+            } => cmd::user::recently_viewed_wikis(&UserRecentlyViewedWikisArgs::try_new(
+                json,
+                count,
+                offset,
+                order.map(|o| o.as_str().to_string()),
+            )?),
+            UserCommands::Star { action } => match action {
+                UserStarCommands::List {
+                    id,
+                    min_id,
+                    max_id,
+                    count,
+                    order,
+                    json,
+                } => cmd::user::star::list(&UserStarListArgs::try_new(
+                    id,
+                    min_id,
+                    max_id,
+                    count,
+                    order.map(|o| o.as_str().to_string()),
+                    json,
+                )?),
+                UserStarCommands::Count {
+                    id,
+                    since,
+                    until,
+                    json,
+                } => cmd::user::star::count(&UserStarCountArgs::new(id, since, until, json)),
+            },
         },
         Commands::Team { action } => match action {
             TeamCommands::List {
