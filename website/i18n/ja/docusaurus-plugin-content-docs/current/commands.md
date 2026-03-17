@@ -1017,6 +1017,100 @@ bl notification reset-unread
 Unread count reset.
 ```
 
+## `bl watch list`
+
+ユーザーのウォッチ一覧を取得します。
+
+```bash
+bl watch list <user-id> [--order asc|desc] [--sort created|updated|issue-updated] [--count N] [--offset N] [--resource-already-read true|false] [--issue-id ID ...] [--json]
+```
+
+出力例:
+
+```text
+[1] ログインバグを修正する (TEST-42)
+[2] ドキュメントを更新する (TEST-7)
+```
+
+## `bl watch count`
+
+ユーザーのウォッチ数を取得します。
+
+```bash
+bl watch count <user-id> [--resource-already-read true|false] [--already-read true|false] [--json]
+```
+
+出力例:
+
+```text
+5
+```
+
+## `bl watch show <id>`
+
+ウォッチの詳細を表示します。
+
+```bash
+bl watch show <id> [--json]
+```
+
+出力例:
+
+```text
+[1] ログインバグを修正する (TEST-42)
+note: あとで確認する
+```
+
+## `bl watch add`
+
+ウォッチを追加します。
+
+```bash
+bl watch add --issue <issue-id-or-key> [--note NOTE] [--json]
+```
+
+出力例:
+
+```text
+Added: [1] ログインバグを修正する (TEST-42)
+```
+
+## `bl watch update <id>`
+
+ウォッチのノートを更新します。
+
+```bash
+bl watch update <id> --note NOTE [--json]
+```
+
+出力例:
+
+```text
+Updated: [1] ログインバグを修正する (TEST-42)
+```
+
+## `bl watch delete <id>`
+
+ウォッチを削除します。
+
+```bash
+bl watch delete <id> [--json]
+```
+
+出力例:
+
+```text
+Deleted: [1] ログインバグを修正する (TEST-42)
+```
+
+## `bl watch read <id>`
+
+ウォッチを既読にします。
+
+```bash
+bl watch read <id>
+```
+
 ## コマンドカバレッジ
 
 Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
@@ -1221,13 +1315,13 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 
 | コマンド | API エンドポイント | 状態 |
 | --- | --- | --- |
-| `bl watch list` | `GET /api/v2/users/{userId}/watchings` | 計画中 |
-| `bl watch count` | `GET /api/v2/users/{userId}/watchings/count` | 計画中 |
-| `bl watch show <id>` | `GET /api/v2/watchings/{watchingId}` | 計画中 |
-| `bl watch add` | `POST /api/v2/watchings` | 計画中 |
-| `bl watch update <id>` | `PATCH /api/v2/watchings/{watchingId}` | 計画中 |
-| `bl watch delete <id>` | `DELETE /api/v2/watchings/{watchingId}` | 計画中 |
-| `bl watch read <id>` | `POST /api/v2/watchings/{watchingId}/markAsRead` | 計画中 |
+| `bl watch list` | `GET /api/v2/users/{userId}/watchings` | ✅ 実装済み |
+| `bl watch count` | `GET /api/v2/users/{userId}/watchings/count` | ✅ 実装済み |
+| `bl watch show <id>` | `GET /api/v2/watchings/{watchingId}` | ✅ 実装済み |
+| `bl watch add` | `POST /api/v2/watchings` | ✅ 実装済み |
+| `bl watch update <id>` | `PATCH /api/v2/watchings/{watchingId}` | ✅ 実装済み |
+| `bl watch delete <id>` | `DELETE /api/v2/watchings/{watchingId}` | ✅ 実装済み |
+| `bl watch read <id>` | `POST /api/v2/watchings/{watchingId}/markAsRead` | ✅ 実装済み |
 
 ### Teams
 

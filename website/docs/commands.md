@@ -1013,6 +1013,100 @@ Example output:
 Unread count reset.
 ```
 
+## `bl watch list`
+
+List watchings for a user.
+
+```bash
+bl watch list <user-id> [--order asc|desc] [--sort created|updated|issue-updated] [--count N] [--offset N] [--resource-already-read true|false] [--issue-id ID ...] [--json]
+```
+
+Example output:
+
+```text
+[1] Fix login bug (TEST-42)
+[2] Update docs (TEST-7)
+```
+
+## `bl watch count`
+
+Count watchings for a user.
+
+```bash
+bl watch count <user-id> [--resource-already-read true|false] [--already-read true|false] [--json]
+```
+
+Example output:
+
+```text
+5
+```
+
+## `bl watch show <id>`
+
+Show details of a watching.
+
+```bash
+bl watch show <id> [--json]
+```
+
+Example output:
+
+```text
+[1] Fix login bug (TEST-42)
+note: Check this later
+```
+
+## `bl watch add`
+
+Add a watching.
+
+```bash
+bl watch add --issue <issue-id-or-key> [--note NOTE] [--json]
+```
+
+Example output:
+
+```text
+Added: [1] Fix login bug (TEST-42)
+```
+
+## `bl watch update <id>`
+
+Update the note of a watching.
+
+```bash
+bl watch update <id> --note NOTE [--json]
+```
+
+Example output:
+
+```text
+Updated: [1] Fix login bug (TEST-42)
+```
+
+## `bl watch delete <id>`
+
+Delete a watching.
+
+```bash
+bl watch delete <id> [--json]
+```
+
+Example output:
+
+```text
+Deleted: [1] Fix login bug (TEST-42)
+```
+
+## `bl watch read <id>`
+
+Mark a watching as read.
+
+```bash
+bl watch read <id>
+```
+
 ## Command coverage
 
 The table below maps Backlog API v2 endpoints to `bl` commands.
@@ -1217,13 +1311,13 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 
 | Command | API endpoint | Status |
 | --- | --- | --- |
-| `bl watch list` | `GET /api/v2/users/{userId}/watchings` | Planned |
-| `bl watch count` | `GET /api/v2/users/{userId}/watchings/count` | Planned |
-| `bl watch show <id>` | `GET /api/v2/watchings/{watchingId}` | Planned |
-| `bl watch add` | `POST /api/v2/watchings` | Planned |
-| `bl watch update <id>` | `PATCH /api/v2/watchings/{watchingId}` | Planned |
-| `bl watch delete <id>` | `DELETE /api/v2/watchings/{watchingId}` | Planned |
-| `bl watch read <id>` | `POST /api/v2/watchings/{watchingId}/markAsRead` | Planned |
+| `bl watch list` | `GET /api/v2/users/{userId}/watchings` | ✅ Implemented |
+| `bl watch count` | `GET /api/v2/users/{userId}/watchings/count` | ✅ Implemented |
+| `bl watch show <id>` | `GET /api/v2/watchings/{watchingId}` | ✅ Implemented |
+| `bl watch add` | `POST /api/v2/watchings` | ✅ Implemented |
+| `bl watch update <id>` | `PATCH /api/v2/watchings/{watchingId}` | ✅ Implemented |
+| `bl watch delete <id>` | `DELETE /api/v2/watchings/{watchingId}` | ✅ Implemented |
+| `bl watch read <id>` | `POST /api/v2/watchings/{watchingId}/markAsRead` | ✅ Implemented |
 
 ### Teams
 

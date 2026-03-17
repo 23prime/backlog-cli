@@ -16,6 +16,7 @@ pub mod space;
 pub mod space_notification;
 pub mod team;
 pub mod user;
+pub mod watch;
 pub mod wiki;
 
 use activity::Activity;
@@ -34,6 +35,7 @@ use space::Space;
 use space_notification::SpaceNotification;
 use team::Team;
 use user::{RecentlyViewedIssue, RecentlyViewedProject, RecentlyViewedWiki, Star, StarCount, User};
+use watch::{Watching, WatchingCount};
 use wiki::{Wiki, WikiAttachment, WikiHistory, WikiListItem};
 
 /// Abstraction over the Backlog HTTP API.
@@ -285,6 +287,31 @@ pub trait BacklogApi {
         unimplemented!()
     }
     fn put_space_notification(&self, _content: &str) -> Result<SpaceNotification> {
+        unimplemented!()
+    }
+    fn get_watchings(&self, _user_id: u64, _params: &[(String, String)]) -> Result<Vec<Watching>> {
+        unimplemented!()
+    }
+    fn count_watchings(
+        &self,
+        _user_id: u64,
+        _params: &[(String, String)],
+    ) -> Result<WatchingCount> {
+        unimplemented!()
+    }
+    fn get_watching(&self, _watching_id: u64) -> Result<Watching> {
+        unimplemented!()
+    }
+    fn add_watching(&self, _params: &[(String, String)]) -> Result<Watching> {
+        unimplemented!()
+    }
+    fn update_watching(&self, _watching_id: u64, _params: &[(String, String)]) -> Result<Watching> {
+        unimplemented!()
+    }
+    fn delete_watching(&self, _watching_id: u64) -> Result<Watching> {
+        unimplemented!()
+    }
+    fn read_watching(&self, _watching_id: u64) -> Result<()> {
         unimplemented!()
     }
 }
@@ -583,6 +610,27 @@ impl BacklogApi for BacklogClient {
 
     fn put_space_notification(&self, content: &str) -> Result<SpaceNotification> {
         self.put_space_notification(content)
+    }
+    fn get_watchings(&self, user_id: u64, params: &[(String, String)]) -> Result<Vec<Watching>> {
+        self.get_watchings(user_id, params)
+    }
+    fn count_watchings(&self, user_id: u64, params: &[(String, String)]) -> Result<WatchingCount> {
+        self.count_watchings(user_id, params)
+    }
+    fn get_watching(&self, watching_id: u64) -> Result<Watching> {
+        self.get_watching(watching_id)
+    }
+    fn add_watching(&self, params: &[(String, String)]) -> Result<Watching> {
+        self.add_watching(params)
+    }
+    fn update_watching(&self, watching_id: u64, params: &[(String, String)]) -> Result<Watching> {
+        self.update_watching(watching_id, params)
+    }
+    fn delete_watching(&self, watching_id: u64) -> Result<Watching> {
+        self.delete_watching(watching_id)
+    }
+    fn read_watching(&self, watching_id: u64) -> Result<()> {
+        self.read_watching(watching_id)
     }
 }
 
