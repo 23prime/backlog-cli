@@ -334,6 +334,74 @@ bl project status list <id-or-key> --json
 [4] Closed
 ```
 
+## `bl project status add`
+
+プロジェクトにステータスを追加します。
+
+```bash
+bl project status add <id-or-key> --name <name> --color <color>
+bl project status add <id-or-key> --name <name> --color <color> --json
+```
+
+`--color` の値は `#` プレフィックス付きの 6 桁の hex カラーコード（例: `#ed8077`）を指定します。CSS カラー名や省略 hex 形式は受け付けられません。
+
+出力例:
+
+```text
+Added: [5] In Review
+```
+
+## `bl project status update`
+
+プロジェクトのステータスを更新します。
+
+```bash
+bl project status update <id-or-key> --status-id <id> --name <name>
+bl project status update <id-or-key> --status-id <id> --color <color>
+bl project status update <id-or-key> --status-id <id> --name <name> --color <color> --json
+```
+
+`--name` または `--color` の少なくともどちらかを指定する必要があります。
+
+出力例:
+
+```text
+Updated: [5] In Review
+```
+
+## `bl project status delete`
+
+プロジェクトのステータスを削除します。削除されたステータスの課題は代替ステータスに移行されます。
+
+```bash
+bl project status delete <id-or-key> --status-id <id> --substitute-status-id <id>
+bl project status delete <id-or-key> --status-id <id> --substitute-status-id <id> --json
+```
+
+出力例:
+
+```text
+Deleted: [5] In Review
+```
+
+## `bl project status reorder`
+
+表示順序を指定してプロジェクトのステータスを並べ替えます。
+
+```bash
+bl project status reorder <id-or-key> --status-id <id1> --status-id <id2> ...
+bl project status reorder <id-or-key> --status-id <id1> --status-id <id2> --json
+```
+
+出力例:
+
+```text
+[2] In Progress
+[1] Open
+[3] Resolved
+[4] Closed
+```
+
 ## `bl project issue-type list`
 
 特定のプロジェクトの課題種別を一覧表示します。
@@ -1258,10 +1326,10 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl project admin delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/administrators` | ✅ 実装済み |
 | — | `GET /api/v2/projects/{projectIdOrKey}/image` | 計画中 |
 | `bl project status list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/statuses` | ✅ 実装済み |
-| `bl project status add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/statuses` | 計画中 |
-| `bl project status update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/statuses/{id}` | 計画中 |
-| `bl project status delete <id-or-key> <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/statuses/{id}` | 計画中 |
-| `bl project status reorder <id-or-key>` | `PATCH /api/v2/projects/{projectIdOrKey}/statuses/updateDisplayOrder` | 計画中 |
+| `bl project status add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/statuses` | ✅ 実装済み |
+| `bl project status update <id-or-key> --status-id <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/statuses/{id}` | ✅ 実装済み |
+| `bl project status delete <id-or-key> --status-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/statuses/{id}` | ✅ 実装済み |
+| `bl project status reorder <id-or-key>` | `PATCH /api/v2/projects/{projectIdOrKey}/statuses/updateDisplayOrder` | ✅ 実装済み |
 | `bl project issue-type list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/issueTypes` | ✅ 実装済み |
 | `bl project issue-type add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/issueTypes` | 計画中 |
 | `bl project issue-type update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/issueTypes/{id}` | 計画中 |

@@ -32,7 +32,10 @@ use cmd::priority::PriorityListArgs;
 use cmd::project::admin::{ProjectAdminAddArgs, ProjectAdminDeleteArgs, ProjectAdminListArgs};
 use cmd::project::category::ProjectCategoryListArgs;
 use cmd::project::issue_type::ProjectIssueTypeListArgs;
-use cmd::project::status::ProjectStatusListArgs;
+use cmd::project::status::{
+    ProjectStatusAddArgs, ProjectStatusDeleteArgs, ProjectStatusListArgs, ProjectStatusReorderArgs,
+    ProjectStatusUpdateArgs,
+};
 use cmd::project::user::{ProjectUserAddArgs, ProjectUserDeleteArgs, ProjectUserListArgs};
 use cmd::project::version::ProjectVersionListArgs;
 use cmd::project::{
@@ -470,6 +473,62 @@ enum ProjectStatusCommands {
     List {
         /// Project ID or key
         id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Add a status to a project
+    Add {
+        /// Project ID or key
+        id_or_key: String,
+        /// Status name
+        #[arg(long)]
+        name: String,
+        /// Status color (hex code, e.g. #ed8077)
+        #[arg(long)]
+        color: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Update a project status
+    Update {
+        /// Project ID or key
+        id_or_key: String,
+        /// Status ID to update
+        #[arg(long)]
+        status_id: u64,
+        /// New status name
+        #[arg(long)]
+        name: Option<String>,
+        /// New status color (hex code)
+        #[arg(long)]
+        color: Option<String>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Delete a project status
+    Delete {
+        /// Project ID or key
+        id_or_key: String,
+        /// Status ID to delete
+        #[arg(long)]
+        status_id: u64,
+        /// Status ID to substitute for issues with the deleted status
+        #[arg(long)]
+        substitute_status_id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Reorder project statuses
+    Reorder {
+        /// Project ID or key
+        id_or_key: String,
+        /// Status IDs in desired display order (repeatable)
+        #[arg(long = "status-id", value_name = "ID")]
+        status_ids: Vec<u64>,
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -1487,6 +1546,41 @@ fn run() -> Result<()> {
                 ProjectStatusCommands::List { id_or_key, json } => {
                     cmd::project::status::list(&ProjectStatusListArgs::new(id_or_key, json))
                 }
+                ProjectStatusCommands::Add {
+                    id_or_key,
+                    name,
+                    color,
+                    json,
+                } => cmd::project::status::add(&ProjectStatusAddArgs::new(
+                    id_or_key, name, color, json,
+                )),
+                ProjectStatusCommands::Update {
+                    id_or_key,
+                    status_id,
+                    name,
+                    color,
+                    json,
+                } => cmd::project::status::update(&ProjectStatusUpdateArgs::try_new(
+                    id_or_key, status_id, name, color, json,
+                )?),
+                ProjectStatusCommands::Delete {
+                    id_or_key,
+                    status_id,
+                    substitute_status_id,
+                    json,
+                } => cmd::project::status::delete(&ProjectStatusDeleteArgs::new(
+                    id_or_key,
+                    status_id,
+                    substitute_status_id,
+                    json,
+                )),
+                ProjectStatusCommands::Reorder {
+                    id_or_key,
+                    status_ids,
+                    json,
+                } => cmd::project::status::reorder(&ProjectStatusReorderArgs::new(
+                    id_or_key, status_ids, json,
+                )),
             },
             ProjectCommands::IssueType { action } => match action {
                 ProjectIssueTypeCommands::List { id_or_key, json } => {

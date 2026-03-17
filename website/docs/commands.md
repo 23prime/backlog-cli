@@ -334,6 +334,74 @@ Example output:
 [4] Closed
 ```
 
+## `bl project status add`
+
+Add a status to a project.
+
+```bash
+bl project status add <id-or-key> --name <name> --color <color>
+bl project status add <id-or-key> --name <name> --color <color> --json
+```
+
+The `--color` value must be a 6-digit hex color code with a `#` prefix (e.g., `#ed8077`). Only hex colors are accepted; CSS color names and shorthand hex are not supported.
+
+Example output:
+
+```text
+Added: [5] In Review
+```
+
+## `bl project status update`
+
+Update a project status.
+
+```bash
+bl project status update <id-or-key> --status-id <id> --name <name>
+bl project status update <id-or-key> --status-id <id> --color <color>
+bl project status update <id-or-key> --status-id <id> --name <name> --color <color> --json
+```
+
+At least one of `--name` or `--color` must be specified.
+
+Example output:
+
+```text
+Updated: [5] In Review
+```
+
+## `bl project status delete`
+
+Delete a project status. Issues with the deleted status are migrated to the substitute status.
+
+```bash
+bl project status delete <id-or-key> --status-id <id> --substitute-status-id <id>
+bl project status delete <id-or-key> --status-id <id> --substitute-status-id <id> --json
+```
+
+Example output:
+
+```text
+Deleted: [5] In Review
+```
+
+## `bl project status reorder`
+
+Reorder project statuses by specifying status IDs in the desired display order.
+
+```bash
+bl project status reorder <id-or-key> --status-id <id1> --status-id <id2> ...
+bl project status reorder <id-or-key> --status-id <id1> --status-id <id2> --json
+```
+
+Example output:
+
+```text
+[2] In Progress
+[1] Open
+[3] Resolved
+[4] Closed
+```
+
 ## `bl project issue-type list`
 
 List issue types defined for a specific project.
@@ -1254,10 +1322,10 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | `bl project admin delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/administrators` | ✅ Implemented |
 | — | `GET /api/v2/projects/{projectIdOrKey}/image` | Planned |
 | `bl project status list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/statuses` | ✅ Implemented |
-| `bl project status add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/statuses` | Planned |
-| `bl project status update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/statuses/{id}` | Planned |
-| `bl project status delete <id-or-key> <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/statuses/{id}` | Planned |
-| `bl project status reorder <id-or-key>` | `PATCH /api/v2/projects/{projectIdOrKey}/statuses/updateDisplayOrder` | Planned |
+| `bl project status add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/statuses` | ✅ Implemented |
+| `bl project status update <id-or-key> --status-id <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/statuses/{id}` | ✅ Implemented |
+| `bl project status delete <id-or-key> --status-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/statuses/{id}` | ✅ Implemented |
+| `bl project status reorder <id-or-key>` | `PATCH /api/v2/projects/{projectIdOrKey}/statuses/updateDisplayOrder` | ✅ Implemented |
 | `bl project issue-type list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/issueTypes` | ✅ Implemented |
 | `bl project issue-type add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/issueTypes` | Planned |
 | `bl project issue-type update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/issueTypes/{id}` | Planned |
