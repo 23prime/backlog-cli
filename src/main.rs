@@ -29,10 +29,11 @@ use cmd::issue::{
 };
 use cmd::notification::{NotificationCountArgs, NotificationListArgs, NotificationReadArgs};
 use cmd::priority::PriorityListArgs;
+use cmd::project::admin::{ProjectAdminAddArgs, ProjectAdminDeleteArgs, ProjectAdminListArgs};
 use cmd::project::category::ProjectCategoryListArgs;
 use cmd::project::issue_type::ProjectIssueTypeListArgs;
 use cmd::project::status::ProjectStatusListArgs;
-use cmd::project::user::ProjectUserListArgs;
+use cmd::project::user::{ProjectUserAddArgs, ProjectUserDeleteArgs, ProjectUserListArgs};
 use cmd::project::version::ProjectVersionListArgs;
 use cmd::project::{
     ProjectActivitiesArgs, ProjectCreateArgs, ProjectDeleteArgs, ProjectDiskUsageArgs,
@@ -368,6 +369,11 @@ enum ProjectCommands {
         #[command(subcommand)]
         action: ProjectUserCommands,
     },
+    /// Manage project administrators
+    Admin {
+        #[command(subcommand)]
+        action: ProjectAdminCommands,
+    },
     /// Manage project statuses
     Status {
         #[command(subcommand)]
@@ -396,6 +402,62 @@ enum ProjectUserCommands {
     List {
         /// Project ID or key
         id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Add a user to a project
+    Add {
+        /// Project ID or key
+        id_or_key: String,
+        /// Numeric user ID to add
+        #[arg(long)]
+        user_id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Remove a user from a project
+    Delete {
+        /// Project ID or key
+        id_or_key: String,
+        /// Numeric user ID to remove
+        #[arg(long)]
+        user_id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum ProjectAdminCommands {
+    /// List administrators of a project
+    List {
+        /// Project ID or key
+        id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Add a user as project administrator
+    Add {
+        /// Project ID or key
+        id_or_key: String,
+        /// Numeric user ID to add as administrator
+        #[arg(long)]
+        user_id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Remove a user from project administrators
+    Delete {
+        /// Project ID or key
+        id_or_key: String,
+        /// Numeric user ID to remove from administrators
+        #[arg(long)]
+        user_id: u64,
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -1391,6 +1453,35 @@ fn run() -> Result<()> {
                 ProjectUserCommands::List { id_or_key, json } => {
                     cmd::project::user::list(&ProjectUserListArgs::new(id_or_key, json))
                 }
+                ProjectUserCommands::Add {
+                    id_or_key,
+                    user_id,
+                    json,
+                } => cmd::project::user::add(&ProjectUserAddArgs::new(id_or_key, user_id, json)),
+                ProjectUserCommands::Delete {
+                    id_or_key,
+                    user_id,
+                    json,
+                } => cmd::project::user::delete(&ProjectUserDeleteArgs::new(
+                    id_or_key, user_id, json,
+                )),
+            },
+            ProjectCommands::Admin { action } => match action {
+                ProjectAdminCommands::List { id_or_key, json } => {
+                    cmd::project::admin::list(&ProjectAdminListArgs::new(id_or_key, json))
+                }
+                ProjectAdminCommands::Add {
+                    id_or_key,
+                    user_id,
+                    json,
+                } => cmd::project::admin::add(&ProjectAdminAddArgs::new(id_or_key, user_id, json)),
+                ProjectAdminCommands::Delete {
+                    id_or_key,
+                    user_id,
+                    json,
+                } => cmd::project::admin::delete(&ProjectAdminDeleteArgs::new(
+                    id_or_key, user_id, json,
+                )),
             },
             ProjectCommands::Status { action } => match action {
                 ProjectStatusCommands::List { id_or_key, json } => {

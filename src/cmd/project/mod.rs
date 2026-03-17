@@ -1,4 +1,5 @@
 mod activities;
+pub mod admin;
 pub mod category;
 mod create;
 mod delete;

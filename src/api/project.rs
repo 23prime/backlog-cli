@@ -227,6 +227,65 @@ impl BacklogClient {
             )
         })
     }
+
+    pub fn add_project_user(&self, key: &str, user_id: u64) -> Result<ProjectUser> {
+        let params = vec![("userId".to_string(), user_id.to_string())];
+        let value = self.post_form(&format!("/projects/{}/users", key), &params)?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize add project user response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn delete_project_user(&self, key: &str, user_id: u64) -> Result<ProjectUser> {
+        let params = vec![("userId".to_string(), user_id.to_string())];
+        let value = self.delete_form(&format!("/projects/{}/users", key), &params)?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize delete project user response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn get_project_administrators(&self, key: &str) -> Result<Vec<ProjectUser>> {
+        let value = self.get(&format!("/projects/{}/administrators", key))?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize project administrators response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn add_project_administrator(&self, key: &str, user_id: u64) -> Result<ProjectUser> {
+        let params = vec![("userId".to_string(), user_id.to_string())];
+        let value = self.post_form(&format!("/projects/{}/administrators", key), &params)?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize add project administrator response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn delete_project_administrator(&self, key: &str, user_id: u64) -> Result<ProjectUser> {
+        let params = vec![("userId".to_string(), user_id.to_string())];
+        let value = self.delete_form(&format!("/projects/{}/administrators", key), &params)?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize delete project administrator response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
 }
 
 #[cfg(test)]
