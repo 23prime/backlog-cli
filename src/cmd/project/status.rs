@@ -163,6 +163,7 @@ pub fn delete_with(args: &ProjectStatusDeleteArgs, api: &dyn BacklogApi) -> Resu
     Ok(())
 }
 
+#[cfg_attr(test, derive(Debug))]
 pub struct ProjectStatusReorderArgs {
     key: String,
     status_ids: Vec<u64>,
@@ -170,12 +171,17 @@ pub struct ProjectStatusReorderArgs {
 }
 
 impl ProjectStatusReorderArgs {
-    pub fn new(key: String, status_ids: Vec<u64>, json: bool) -> Self {
-        Self {
+    pub fn try_new(key: String, status_ids: Vec<u64>, json: bool) -> anyhow::Result<Self> {
+        if status_ids.is_empty() {
+            return Err(anyhow::anyhow!(
+                "At least one --status-id must be specified for reorder"
+            ));
+        }
+        Ok(Self {
             key,
             status_ids,
             json,
-        }
+        })
     }
 }
 
@@ -407,23 +413,31 @@ mod tests {
     }
 
     #[test]
+    fn reorder_try_new_rejects_empty() {
+        let err = ProjectStatusReorderArgs::try_new("TEST".to_string(), vec![], false).unwrap_err();
+        assert!(err.to_string().contains("At least one"));
+    }
+
+    #[test]
     fn reorder_with_text_output_succeeds() {
         let api = mock(Some(vec![sample_status()]), None);
-        let args = ProjectStatusReorderArgs::new("TEST".to_string(), vec![1, 2], false);
+        let args =
+            ProjectStatusReorderArgs::try_new("TEST".to_string(), vec![1, 2], false).unwrap();
         assert!(reorder_with(&args, &api).is_ok());
     }
 
     #[test]
     fn reorder_with_json_output_succeeds() {
         let api = mock(Some(vec![sample_status()]), None);
-        let args = ProjectStatusReorderArgs::new("TEST".to_string(), vec![1, 2], true);
+        let args = ProjectStatusReorderArgs::try_new("TEST".to_string(), vec![1, 2], true).unwrap();
         assert!(reorder_with(&args, &api).is_ok());
     }
 
     #[test]
     fn reorder_with_propagates_api_error() {
         let api = mock(None, None);
-        let args = ProjectStatusReorderArgs::new("TEST".to_string(), vec![1, 2], false);
+        let args =
+            ProjectStatusReorderArgs::try_new("TEST".to_string(), vec![1, 2], false).unwrap();
         let err = reorder_with(&args, &api).unwrap_err();
         assert!(err.to_string().contains("reorder failed"));
     }

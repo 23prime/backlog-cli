@@ -1578,9 +1578,9 @@ fn run() -> Result<()> {
                     id_or_key,
                     status_ids,
                     json,
-                } => cmd::project::status::reorder(&ProjectStatusReorderArgs::new(
+                } => cmd::project::status::reorder(&ProjectStatusReorderArgs::try_new(
                     id_or_key, status_ids, json,
-                )),
+                )?),
             },
             ProjectCommands::IssueType { action } => match action {
                 ProjectIssueTypeCommands::List { id_or_key, json } => {
