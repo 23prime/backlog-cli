@@ -228,6 +228,83 @@ impl BacklogClient {
         })
     }
 
+    pub fn add_project_status(&self, key: &str, name: &str, color: &str) -> Result<ProjectStatus> {
+        let params = vec![
+            ("name".to_string(), name.to_string()),
+            ("color".to_string(), color.to_string()),
+        ];
+        let value = self.post_form(&format!("/projects/{}/statuses", key), &params)?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize add project status response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn update_project_status(
+        &self,
+        key: &str,
+        status_id: u64,
+        params: &[(String, String)],
+    ) -> Result<ProjectStatus> {
+        let value =
+            self.patch_form(&format!("/projects/{}/statuses/{}", key, status_id), params)?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize update project status response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn delete_project_status(
+        &self,
+        key: &str,
+        status_id: u64,
+        substitute_status_id: u64,
+    ) -> Result<ProjectStatus> {
+        let params = vec![(
+            "substituteStatusId".to_string(),
+            substitute_status_id.to_string(),
+        )];
+        let value = self.delete_form(
+            &format!("/projects/{}/statuses/{}", key, status_id),
+            &params,
+        )?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize delete project status response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn reorder_project_statuses(
+        &self,
+        key: &str,
+        status_ids: &[u64],
+    ) -> Result<Vec<ProjectStatus>> {
+        let params: Vec<(String, String)> = status_ids
+            .iter()
+            .map(|id| ("statusId[]".to_string(), id.to_string()))
+            .collect();
+        let value = self.patch_form(
+            &format!("/projects/{}/statuses/updateDisplayOrder", key),
+            &params,
+        )?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize reorder project statuses response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
     pub fn add_project_user(&self, key: &str, user_id: u64) -> Result<ProjectUser> {
         let params = vec![("userId".to_string(), user_id.to_string())];
         let value = self.post_form(&format!("/projects/{}/users", key), &params)?;

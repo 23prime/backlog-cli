@@ -33,3 +33,4 @@ MYPRJ
 NEWKEY
 burndown
 splitn
+hexdigit

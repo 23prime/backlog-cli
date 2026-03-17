@@ -101,6 +101,32 @@ pub trait BacklogApi {
     fn get_project_statuses(&self, _key: &str) -> Result<Vec<ProjectStatus>> {
         unimplemented!()
     }
+    fn add_project_status(&self, _key: &str, _name: &str, _color: &str) -> Result<ProjectStatus> {
+        unimplemented!()
+    }
+    fn update_project_status(
+        &self,
+        _key: &str,
+        _status_id: u64,
+        _params: &[(String, String)],
+    ) -> Result<ProjectStatus> {
+        unimplemented!()
+    }
+    fn delete_project_status(
+        &self,
+        _key: &str,
+        _status_id: u64,
+        _substitute_status_id: u64,
+    ) -> Result<ProjectStatus> {
+        unimplemented!()
+    }
+    fn reorder_project_statuses(
+        &self,
+        _key: &str,
+        _status_ids: &[u64],
+    ) -> Result<Vec<ProjectStatus>> {
+        unimplemented!()
+    }
     fn get_project_issue_types(&self, _key: &str) -> Result<Vec<ProjectIssueType>> {
         unimplemented!()
     }
@@ -396,6 +422,36 @@ impl BacklogApi for BacklogClient {
 
     fn get_project_statuses(&self, key: &str) -> Result<Vec<ProjectStatus>> {
         self.get_project_statuses(key)
+    }
+
+    fn add_project_status(&self, key: &str, name: &str, color: &str) -> Result<ProjectStatus> {
+        self.add_project_status(key, name, color)
+    }
+
+    fn update_project_status(
+        &self,
+        key: &str,
+        status_id: u64,
+        params: &[(String, String)],
+    ) -> Result<ProjectStatus> {
+        self.update_project_status(key, status_id, params)
+    }
+
+    fn delete_project_status(
+        &self,
+        key: &str,
+        status_id: u64,
+        substitute_status_id: u64,
+    ) -> Result<ProjectStatus> {
+        self.delete_project_status(key, status_id, substitute_status_id)
+    }
+
+    fn reorder_project_statuses(
+        &self,
+        key: &str,
+        status_ids: &[u64],
+    ) -> Result<Vec<ProjectStatus>> {
+        self.reorder_project_statuses(key, status_ids)
     }
 
     fn get_project_issue_types(&self, key: &str) -> Result<Vec<ProjectIssueType>> {
