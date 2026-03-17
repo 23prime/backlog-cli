@@ -34,6 +34,7 @@ pub fn list_with(args: &ProjectStatusListArgs, api: &dyn BacklogApi) -> Result<(
     Ok(())
 }
 
+#[cfg_attr(test, derive(Debug))]
 pub struct ProjectStatusAddArgs {
     key: String,
     name: String,
@@ -42,13 +43,14 @@ pub struct ProjectStatusAddArgs {
 }
 
 impl ProjectStatusAddArgs {
-    pub fn new(key: String, name: String, color: String, json: bool) -> Self {
-        Self {
+    pub fn try_new(key: String, name: String, color: String, json: bool) -> anyhow::Result<Self> {
+        validate_color(&color)?;
+        Ok(Self {
             key,
             name,
             color,
             json,
-        }
+        })
     }
 }
 
@@ -92,6 +94,9 @@ impl ProjectStatusUpdateArgs {
                 "At least one of --name or --color must be specified for update"
             ));
         }
+        if let Some(c) = &color {
+            validate_color(c)?;
+        }
         Ok(Self {
             key,
             status_id,
@@ -127,6 +132,7 @@ pub fn update_with(args: &ProjectStatusUpdateArgs, api: &dyn BacklogApi) -> Resu
     Ok(())
 }
 
+#[cfg_attr(test, derive(Debug))]
 pub struct ProjectStatusDeleteArgs {
     key: String,
     status_id: u64,
@@ -135,13 +141,23 @@ pub struct ProjectStatusDeleteArgs {
 }
 
 impl ProjectStatusDeleteArgs {
-    pub fn new(key: String, status_id: u64, substitute_status_id: u64, json: bool) -> Self {
-        Self {
+    pub fn try_new(
+        key: String,
+        status_id: u64,
+        substitute_status_id: u64,
+        json: bool,
+    ) -> anyhow::Result<Self> {
+        if status_id == substitute_status_id {
+            return Err(anyhow::anyhow!(
+                "--substitute-status-id must differ from --status-id"
+            ));
+        }
+        Ok(Self {
             key,
             status_id,
             substitute_status_id,
             json,
-        }
+        })
     }
 }
 
@@ -203,6 +219,19 @@ pub fn reorder_with(args: &ProjectStatusReorderArgs, api: &dyn BacklogApi) -> Re
         }
     }
     Ok(())
+}
+
+fn validate_color(color: &str) -> anyhow::Result<()> {
+    if color.len() == 7
+        && color.starts_with('#')
+        && color[1..].chars().all(|c| c.is_ascii_hexdigit())
+    {
+        Ok(())
+    } else {
+        Err(anyhow::anyhow!(
+            "Color must be a 6-digit hex code with # prefix (e.g. #ed8077)"
+        ))
+    }
 }
 
 fn format_status_row(s: &ProjectStatus) -> String {
@@ -304,38 +333,53 @@ mod tests {
     }
 
     #[test]
+    fn add_try_new_rejects_invalid_color() {
+        let err = ProjectStatusAddArgs::try_new(
+            "TEST".to_string(),
+            "Open".to_string(),
+            "ed8077".to_string(),
+            false,
+        )
+        .unwrap_err();
+        assert!(err.to_string().contains("hex code"));
+    }
+
+    #[test]
     fn add_with_text_output_succeeds() {
         let api = mock(None, Some(sample_status()));
-        let args = ProjectStatusAddArgs::new(
+        let args = ProjectStatusAddArgs::try_new(
             "TEST".to_string(),
             "Open".to_string(),
             "#ed8077".to_string(),
             false,
-        );
+        )
+        .unwrap();
         assert!(add_with(&args, &api).is_ok());
     }
 
     #[test]
     fn add_with_json_output_succeeds() {
         let api = mock(None, Some(sample_status()));
-        let args = ProjectStatusAddArgs::new(
+        let args = ProjectStatusAddArgs::try_new(
             "TEST".to_string(),
             "Open".to_string(),
             "#ed8077".to_string(),
             true,
-        );
+        )
+        .unwrap();
         assert!(add_with(&args, &api).is_ok());
     }
 
     #[test]
     fn add_with_propagates_api_error() {
         let api = mock(None, None);
-        let args = ProjectStatusAddArgs::new(
+        let args = ProjectStatusAddArgs::try_new(
             "TEST".to_string(),
             "Open".to_string(),
             "#ed8077".to_string(),
             false,
-        );
+        )
+        .unwrap();
         let err = add_with(&args, &api).unwrap_err();
         assert!(err.to_string().contains("add failed"));
     }
@@ -391,23 +435,29 @@ mod tests {
     }
 
     #[test]
+    fn delete_try_new_rejects_same_ids() {
+        let err = ProjectStatusDeleteArgs::try_new("TEST".to_string(), 1, 1, false).unwrap_err();
+        assert!(err.to_string().contains("must differ"));
+    }
+
+    #[test]
     fn delete_with_text_output_succeeds() {
         let api = mock(None, Some(sample_status()));
-        let args = ProjectStatusDeleteArgs::new("TEST".to_string(), 1, 2, false);
+        let args = ProjectStatusDeleteArgs::try_new("TEST".to_string(), 1, 2, false).unwrap();
         assert!(delete_with(&args, &api).is_ok());
     }
 
     #[test]
     fn delete_with_json_output_succeeds() {
         let api = mock(None, Some(sample_status()));
-        let args = ProjectStatusDeleteArgs::new("TEST".to_string(), 1, 2, true);
+        let args = ProjectStatusDeleteArgs::try_new("TEST".to_string(), 1, 2, true).unwrap();
         assert!(delete_with(&args, &api).is_ok());
     }
 
     #[test]
     fn delete_with_propagates_api_error() {
         let api = mock(None, None);
-        let args = ProjectStatusDeleteArgs::new("TEST".to_string(), 1, 2, false);
+        let args = ProjectStatusDeleteArgs::try_new("TEST".to_string(), 1, 2, false).unwrap();
         let err = delete_with(&args, &api).unwrap_err();
         assert!(err.to_string().contains("delete failed"));
     }

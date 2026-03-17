@@ -1551,9 +1551,9 @@ fn run() -> Result<()> {
                     name,
                     color,
                     json,
-                } => cmd::project::status::add(&ProjectStatusAddArgs::new(
+                } => cmd::project::status::add(&ProjectStatusAddArgs::try_new(
                     id_or_key, name, color, json,
-                )),
+                )?),
                 ProjectStatusCommands::Update {
                     id_or_key,
                     status_id,
@@ -1568,12 +1568,12 @@ fn run() -> Result<()> {
                     status_id,
                     substitute_status_id,
                     json,
-                } => cmd::project::status::delete(&ProjectStatusDeleteArgs::new(
+                } => cmd::project::status::delete(&ProjectStatusDeleteArgs::try_new(
                     id_or_key,
                     status_id,
                     substitute_status_id,
                     json,
-                )),
+                )?),
                 ProjectStatusCommands::Reorder {
                     id_or_key,
                     status_ids,
