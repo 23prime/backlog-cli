@@ -241,6 +241,81 @@ Example output:
 [jane] Jane Smith
 ```
 
+## `bl project user add`
+
+Add a user to a project by numeric user ID.
+
+```bash
+bl project user add <id-or-key> --user-id <user-id>
+bl project user add <id-or-key> --user-id <user-id> --json
+```
+
+Example output:
+
+```text
+Added: [john] John Doe
+```
+
+## `bl project user delete`
+
+Remove a user from a project by numeric user ID.
+
+```bash
+bl project user delete <id-or-key> --user-id <user-id>
+bl project user delete <id-or-key> --user-id <user-id> --json
+```
+
+Example output:
+
+```text
+Deleted: [john] John Doe
+```
+
+## `bl project admin list`
+
+List administrators of a specific project.
+
+```bash
+bl project admin list <id-or-key>
+bl project admin list <id-or-key> --json
+```
+
+Example output:
+
+```text
+[admin1] Alice Admin
+```
+
+## `bl project admin add`
+
+Add a user as an administrator of a project by numeric user ID.
+
+```bash
+bl project admin add <id-or-key> --user-id <user-id>
+bl project admin add <id-or-key> --user-id <user-id> --json
+```
+
+Example output:
+
+```text
+Added: [john] John Doe
+```
+
+## `bl project admin delete`
+
+Remove a user from the administrators of a project by numeric user ID.
+
+```bash
+bl project admin delete <id-or-key> --user-id <user-id>
+bl project admin delete <id-or-key> --user-id <user-id> --json
+```
+
+Example output:
+
+```text
+Deleted: [john] John Doe
+```
+
 ## `bl project status list`
 
 List issue statuses defined for a specific project.
@@ -1172,11 +1247,11 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | `bl project activities <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/activities` | ✅ Implemented |
 | `bl project disk-usage <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/diskUsage` | ✅ Implemented |
 | `bl project user list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/users` | ✅ Implemented |
-| `bl project user add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/users` | Planned |
-| `bl project user delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/users` | Planned |
-| `bl project admin list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/administrators` | Planned |
-| `bl project admin add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/administrators` | Planned |
-| `bl project admin delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/administrators` | Planned |
+| `bl project user add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/users` | ✅ Implemented |
+| `bl project user delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/users` | ✅ Implemented |
+| `bl project admin list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/administrators` | ✅ Implemented |
+| `bl project admin add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/administrators` | ✅ Implemented |
+| `bl project admin delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/administrators` | ✅ Implemented |
 | — | `GET /api/v2/projects/{projectIdOrKey}/image` | Planned |
 | `bl project status list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/statuses` | ✅ Implemented |
 | `bl project status add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/statuses` | Planned |

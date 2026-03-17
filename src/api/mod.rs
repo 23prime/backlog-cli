@@ -119,6 +119,21 @@ pub trait BacklogApi {
     fn delete_project(&self, _key: &str) -> Result<Project> {
         unimplemented!()
     }
+    fn add_project_user(&self, _key: &str, _user_id: u64) -> Result<ProjectUser> {
+        unimplemented!()
+    }
+    fn delete_project_user(&self, _key: &str, _user_id: u64) -> Result<ProjectUser> {
+        unimplemented!()
+    }
+    fn get_project_administrators(&self, _key: &str) -> Result<Vec<ProjectUser>> {
+        unimplemented!()
+    }
+    fn add_project_administrator(&self, _key: &str, _user_id: u64) -> Result<ProjectUser> {
+        unimplemented!()
+    }
+    fn delete_project_administrator(&self, _key: &str, _user_id: u64) -> Result<ProjectUser> {
+        unimplemented!()
+    }
     fn get_issues(&self, _params: &[(String, String)]) -> Result<Vec<Issue>> {
         unimplemented!()
     }
@@ -405,6 +420,26 @@ impl BacklogApi for BacklogClient {
 
     fn delete_project(&self, key: &str) -> Result<Project> {
         self.delete_project(key)
+    }
+
+    fn add_project_user(&self, key: &str, user_id: u64) -> Result<ProjectUser> {
+        self.add_project_user(key, user_id)
+    }
+
+    fn delete_project_user(&self, key: &str, user_id: u64) -> Result<ProjectUser> {
+        self.delete_project_user(key, user_id)
+    }
+
+    fn get_project_administrators(&self, key: &str) -> Result<Vec<ProjectUser>> {
+        self.get_project_administrators(key)
+    }
+
+    fn add_project_administrator(&self, key: &str, user_id: u64) -> Result<ProjectUser> {
+        self.add_project_administrator(key, user_id)
+    }
+
+    fn delete_project_administrator(&self, key: &str, user_id: u64) -> Result<ProjectUser> {
+        self.delete_project_administrator(key, user_id)
     }
 
     fn get_issues(&self, params: &[(String, String)]) -> Result<Vec<Issue>> {

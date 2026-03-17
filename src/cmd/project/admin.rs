@@ -3,24 +3,24 @@ use anyhow::{Context, Result};
 
 use crate::api::{BacklogApi, BacklogClient, project::ProjectUser};
 
-pub struct ProjectUserListArgs {
+pub struct ProjectAdminListArgs {
     key: String,
     json: bool,
 }
 
-impl ProjectUserListArgs {
+impl ProjectAdminListArgs {
     pub fn new(key: String, json: bool) -> Self {
         Self { key, json }
     }
 }
 
-pub fn list(args: &ProjectUserListArgs) -> Result<()> {
+pub fn list(args: &ProjectAdminListArgs) -> Result<()> {
     let client = BacklogClient::from_config()?;
     list_with(args, &client)
 }
 
-pub fn list_with(args: &ProjectUserListArgs, api: &dyn BacklogApi) -> Result<()> {
-    let users = api.get_project_users(&args.key)?;
+pub fn list_with(args: &ProjectAdminListArgs, api: &dyn BacklogApi) -> Result<()> {
+    let users = api.get_project_administrators(&args.key)?;
     if args.json {
         println!(
             "{}",
@@ -34,25 +34,25 @@ pub fn list_with(args: &ProjectUserListArgs, api: &dyn BacklogApi) -> Result<()>
     Ok(())
 }
 
-pub struct ProjectUserAddArgs {
+pub struct ProjectAdminAddArgs {
     key: String,
     user_id: u64,
     json: bool,
 }
 
-impl ProjectUserAddArgs {
+impl ProjectAdminAddArgs {
     pub fn new(key: String, user_id: u64, json: bool) -> Self {
         Self { key, user_id, json }
     }
 }
 
-pub fn add(args: &ProjectUserAddArgs) -> Result<()> {
+pub fn add(args: &ProjectAdminAddArgs) -> Result<()> {
     let client = BacklogClient::from_config()?;
     add_with(args, &client)
 }
 
-pub fn add_with(args: &ProjectUserAddArgs, api: &dyn BacklogApi) -> Result<()> {
-    let user = api.add_project_user(&args.key, args.user_id)?;
+pub fn add_with(args: &ProjectAdminAddArgs, api: &dyn BacklogApi) -> Result<()> {
+    let user = api.add_project_administrator(&args.key, args.user_id)?;
     if args.json {
         println!(
             "{}",
@@ -64,25 +64,25 @@ pub fn add_with(args: &ProjectUserAddArgs, api: &dyn BacklogApi) -> Result<()> {
     Ok(())
 }
 
-pub struct ProjectUserDeleteArgs {
+pub struct ProjectAdminDeleteArgs {
     key: String,
     user_id: u64,
     json: bool,
 }
 
-impl ProjectUserDeleteArgs {
+impl ProjectAdminDeleteArgs {
     pub fn new(key: String, user_id: u64, json: bool) -> Self {
         Self { key, user_id, json }
     }
 }
 
-pub fn delete(args: &ProjectUserDeleteArgs) -> Result<()> {
+pub fn delete(args: &ProjectAdminDeleteArgs) -> Result<()> {
     let client = BacklogClient::from_config()?;
     delete_with(args, &client)
 }
 
-pub fn delete_with(args: &ProjectUserDeleteArgs, api: &dyn BacklogApi) -> Result<()> {
-    let user = api.delete_project_user(&args.key, args.user_id)?;
+pub fn delete_with(args: &ProjectAdminDeleteArgs, api: &dyn BacklogApi) -> Result<()> {
+    let user = api.delete_project_administrator(&args.key, args.user_id)?;
     if args.json {
         println!(
             "{}",
@@ -113,15 +113,23 @@ mod tests {
     }
 
     impl crate::api::BacklogApi for MockApi {
-        fn get_project_users(&self, _key: &str) -> anyhow::Result<Vec<ProjectUser>> {
-            self.users.clone().ok_or_else(|| anyhow!("no users"))
+        fn get_project_administrators(&self, _key: &str) -> anyhow::Result<Vec<ProjectUser>> {
+            self.users.clone().ok_or_else(|| anyhow!("no admins"))
         }
 
-        fn add_project_user(&self, _key: &str, _user_id: u64) -> anyhow::Result<ProjectUser> {
+        fn add_project_administrator(
+            &self,
+            _key: &str,
+            _user_id: u64,
+        ) -> anyhow::Result<ProjectUser> {
             self.user.clone().ok_or_else(|| anyhow!("add failed"))
         }
 
-        fn delete_project_user(&self, _key: &str, _user_id: u64) -> anyhow::Result<ProjectUser> {
+        fn delete_project_administrator(
+            &self,
+            _key: &str,
+            _user_id: u64,
+        ) -> anyhow::Result<ProjectUser> {
             self.user.clone().ok_or_else(|| anyhow!("delete failed"))
         }
     }
@@ -140,28 +148,12 @@ mod tests {
     }
 
     #[test]
-    fn format_user_row_with_user_id() {
-        let text = format_user_row(&sample_user());
-        assert!(text.contains("[john]"));
-        assert!(text.contains("John Doe"));
-    }
-
-    #[test]
-    fn format_user_row_without_user_id() {
-        let mut u = sample_user();
-        u.user_id = None;
-        let text = format_user_row(&u);
-        assert!(text.contains("[1]"));
-        assert!(text.contains("John Doe"));
-    }
-
-    #[test]
     fn list_with_text_output_succeeds() {
         let api = MockApi {
             users: Some(vec![sample_user()]),
             user: None,
         };
-        assert!(list_with(&ProjectUserListArgs::new("TEST".to_string(), false), &api).is_ok());
+        assert!(list_with(&ProjectAdminListArgs::new("TEST".to_string(), false), &api).is_ok());
     }
 
     #[test]
@@ -170,7 +162,7 @@ mod tests {
             users: Some(vec![sample_user()]),
             user: None,
         };
-        assert!(list_with(&ProjectUserListArgs::new("TEST".to_string(), true), &api).is_ok());
+        assert!(list_with(&ProjectAdminListArgs::new("TEST".to_string(), true), &api).is_ok());
     }
 
     #[test]
@@ -180,8 +172,8 @@ mod tests {
             user: None,
         };
         let err =
-            list_with(&ProjectUserListArgs::new("TEST".to_string(), false), &api).unwrap_err();
-        assert!(err.to_string().contains("no users"));
+            list_with(&ProjectAdminListArgs::new("TEST".to_string(), false), &api).unwrap_err();
+        assert!(err.to_string().contains("no admins"));
     }
 
     #[test]
@@ -190,7 +182,13 @@ mod tests {
             users: None,
             user: Some(sample_user()),
         };
-        assert!(add_with(&ProjectUserAddArgs::new("TEST".to_string(), 1, false), &api).is_ok());
+        assert!(
+            add_with(
+                &ProjectAdminAddArgs::new("TEST".to_string(), 1, false),
+                &api
+            )
+            .is_ok()
+        );
     }
 
     #[test]
@@ -199,7 +197,7 @@ mod tests {
             users: None,
             user: Some(sample_user()),
         };
-        assert!(add_with(&ProjectUserAddArgs::new("TEST".to_string(), 1, true), &api).is_ok());
+        assert!(add_with(&ProjectAdminAddArgs::new("TEST".to_string(), 1, true), &api).is_ok());
     }
 
     #[test]
@@ -208,8 +206,11 @@ mod tests {
             users: None,
             user: None,
         };
-        let err =
-            add_with(&ProjectUserAddArgs::new("TEST".to_string(), 1, false), &api).unwrap_err();
+        let err = add_with(
+            &ProjectAdminAddArgs::new("TEST".to_string(), 1, false),
+            &api,
+        )
+        .unwrap_err();
         assert!(err.to_string().contains("add failed"));
     }
 
@@ -221,7 +222,7 @@ mod tests {
         };
         assert!(
             delete_with(
-                &ProjectUserDeleteArgs::new("TEST".to_string(), 1, false),
+                &ProjectAdminDeleteArgs::new("TEST".to_string(), 1, false),
                 &api
             )
             .is_ok()
@@ -236,7 +237,7 @@ mod tests {
         };
         assert!(
             delete_with(
-                &ProjectUserDeleteArgs::new("TEST".to_string(), 1, true),
+                &ProjectAdminDeleteArgs::new("TEST".to_string(), 1, true),
                 &api
             )
             .is_ok()
@@ -250,7 +251,7 @@ mod tests {
             user: None,
         };
         let err = delete_with(
-            &ProjectUserDeleteArgs::new("TEST".to_string(), 1, false),
+            &ProjectAdminDeleteArgs::new("TEST".to_string(), 1, false),
             &api,
         )
         .unwrap_err();

@@ -241,6 +241,81 @@ bl project user list <id-or-key> --json
 [jane] Jane Smith
 ```
 
+## `bl project user add`
+
+数値ユーザー ID を指定してプロジェクトにユーザーを追加します。
+
+```bash
+bl project user add <id-or-key> --user-id <user-id>
+bl project user add <id-or-key> --user-id <user-id> --json
+```
+
+出力例:
+
+```text
+Added: [john] John Doe
+```
+
+## `bl project user delete`
+
+数値ユーザー ID を指定してプロジェクトからユーザーを削除します。
+
+```bash
+bl project user delete <id-or-key> --user-id <user-id>
+bl project user delete <id-or-key> --user-id <user-id> --json
+```
+
+出力例:
+
+```text
+Deleted: [john] John Doe
+```
+
+## `bl project admin list`
+
+特定のプロジェクトの管理者を一覧表示します。
+
+```bash
+bl project admin list <id-or-key>
+bl project admin list <id-or-key> --json
+```
+
+出力例:
+
+```text
+[admin1] Alice Admin
+```
+
+## `bl project admin add`
+
+数値ユーザー ID を指定してユーザーをプロジェクト管理者に追加します。
+
+```bash
+bl project admin add <id-or-key> --user-id <user-id>
+bl project admin add <id-or-key> --user-id <user-id> --json
+```
+
+出力例:
+
+```text
+Added: [john] John Doe
+```
+
+## `bl project admin delete`
+
+数値ユーザー ID を指定してユーザーをプロジェクト管理者から削除します。
+
+```bash
+bl project admin delete <id-or-key> --user-id <user-id>
+bl project admin delete <id-or-key> --user-id <user-id> --json
+```
+
+出力例:
+
+```text
+Deleted: [john] John Doe
+```
+
 ## `bl project status list`
 
 特定のプロジェクトの課題ステータスを一覧表示します。
@@ -1176,11 +1251,11 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl project activities <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/activities` | ✅ 実装済み |
 | `bl project disk-usage <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/diskUsage` | ✅ 実装済み |
 | `bl project user list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/users` | ✅ 実装済み |
-| `bl project user add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/users` | 計画中 |
-| `bl project user delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/users` | 計画中 |
-| `bl project admin list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/administrators` | 計画中 |
-| `bl project admin add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/administrators` | 計画中 |
-| `bl project admin delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/administrators` | 計画中 |
+| `bl project user add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/users` | ✅ 実装済み |
+| `bl project user delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/users` | ✅ 実装済み |
+| `bl project admin list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/administrators` | ✅ 実装済み |
+| `bl project admin add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/administrators` | ✅ 実装済み |
+| `bl project admin delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/administrators` | ✅ 実装済み |
 | — | `GET /api/v2/projects/{projectIdOrKey}/image` | 計画中 |
 | `bl project status list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/statuses` | ✅ 実装済み |
 | `bl project status add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/statuses` | 計画中 |

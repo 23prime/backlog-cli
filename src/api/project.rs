@@ -227,6 +227,65 @@ impl BacklogClient {
             )
         })
     }
+
+    pub fn add_project_user(&self, key: &str, user_id: u64) -> Result<ProjectUser> {
+        let params = vec![("userId".to_string(), user_id.to_string())];
+        let value = self.post_form(&format!("/projects/{}/users", key), &params)?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize add project user response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn delete_project_user(&self, key: &str, user_id: u64) -> Result<ProjectUser> {
+        let params = vec![("userId".to_string(), user_id.to_string())];
+        let value = self.delete_form(&format!("/projects/{}/users", key), &params)?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize delete project user response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn get_project_administrators(&self, key: &str) -> Result<Vec<ProjectUser>> {
+        let value = self.get(&format!("/projects/{}/administrators", key))?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize project administrators response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn add_project_administrator(&self, key: &str, user_id: u64) -> Result<ProjectUser> {
+        let params = vec![("userId".to_string(), user_id.to_string())];
+        let value = self.post_form(&format!("/projects/{}/administrators", key), &params)?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize add project administrator response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn delete_project_administrator(&self, key: &str, user_id: u64) -> Result<ProjectUser> {
+        let params = vec![("userId".to_string(), user_id.to_string())];
+        let value = self.delete_form(&format!("/projects/{}/administrators", key), &params)?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize delete project administrator response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
 }
 
 #[cfg(test)]
@@ -621,5 +680,158 @@ mod tests {
         let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
         let err = client.delete_project("UNKNOWN").unwrap_err();
         assert!(err.to_string().contains("No project"));
+    }
+
+    fn project_user_json() -> serde_json::Value {
+        json!({
+            "id": 1,
+            "userId": "john",
+            "name": "John Doe",
+            "roleType": 1,
+            "lang": "ja",
+            "mailAddress": "john@example.com",
+            "lastLoginTime": null
+        })
+    }
+
+    #[test]
+    fn add_project_user_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST).path("/projects/TEST/users");
+            then.status(200).json_body(project_user_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let user = client.add_project_user("TEST", 1).unwrap();
+        assert_eq!(user.id, 1);
+        assert_eq!(user.name, "John Doe");
+    }
+
+    #[test]
+    fn add_project_user_returns_error_on_api_failure() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST).path("/projects/TEST/users");
+            then.status(403)
+                .json_body(json!({"errors": [{"message": "Forbidden"}]}));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let err = client.add_project_user("TEST", 1).unwrap_err();
+        assert!(err.to_string().contains("Forbidden"));
+    }
+
+    #[test]
+    fn delete_project_user_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(DELETE).path("/projects/TEST/users");
+            then.status(200).json_body(project_user_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let user = client.delete_project_user("TEST", 1).unwrap();
+        assert_eq!(user.id, 1);
+        assert_eq!(user.name, "John Doe");
+    }
+
+    #[test]
+    fn delete_project_user_returns_error_on_api_failure() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(DELETE).path("/projects/TEST/users");
+            then.status(404)
+                .json_body(json!({"errors": [{"message": "No user"}]}));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let err = client.delete_project_user("TEST", 1).unwrap_err();
+        assert!(err.to_string().contains("No user"));
+    }
+
+    #[test]
+    fn get_project_administrators_returns_parsed_list() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/projects/TEST/administrators");
+            then.status(200).json_body(json!([project_user_json()]));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let admins = client.get_project_administrators("TEST").unwrap();
+        assert_eq!(admins.len(), 1);
+        assert_eq!(admins[0].id, 1);
+        assert_eq!(admins[0].name, "John Doe");
+    }
+
+    #[test]
+    fn get_project_administrators_returns_error_on_api_failure() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/projects/TEST/administrators");
+            then.status(403)
+                .json_body(json!({"errors": [{"message": "Forbidden"}]}));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let err = client.get_project_administrators("TEST").unwrap_err();
+        assert!(err.to_string().contains("Forbidden"));
+    }
+
+    #[test]
+    fn add_project_administrator_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST).path("/projects/TEST/administrators");
+            then.status(200).json_body(project_user_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let user = client.add_project_administrator("TEST", 1).unwrap();
+        assert_eq!(user.id, 1);
+        assert_eq!(user.name, "John Doe");
+    }
+
+    #[test]
+    fn add_project_administrator_returns_error_on_api_failure() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST).path("/projects/TEST/administrators");
+            then.status(403)
+                .json_body(json!({"errors": [{"message": "Forbidden"}]}));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let err = client.add_project_administrator("TEST", 1).unwrap_err();
+        assert!(err.to_string().contains("Forbidden"));
+    }
+
+    #[test]
+    fn delete_project_administrator_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(DELETE).path("/projects/TEST/administrators");
+            then.status(200).json_body(project_user_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let user = client.delete_project_administrator("TEST", 1).unwrap();
+        assert_eq!(user.id, 1);
+        assert_eq!(user.name, "John Doe");
+    }
+
+    #[test]
+    fn delete_project_administrator_returns_error_on_api_failure() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(DELETE).path("/projects/TEST/administrators");
+            then.status(404)
+                .json_body(json!({"errors": [{"message": "No user"}]}));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let err = client.delete_project_administrator("TEST", 1).unwrap_err();
+        assert!(err.to_string().contains("No user"));
     }
 }
