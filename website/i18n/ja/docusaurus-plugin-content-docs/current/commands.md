@@ -1111,6 +1111,8 @@ Deleted: [1] ログインバグを修正する (TEST-42)
 bl watch read <id>
 ```
 
+成功時は出力されません（HTTP 204 No Content）。
+
 ## コマンドカバレッジ
 
 Backlog API v2 エンドポイントと `bl` コマンドの対応表です。

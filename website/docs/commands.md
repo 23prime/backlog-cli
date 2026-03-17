@@ -1107,6 +1107,8 @@ Mark a watching as read.
 bl watch read <id>
 ```
 
+On success, this command prints no output (HTTP 204 No Content).
+
 ## Command coverage
 
 The table below maps Backlog API v2 endpoints to `bl` commands.
