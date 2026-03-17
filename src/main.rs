@@ -47,6 +47,10 @@ use cmd::user::{
     UserActivitiesArgs, UserAddArgs, UserDeleteArgs, UserListArgs, UserRecentlyViewedArgs,
     UserRecentlyViewedProjectsArgs, UserRecentlyViewedWikisArgs, UserShowArgs, UserUpdateArgs,
 };
+use cmd::watch::{
+    WatchAddArgs, WatchCountArgs, WatchDeleteArgs, WatchListArgs, WatchReadArgs, WatchShowArgs,
+    WatchUpdateArgs,
+};
 use cmd::wiki::attachment::WikiAttachmentListArgs;
 use cmd::wiki::{
     WikiCreateArgs, WikiDeleteArgs, WikiHistoryArgs, WikiListArgs, WikiShowArgs, WikiUpdateArgs,
@@ -116,6 +120,11 @@ enum Commands {
         #[command(subcommand)]
         action: NotificationCommands,
     },
+    /// Manage watchings
+    Watch {
+        #[command(subcommand)]
+        action: WatchCommands,
+    },
 }
 
 #[derive(clap::ValueEnum, Clone)]
@@ -167,6 +176,23 @@ impl RoleType {
             RoleType::Viewer => 4,
             RoleType::GuestReporter => 5,
             RoleType::GuestViewer => 6,
+        }
+    }
+}
+
+#[derive(clap::ValueEnum, Clone)]
+enum WatchSort {
+    Created,
+    Updated,
+    IssueUpdated,
+}
+
+impl WatchSort {
+    fn as_str(&self) -> &'static str {
+        match self {
+            WatchSort::Created => "created",
+            WatchSort::Updated => "updated",
+            WatchSort::IssueUpdated => "issueUpdated",
         }
     }
 }
@@ -1088,6 +1114,94 @@ enum NotificationCommands {
 }
 
 #[derive(Subcommand)]
+enum WatchCommands {
+    /// List watchings for a user
+    List {
+        /// User ID
+        user_id: u64,
+        /// Sort order
+        #[arg(long)]
+        order: Option<Order>,
+        /// Sort field
+        #[arg(long)]
+        sort: Option<WatchSort>,
+        /// Number of watchings to retrieve (1–100)
+        #[arg(long, default_value = "20")]
+        count: u32,
+        /// Offset
+        #[arg(long)]
+        offset: Option<u64>,
+        /// Filter by read status (true = read only, false = unread only)
+        #[arg(long)]
+        resource_already_read: Option<bool>,
+        /// Filter by issue ID (repeatable)
+        #[arg(long = "issue-id", value_name = "ID")]
+        issue_ids: Vec<u64>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Count watchings for a user
+    Count {
+        /// User ID
+        user_id: u64,
+        /// Filter by resource read status
+        #[arg(long)]
+        resource_already_read: Option<bool>,
+        /// Filter by already-read status (takes precedence over --resource-already-read)
+        #[arg(long)]
+        already_read: Option<bool>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Show a watching
+    Show {
+        /// Watching ID
+        id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Add a watching
+    Add {
+        /// Issue ID or key to watch
+        #[arg(long)]
+        issue: String,
+        /// Note
+        #[arg(long)]
+        note: Option<String>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Update a watching note
+    Update {
+        /// Watching ID
+        id: u64,
+        /// New note
+        #[arg(long)]
+        note: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Delete a watching
+    Delete {
+        /// Watching ID
+        id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Mark a watching as read
+    Read {
+        /// Watching ID
+        id: u64,
+    },
+}
+
+#[derive(Subcommand)]
 enum AuthCommands {
     /// Login with your API key
     Login {
@@ -1665,6 +1779,49 @@ fn run() -> Result<()> {
                 cmd::notification::read(&NotificationReadArgs::new(id))
             }
             NotificationCommands::ResetUnread => cmd::notification::reset_unread(),
+        },
+        Commands::Watch { action } => match action {
+            WatchCommands::List {
+                user_id,
+                order,
+                sort,
+                count,
+                offset,
+                resource_already_read,
+                issue_ids,
+                json,
+            } => cmd::watch::list(&WatchListArgs::try_new(
+                user_id,
+                order.map(|o| o.as_str().to_string()),
+                sort.map(|s| s.as_str().to_string()),
+                count,
+                offset,
+                resource_already_read,
+                issue_ids,
+                json,
+            )?),
+            WatchCommands::Count {
+                user_id,
+                resource_already_read,
+                already_read,
+                json,
+            } => cmd::watch::count(&WatchCountArgs::new(
+                user_id,
+                resource_already_read,
+                already_read,
+                json,
+            )),
+            WatchCommands::Show { id, json } => cmd::watch::show(&WatchShowArgs::new(id, json)),
+            WatchCommands::Add { issue, note, json } => {
+                cmd::watch::add(&WatchAddArgs::new(issue, note, json))
+            }
+            WatchCommands::Update { id, note, json } => {
+                cmd::watch::update(&WatchUpdateArgs::new(id, note, json))
+            }
+            WatchCommands::Delete { id, json } => {
+                cmd::watch::delete(&WatchDeleteArgs::new(id, json))
+            }
+            WatchCommands::Read { id } => cmd::watch::read(&WatchReadArgs::new(id)),
         },
         Commands::Space { action, json } => match action {
             None => cmd::space::show(&SpaceShowArgs::new(json)),
