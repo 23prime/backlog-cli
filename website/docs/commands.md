@@ -1109,6 +1109,40 @@ bl watch read <id>
 
 On success, this command prints no output (HTTP 204 No Content).
 
+## `bl priority list`
+
+List issue priorities.
+
+```bash
+bl priority list [--json]
+```
+
+Example output:
+
+```text
+[2] High
+[3] Normal
+[4] Low
+```
+
+## `bl resolution list`
+
+List issue resolutions.
+
+```bash
+bl resolution list [--json]
+```
+
+Example output:
+
+```text
+[0] Fixed
+[1] Won't Fix
+[2] Invalid
+[3] Duplication
+[4] Cannot Reproduce
+```
+
 ## Command coverage
 
 The table below maps Backlog API v2 endpoints to `bl` commands.
@@ -1181,8 +1215,8 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 
 | Command | API endpoint | Status |
 | --- | --- | --- |
-| `bl priority list` | `GET /api/v2/priorities` | Planned |
-| `bl resolution list` | `GET /api/v2/resolutions` | Planned |
+| `bl priority list` | `GET /api/v2/priorities` | ✅ Implemented |
+| `bl resolution list` | `GET /api/v2/resolutions` | ✅ Implemented |
 
 ### Issues
 
