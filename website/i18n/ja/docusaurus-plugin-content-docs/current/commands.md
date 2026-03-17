@@ -1113,6 +1113,40 @@ bl watch read <id>
 
 成功時は出力されません（HTTP 204 No Content）。
 
+## `bl priority list`
+
+課題優先度の一覧を表示します。
+
+```bash
+bl priority list [--json]
+```
+
+出力例:
+
+```text
+[2] 高
+[3] 中
+[4] 低
+```
+
+## `bl resolution list`
+
+課題解決理由の一覧を表示します。
+
+```bash
+bl resolution list [--json]
+```
+
+出力例:
+
+```text
+[0] 対応済み
+[1] 対応しない
+[2] 無効
+[3] 重複
+[4] 再現しない
+```
+
 ## コマンドカバレッジ
 
 Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
@@ -1185,8 +1219,8 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 
 | コマンド | API エンドポイント | 状態 |
 | --- | --- | --- |
-| `bl priority list` | `GET /api/v2/priorities` | 計画中 |
-| `bl resolution list` | `GET /api/v2/resolutions` | 計画中 |
+| `bl priority list` | `GET /api/v2/priorities` | ✅ 実装済み |
+| `bl resolution list` | `GET /api/v2/resolutions` | ✅ 実装済み |
 
 ### Issues
 

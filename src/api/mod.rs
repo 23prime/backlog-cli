@@ -11,7 +11,9 @@ pub mod disk_usage;
 pub mod issue;
 pub mod licence;
 pub mod notification;
+pub mod priority;
 pub mod project;
+pub mod resolution;
 pub mod space;
 pub mod space_notification;
 pub mod team;
@@ -27,10 +29,12 @@ use issue::{
 };
 use licence::Licence;
 use notification::{Notification, NotificationCount};
+use priority::Priority;
 use project::{
     Project, ProjectCategory, ProjectDiskUsage, ProjectIssueType, ProjectStatus, ProjectUser,
     ProjectVersion,
 };
+use resolution::Resolution;
 use space::Space;
 use space_notification::SpaceNotification;
 use team::Team;
@@ -287,6 +291,12 @@ pub trait BacklogApi {
         unimplemented!()
     }
     fn put_space_notification(&self, _content: &str) -> Result<SpaceNotification> {
+        unimplemented!()
+    }
+    fn get_priorities(&self) -> Result<Vec<Priority>> {
+        unimplemented!()
+    }
+    fn get_resolutions(&self) -> Result<Vec<Resolution>> {
         unimplemented!()
     }
     fn get_watchings(&self, _user_id: u64, _params: &[(String, String)]) -> Result<Vec<Watching>> {
@@ -610,6 +620,12 @@ impl BacklogApi for BacklogClient {
 
     fn put_space_notification(&self, content: &str) -> Result<SpaceNotification> {
         self.put_space_notification(content)
+    }
+    fn get_priorities(&self) -> Result<Vec<Priority>> {
+        self.get_priorities()
+    }
+    fn get_resolutions(&self) -> Result<Vec<Resolution>> {
+        self.get_resolutions()
     }
     fn get_watchings(&self, user_id: u64, params: &[(String, String)]) -> Result<Vec<Watching>> {
         self.get_watchings(user_id, params)

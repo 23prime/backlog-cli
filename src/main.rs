@@ -28,6 +28,7 @@ use cmd::issue::{
     IssueUpdateArgs, ParentChild,
 };
 use cmd::notification::{NotificationCountArgs, NotificationListArgs, NotificationReadArgs};
+use cmd::priority::PriorityListArgs;
 use cmd::project::category::ProjectCategoryListArgs;
 use cmd::project::issue_type::ProjectIssueTypeListArgs;
 use cmd::project::status::ProjectStatusListArgs;
@@ -37,6 +38,7 @@ use cmd::project::{
     ProjectActivitiesArgs, ProjectCreateArgs, ProjectDeleteArgs, ProjectDiskUsageArgs,
     ProjectListArgs, ProjectShowArgs, ProjectUpdateArgs,
 };
+use cmd::resolution::ResolutionListArgs;
 use cmd::space::{
     SpaceActivitiesArgs, SpaceDiskUsageArgs, SpaceLicenceArgs, SpaceNotificationArgs,
     SpaceShowArgs, SpaceUpdateNotificationArgs,
@@ -124,6 +126,16 @@ enum Commands {
     Watch {
         #[command(subcommand)]
         action: WatchCommands,
+    },
+    /// List priorities
+    Priority {
+        #[command(subcommand)]
+        action: PriorityCommands,
+    },
+    /// List resolutions
+    Resolution {
+        #[command(subcommand)]
+        action: ResolutionCommands,
     },
 }
 
@@ -1202,6 +1214,26 @@ enum WatchCommands {
 }
 
 #[derive(Subcommand)]
+enum PriorityCommands {
+    /// List priorities
+    List {
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum ResolutionCommands {
+    /// List resolutions
+    List {
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
 enum AuthCommands {
     /// Login with your API key
     Login {
@@ -1822,6 +1854,14 @@ fn run() -> Result<()> {
                 cmd::watch::delete(&WatchDeleteArgs::new(id, json))
             }
             WatchCommands::Read { id } => cmd::watch::read(&WatchReadArgs::new(id)),
+        },
+        Commands::Priority { action } => match action {
+            PriorityCommands::List { json } => cmd::priority::list(&PriorityListArgs::new(json)),
+        },
+        Commands::Resolution { action } => match action {
+            ResolutionCommands::List { json } => {
+                cmd::resolution::list(&ResolutionListArgs::new(json))
+            }
         },
         Commands::Space { action, json } => match action {
             None => cmd::space::show(&SpaceShowArgs::new(json)),
