@@ -193,6 +193,16 @@ impl ProjectStatusReorderArgs {
                 "At least one --status-id must be specified for reorder"
             ));
         }
+        let unique_count = status_ids
+            .iter()
+            .copied()
+            .collect::<std::collections::HashSet<_>>()
+            .len();
+        if unique_count != status_ids.len() {
+            return Err(anyhow::anyhow!(
+                "--status-id values for reorder must be unique"
+            ));
+        }
         Ok(Self {
             key,
             status_ids,
@@ -466,6 +476,13 @@ mod tests {
     fn reorder_try_new_rejects_empty() {
         let err = ProjectStatusReorderArgs::try_new("TEST".to_string(), vec![], false).unwrap_err();
         assert!(err.to_string().contains("At least one"));
+    }
+
+    #[test]
+    fn reorder_try_new_rejects_duplicate_ids() {
+        let err =
+            ProjectStatusReorderArgs::try_new("TEST".to_string(), vec![1, 1], false).unwrap_err();
+        assert!(err.to_string().contains("unique"));
     }
 
     #[test]
