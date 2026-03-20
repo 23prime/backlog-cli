@@ -641,7 +641,7 @@ bl project custom-field add <id-or-key> --type-id 1 --name "Notes" --description
 
 | Flag | Default | Description |
 | --- | --- | --- |
-| `--type-id` | — | Field type (required): 1=Text, 2=Sentence, 3=Number, 4=Date, 5=SingleList, 6=MultipleList, 7=Radio, 8=Checkbox |
+| `--type-id` | — | Field type (required): 1=Text, 2=Sentence, 3=Number, 4=Date, 5=SingleList, 6=MultipleList, 7=Checkbox, 8=Radio |
 | `--name` | — | Field name (required) |
 | `--description` | — | Description |
 | `--required` | — | `true` to mark as required |

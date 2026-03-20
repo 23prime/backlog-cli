@@ -742,7 +742,7 @@ enum ProjectCustomFieldCommands {
     Add {
         /// Project ID or key
         id_or_key: String,
-        /// Field type ID (1=Text, 2=Sentence, 3=Number, 4=Date, 5=SingleList, 6=MultipleList, 7=Radio, 8=Checkbox)
+        /// Field type ID (1=Text, 2=Sentence, 3=Number, 4=Date, 5=SingleList, 6=MultipleList, 7=Checkbox, 8=Radio)
         #[arg(long)]
         type_id: u64,
         /// Field name
