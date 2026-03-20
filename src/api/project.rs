@@ -74,6 +74,7 @@ pub struct ProjectIssueType {
 #[serde(rename_all = "camelCase")]
 pub struct ProjectCategory {
     pub id: u64,
+    pub project_id: u64,
     pub name: String,
     pub display_order: u32,
 }
@@ -715,6 +716,7 @@ mod tests {
             when.method(GET).path("/projects/TEST/categories");
             then.status(200).json_body(json!([{
                 "id": 11,
+                "projectId": 1,
                 "name": "Development",
                 "displayOrder": 0
             }]));

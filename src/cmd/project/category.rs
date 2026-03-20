@@ -182,6 +182,7 @@ mod tests {
     fn sample_category() -> ProjectCategory {
         ProjectCategory {
             id: 11,
+            project_id: 1,
             name: "Development".to_string(),
             display_order: 0,
         }
