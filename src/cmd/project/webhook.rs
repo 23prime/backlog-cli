@@ -63,7 +63,7 @@ pub fn show_with(args: &ProjectWebhookShowArgs, api: &dyn BacklogApi) -> Result<
             serde_json::to_string_pretty(&hook).context("Failed to serialize JSON")?
         );
     } else {
-        println!("{}", format_webhook_row(&hook));
+        println!("{}", format_webhook_detail(&hook));
     }
     Ok(())
 }
@@ -235,6 +235,22 @@ fn format_webhook_row(h: &ProjectWebhook) -> String {
     format!("[{}] {} ({})", h.id, h.name, h.hook_url)
 }
 
+fn format_webhook_detail(h: &ProjectWebhook) -> String {
+    let events = if h.all_event {
+        "all".to_string()
+    } else {
+        h.activity_type_ids
+            .iter()
+            .map(|id| id.to_string())
+            .collect::<Vec<_>>()
+            .join(", ")
+    };
+    format!(
+        "ID: {}\nName: {}\nURL: {}\nDescription: {}\nEvents: {}",
+        h.id, h.name, h.hook_url, h.description, events
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -329,6 +345,24 @@ mod tests {
         assert!(text.contains("[1]"));
         assert!(text.contains("My Webhook"));
         assert!(text.contains("https://example.com/hook"));
+    }
+
+    #[test]
+    fn format_webhook_detail_shows_full_info() {
+        let text = format_webhook_detail(&sample_hook());
+        assert!(text.contains("ID: 1"));
+        assert!(text.contains("My Webhook"));
+        assert!(text.contains("https://example.com/hook"));
+        assert!(text.contains("desc"));
+        assert!(text.contains("1, 2"));
+    }
+
+    #[test]
+    fn format_webhook_detail_all_event_shows_all() {
+        let mut hook = sample_hook();
+        hook.all_event = true;
+        let text = format_webhook_detail(&hook);
+        assert!(text.contains("Events: all"));
     }
 
     #[test]
@@ -437,6 +471,29 @@ mod tests {
     }
 
     #[test]
+    fn add_with_json_output_succeeds() {
+        let api = MockApi {
+            hooks: None,
+            hook: Some(sample_hook()),
+        };
+        assert!(
+            add_with(
+                &ProjectWebhookAddArgs::new(
+                    "TEST".to_string(),
+                    "My Webhook".to_string(),
+                    "https://example.com/hook".to_string(),
+                    None,
+                    None,
+                    vec![],
+                    true,
+                ),
+                &api
+            )
+            .is_ok()
+        );
+    }
+
+    #[test]
     fn add_with_propagates_api_error() {
         let api = MockApi {
             hooks: None,
@@ -504,6 +561,26 @@ mod tests {
             None,
             None,
             false,
+        )
+        .unwrap();
+        assert!(update_with(&args, &api).is_ok());
+    }
+
+    #[test]
+    fn update_with_json_output_succeeds() {
+        let api = MockApi {
+            hooks: None,
+            hook: Some(sample_hook()),
+        };
+        let args = ProjectWebhookUpdateArgs::try_new(
+            "TEST".to_string(),
+            1,
+            Some("New Name".to_string()),
+            None,
+            None,
+            None,
+            None,
+            true,
         )
         .unwrap();
         assert!(update_with(&args, &api).is_ok());
