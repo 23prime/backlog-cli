@@ -95,7 +95,7 @@ alias = "rf"
 [tasks.rs-check]
 description = "Check Rust code"
 run = [
-  "cargo clippy --all-targets --all-features --no-deps",
+  "cargo clippy --all-targets --all-features --no-deps -- -D warnings",
   "cargo fmt -- --check",
   "cargo test -- --nocapture",
 ]
