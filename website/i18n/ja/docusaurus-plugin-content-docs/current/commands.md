@@ -1157,6 +1157,94 @@ bl issue shared-file unlink TEST-1 1
 bl issue shared-file unlink TEST-1 1 --json
 ```
 
+## `bl document list`
+
+ドキュメントを一覧表示します。
+
+```bash
+bl document list --project-id 1
+bl document list --project-id 1 --keyword design
+bl document list --project-id 1 --count 50 --offset 0 --json
+```
+
+出力例:
+
+```text
+[abc123] Design Document
+[def456] API Reference
+```
+
+## `bl document tree`
+
+プロジェクトのドキュメントツリーを表示します。
+
+```bash
+bl document tree TEST
+bl document tree TEST --json
+```
+
+出力例:
+
+```text
+Project: 1
+Active:
+Root [root-id]
+  Design Document [abc123]
+    Frontend [def456]
+    Backend [ghi789]
+Trash:
+Trash [trash-id]
+```
+
+## `bl document show`
+
+ドキュメントの詳細を表示します。
+
+```bash
+bl document show abc123
+bl document show abc123 --json
+```
+
+出力例:
+
+```text
+ID: abc123
+Title: Design Document
+Project ID: 1
+Status: 1
+Content:
+Hello world
+Created: Taro (2024-01-01T00:00:00Z)
+Updated: Taro (2024-06-01T00:00:00Z)
+```
+
+## `bl document create`
+
+新しいドキュメントを作成します。
+
+```bash
+bl document create --project-id 1 --title "New Doc" --content "# New Doc"
+bl document create --project-id 1 --title "Child Doc" --parent-id abc123 --json
+```
+
+## `bl document delete`
+
+ドキュメントを削除します。
+
+```bash
+bl document delete abc123
+bl document delete abc123 --json
+```
+
+## `bl document attachment get`
+
+ドキュメントの添付ファイルをダウンロードします。
+
+```bash
+bl document attachment get abc123 1
+bl document attachment get abc123 1 --output /path/to/file.pdf
+```
+
 ## `bl wiki list`
 
 プロジェクトの Wiki ページを一覧表示します。
@@ -1794,12 +1882,12 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 
 | コマンド | API エンドポイント | 状態 |
 | --- | --- | --- |
-| `bl document list` | `GET /api/v2/documents` | 計画中 |
-| `bl document tree` | `GET /api/v2/documents/tree` | 計画中 |
-| `bl document show <id>` | `GET /api/v2/documents/{documentId}` | 計画中 |
-| `bl document create` | `POST /api/v2/documents` | 計画中 |
-| `bl document delete <id>` | `DELETE /api/v2/documents/{documentId}` | 計画中 |
-| `bl document attachment get <id> <attachment-id>` | `GET /api/v2/documents/{documentId}/attachments/{attachmentId}` | 計画中 |
+| `bl document list` | `GET /api/v2/documents` | ✅ 実装済み |
+| `bl document tree` | `GET /api/v2/documents/tree` | ✅ 実装済み |
+| `bl document show <id>` | `GET /api/v2/documents/{documentId}` | ✅ 実装済み |
+| `bl document create` | `POST /api/v2/documents` | ✅ 実装済み |
+| `bl document delete <id>` | `DELETE /api/v2/documents/{documentId}` | ✅ 実装済み |
+| `bl document attachment get <id> <attachment-id>` | `GET /api/v2/documents/{documentId}/attachments/{attachmentId}` | ✅ 実装済み |
 
 ### Wiki
 

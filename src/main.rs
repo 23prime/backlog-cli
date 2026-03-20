@@ -9,6 +9,10 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 
 use cmd::auth::AuthStatusArgs;
+use cmd::document::attachment::DocumentAttachmentGetArgs;
+use cmd::document::{
+    DocumentCreateArgs, DocumentDeleteArgs, DocumentListArgs, DocumentShowArgs, DocumentTreeArgs,
+};
 use cmd::issue::attachment::{
     IssueAttachmentDeleteArgs, IssueAttachmentGetArgs, IssueAttachmentListArgs,
 };
@@ -125,6 +129,11 @@ enum Commands {
     Issue {
         #[command(subcommand)]
         action: IssueCommands,
+    },
+    /// Manage documents
+    Document {
+        #[command(subcommand)]
+        action: DocumentCommands,
     },
     /// Manage wiki pages
     Wiki {
@@ -1411,6 +1420,101 @@ enum WikiAttachmentCommands {
 }
 
 #[derive(Subcommand)]
+enum DocumentCommands {
+    /// List documents
+    List {
+        /// Filter by project ID (repeatable)
+        #[arg(long = "project-id", value_name = "ID")]
+        project_ids: Vec<u64>,
+        /// Search keyword
+        #[arg(long)]
+        keyword: Option<String>,
+        /// Sort field (e.g. created, updated)
+        #[arg(long)]
+        sort: Option<String>,
+        /// Sort order
+        #[arg(long)]
+        order: Option<Order>,
+        /// Number of documents to retrieve
+        #[arg(long)]
+        count: Option<u32>,
+        /// Offset for pagination
+        #[arg(long)]
+        offset: Option<u64>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Show document tree for a project
+    Tree {
+        /// Project ID or key
+        project_id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Show a document
+    Show {
+        /// Document ID
+        document_id: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Create a document
+    Create {
+        /// Project ID
+        #[arg(long)]
+        project_id: u64,
+        /// Document title
+        #[arg(long)]
+        title: Option<String>,
+        /// Document content
+        #[arg(long)]
+        content: Option<String>,
+        /// Emoji for the document icon
+        #[arg(long)]
+        emoji: Option<String>,
+        /// Parent document ID
+        #[arg(long)]
+        parent_id: Option<String>,
+        /// Add document at the end of the list
+        #[arg(long)]
+        add_last: bool,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Delete a document
+    Delete {
+        /// Document ID
+        document_id: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Manage document attachments
+    Attachment {
+        #[command(subcommand)]
+        action: DocumentAttachmentCommands,
+    },
+}
+
+#[derive(Subcommand)]
+enum DocumentAttachmentCommands {
+    /// Download a document attachment
+    Get {
+        /// Document ID
+        document_id: String,
+        /// Attachment ID
+        attachment_id: u64,
+        /// Output file path (defaults to original filename)
+        #[arg(long, short)]
+        output: Option<std::path::PathBuf>,
+    },
+}
+
+#[derive(Subcommand)]
 enum UserCommands {
     /// List users in the space
     List {
@@ -2466,6 +2570,57 @@ fn run() -> Result<()> {
                     id_or_key,
                     shared_file_id,
                     json,
+                )),
+            },
+        },
+        Commands::Document { action } => match action {
+            DocumentCommands::List {
+                project_ids,
+                keyword,
+                sort,
+                order,
+                count,
+                offset,
+                json,
+            } => cmd::document::list(&DocumentListArgs::new(
+                project_ids,
+                keyword,
+                sort,
+                order.map(|o| o.as_str().to_string()),
+                count,
+                offset,
+                json,
+            )),
+            DocumentCommands::Tree {
+                project_id_or_key,
+                json,
+            } => cmd::document::tree(&DocumentTreeArgs::new(project_id_or_key, json)),
+            DocumentCommands::Show { document_id, json } => {
+                cmd::document::show(&DocumentShowArgs::new(document_id, json))
+            }
+            DocumentCommands::Create {
+                project_id,
+                title,
+                content,
+                emoji,
+                parent_id,
+                add_last,
+                json,
+            } => cmd::document::create(&DocumentCreateArgs::new(
+                project_id, title, content, emoji, parent_id, add_last, json,
+            )),
+            DocumentCommands::Delete { document_id, json } => {
+                cmd::document::delete(&DocumentDeleteArgs::new(document_id, json))
+            }
+            DocumentCommands::Attachment { action } => match action {
+                DocumentAttachmentCommands::Get {
+                    document_id,
+                    attachment_id,
+                    output,
+                } => cmd::document::attachment::get(&DocumentAttachmentGetArgs::new(
+                    document_id,
+                    attachment_id,
+                    output,
                 )),
             },
         },
