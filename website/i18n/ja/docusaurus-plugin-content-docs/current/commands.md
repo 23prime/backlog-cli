@@ -614,6 +614,126 @@ bl project version delete <id-or-key> --version-id 5 --json
 Deleted: [5] v1.0
 ```
 
+## `bl project custom-field list`
+
+特定のプロジェクトのカスタム属性を一覧表示します。
+
+```bash
+bl project custom-field list <id-or-key>
+bl project custom-field list <id-or-key> --json
+```
+
+出力例:
+
+```text
+[1] Priority (type:6)
+[2] Severity (type:7) [required]
+```
+
+## `bl project custom-field add`
+
+プロジェクトにカスタム属性を追加します。
+
+```bash
+bl project custom-field add <id-or-key> --type-id 6 --name "Priority"
+bl project custom-field add <id-or-key> --type-id 1 --name "Notes" --description "自由入力" --required true --json
+```
+
+| フラグ | デフォルト | 説明 |
+| --- | --- | --- |
+| `--type-id` | — | 属性タイプ（必須）: 1=文字列, 2=文章, 3=数値, 4=日付, 5=単一リスト, 6=複数リスト, 7=ラジオボタン, 8=チェックボックス |
+| `--name` | — | 属性名（必須） |
+| `--description` | — | 説明 |
+| `--required` | — | `true` で必須にする |
+
+出力例:
+
+```text
+Added: [1] Priority (type:6)
+```
+
+## `bl project custom-field update`
+
+プロジェクトのカスタム属性を更新します。`--name`、`--description`、`--required` のいずれかを必ず指定してください。
+
+```bash
+bl project custom-field update <id-or-key> --custom-field-id 1 --name "Importance"
+bl project custom-field update <id-or-key> --custom-field-id 1 --required true --json
+```
+
+| フラグ | デフォルト | 説明 |
+| --- | --- | --- |
+| `--custom-field-id` | — | カスタム属性 ID（必須） |
+| `--name` | — | 属性名 |
+| `--description` | — | 説明 |
+| `--required` | — | `true` で必須にする、`false` で解除 |
+
+出力例:
+
+```text
+Updated: [1] Importance (type:6)
+```
+
+## `bl project custom-field delete`
+
+プロジェクトからカスタム属性を削除します。
+
+```bash
+bl project custom-field delete <id-or-key> --custom-field-id 1
+bl project custom-field delete <id-or-key> --custom-field-id 1 --json
+```
+
+| フラグ | デフォルト | 説明 |
+| --- | --- | --- |
+| `--custom-field-id` | — | カスタム属性 ID（必須） |
+
+出力例:
+
+```text
+Deleted: [1] Priority (type:6)
+```
+
+## `bl project custom-field item add`
+
+リスト型カスタム属性に項目を追加します。
+
+```bash
+bl project custom-field item add <id-or-key> --custom-field-id 1 --name "High"
+bl project custom-field item add <id-or-key> --custom-field-id 1 --name "High" --json
+```
+
+| フラグ | デフォルト | 説明 |
+| --- | --- | --- |
+| `--custom-field-id` | — | カスタム属性 ID（必須） |
+| `--name` | — | 項目名（必須） |
+
+## `bl project custom-field item update`
+
+リスト型カスタム属性の項目を更新します。
+
+```bash
+bl project custom-field item update <id-or-key> --custom-field-id 1 --item-id 10 --name "Very High"
+```
+
+| フラグ | デフォルト | 説明 |
+| --- | --- | --- |
+| `--custom-field-id` | — | カスタム属性 ID（必須） |
+| `--item-id` | — | 項目 ID（必須） |
+| `--name` | — | 項目名（必須） |
+
+## `bl project custom-field item delete`
+
+リスト型カスタム属性から項目を削除します。
+
+```bash
+bl project custom-field item delete <id-or-key> --custom-field-id 1 --item-id 10
+```
+
+| フラグ | デフォルト | 説明 |
+| --- | --- | --- |
+| `--custom-field-id` | — | カスタム属性 ID（必須） |
+| `--item-id` | — | 項目 ID（必須） |
+
 ## `bl project create`
 
 新しいプロジェクトを作成します。
@@ -1505,13 +1625,13 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl project version add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/versions` | ✅ 実装済み |
 | `bl project version update <id-or-key> --version-id <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/versions/{id}` | ✅ 実装済み |
 | `bl project version delete <id-or-key> --version-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/versions/{id}` | ✅ 実装済み |
-| `bl project custom-field list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/customFields` | 計画中 |
-| `bl project custom-field add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/customFields` | 計画中 |
-| `bl project custom-field update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/customFields/{id}` | 計画中 |
-| `bl project custom-field delete <id-or-key> <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/customFields/{id}` | 計画中 |
-| `bl project custom-field item add <id-or-key> <id>` | `POST /api/v2/projects/{projectIdOrKey}/customFields/{id}/items` | 計画中 |
-| `bl project custom-field item update <id-or-key> <id> <item-id>` | `PATCH /api/v2/projects/{projectIdOrKey}/customFields/{id}/items/{itemId}` | 計画中 |
-| `bl project custom-field item delete <id-or-key> <id> <item-id>` | `DELETE /api/v2/projects/{projectIdOrKey}/customFields/{id}/items/{itemId}` | 計画中 |
+| `bl project custom-field list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/customFields` | ✅ 実装済み |
+| `bl project custom-field add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/customFields` | ✅ 実装済み |
+| `bl project custom-field update <id-or-key> --custom-field-id <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/customFields/{id}` | ✅ 実装済み |
+| `bl project custom-field delete <id-or-key> --custom-field-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/customFields/{id}` | ✅ 実装済み |
+| `bl project custom-field item add <id-or-key> --custom-field-id <id>` | `POST /api/v2/projects/{projectIdOrKey}/customFields/{id}/items` | ✅ 実装済み |
+| `bl project custom-field item update <id-or-key> --custom-field-id <id> --item-id <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/customFields/{id}/items/{itemId}` | ✅ 実装済み |
+| `bl project custom-field item delete <id-or-key> --custom-field-id <id> --item-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/customFields/{id}/items/{itemId}` | ✅ 実装済み |
 | `bl project webhook list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/webhooks` | 計画中 |
 | `bl project webhook show <id-or-key> <webhook-id>` | `GET /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | 計画中 |
 | `bl project webhook add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/webhooks` | 計画中 |

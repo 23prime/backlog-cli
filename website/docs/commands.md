@@ -614,6 +614,126 @@ Example output:
 Deleted: [5] v1.0
 ```
 
+## `bl project custom-field list`
+
+List custom fields defined for a specific project.
+
+```bash
+bl project custom-field list <id-or-key>
+bl project custom-field list <id-or-key> --json
+```
+
+Example output:
+
+```text
+[1] Priority (type:6)
+[2] Severity (type:7) [required]
+```
+
+## `bl project custom-field add`
+
+Add a custom field to a project.
+
+```bash
+bl project custom-field add <id-or-key> --type-id 6 --name "Priority"
+bl project custom-field add <id-or-key> --type-id 1 --name "Notes" --description "Free text" --required true --json
+```
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--type-id` | — | Field type (required): 1=Text, 2=Sentence, 3=Number, 4=Date, 5=SingleList, 6=MultipleList, 7=Radio, 8=Checkbox |
+| `--name` | — | Field name (required) |
+| `--description` | — | Description |
+| `--required` | — | `true` to mark as required |
+
+Example output:
+
+```text
+Added: [1] Priority (type:6)
+```
+
+## `bl project custom-field update`
+
+Update a custom field in a project. At least one of `--name`, `--description`, or `--required` must be provided.
+
+```bash
+bl project custom-field update <id-or-key> --custom-field-id 1 --name "Importance"
+bl project custom-field update <id-or-key> --custom-field-id 1 --required true --json
+```
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--custom-field-id` | — | Custom field ID (required) |
+| `--name` | — | Field name |
+| `--description` | — | Description |
+| `--required` | — | `true` to mark as required, `false` to unmark |
+
+Example output:
+
+```text
+Updated: [1] Importance (type:6)
+```
+
+## `bl project custom-field delete`
+
+Delete a custom field from a project.
+
+```bash
+bl project custom-field delete <id-or-key> --custom-field-id 1
+bl project custom-field delete <id-or-key> --custom-field-id 1 --json
+```
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--custom-field-id` | — | Custom field ID (required) |
+
+Example output:
+
+```text
+Deleted: [1] Priority (type:6)
+```
+
+## `bl project custom-field item add`
+
+Add an item to a list-type custom field.
+
+```bash
+bl project custom-field item add <id-or-key> --custom-field-id 1 --name "High"
+bl project custom-field item add <id-or-key> --custom-field-id 1 --name "High" --json
+```
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--custom-field-id` | — | Custom field ID (required) |
+| `--name` | — | Item name (required) |
+
+## `bl project custom-field item update`
+
+Update an item in a list-type custom field.
+
+```bash
+bl project custom-field item update <id-or-key> --custom-field-id 1 --item-id 10 --name "Very High"
+```
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--custom-field-id` | — | Custom field ID (required) |
+| `--item-id` | — | Item ID (required) |
+| `--name` | — | Item name (required) |
+
+## `bl project custom-field item delete`
+
+Delete an item from a list-type custom field.
+
+```bash
+bl project custom-field item delete <id-or-key> --custom-field-id 1 --item-id 10
+```
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--custom-field-id` | — | Custom field ID (required) |
+| `--item-id` | — | Item ID (required) |
+
 ## `bl project create`
 
 Create a new project.
@@ -1501,13 +1621,13 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | `bl project version add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/versions` | ✅ Implemented |
 | `bl project version update <id-or-key> --version-id <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/versions/{id}` | ✅ Implemented |
 | `bl project version delete <id-or-key> --version-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/versions/{id}` | ✅ Implemented |
-| `bl project custom-field list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/customFields` | Planned |
-| `bl project custom-field add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/customFields` | Planned |
-| `bl project custom-field update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/customFields/{id}` | Planned |
-| `bl project custom-field delete <id-or-key> <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/customFields/{id}` | Planned |
-| `bl project custom-field item add <id-or-key> <id>` | `POST /api/v2/projects/{projectIdOrKey}/customFields/{id}/items` | Planned |
-| `bl project custom-field item update <id-or-key> <id> <item-id>` | `PATCH /api/v2/projects/{projectIdOrKey}/customFields/{id}/items/{itemId}` | Planned |
-| `bl project custom-field item delete <id-or-key> <id> <item-id>` | `DELETE /api/v2/projects/{projectIdOrKey}/customFields/{id}/items/{itemId}` | Planned |
+| `bl project custom-field list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/customFields` | ✅ Implemented |
+| `bl project custom-field add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/customFields` | ✅ Implemented |
+| `bl project custom-field update <id-or-key> --custom-field-id <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/customFields/{id}` | ✅ Implemented |
+| `bl project custom-field delete <id-or-key> --custom-field-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/customFields/{id}` | ✅ Implemented |
+| `bl project custom-field item add <id-or-key> --custom-field-id <id>` | `POST /api/v2/projects/{projectIdOrKey}/customFields/{id}/items` | ✅ Implemented |
+| `bl project custom-field item update <id-or-key> --custom-field-id <id> --item-id <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/customFields/{id}/items/{itemId}` | ✅ Implemented |
+| `bl project custom-field item delete <id-or-key> --custom-field-id <id> --item-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/customFields/{id}/items/{itemId}` | ✅ Implemented |
 | `bl project webhook list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/webhooks` | Planned |
 | `bl project webhook show <id-or-key> <webhook-id>` | `GET /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | Planned |
 | `bl project webhook add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/webhooks` | Planned |

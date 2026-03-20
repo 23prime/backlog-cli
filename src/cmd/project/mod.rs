@@ -2,6 +2,7 @@ mod activities;
 pub mod admin;
 pub mod category;
 mod create;
+pub mod custom_field;
 mod delete;
 mod disk_usage;
 pub mod issue_type;

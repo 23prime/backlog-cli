@@ -31,8 +31,8 @@ use licence::Licence;
 use notification::{Notification, NotificationCount};
 use priority::Priority;
 use project::{
-    Project, ProjectCategory, ProjectDiskUsage, ProjectIssueType, ProjectStatus, ProjectUser,
-    ProjectVersion,
+    Project, ProjectCategory, ProjectCustomField, ProjectDiskUsage, ProjectIssueType,
+    ProjectStatus, ProjectUser, ProjectVersion,
 };
 use resolution::Resolution;
 use space::Space;
@@ -221,6 +221,61 @@ pub trait BacklogApi {
         unimplemented!()
     }
     fn delete_project_administrator(&self, _key: &str, _user_id: u64) -> Result<ProjectUser> {
+        unimplemented!()
+    }
+    fn get_project_custom_fields(&self, _key: &str) -> Result<Vec<ProjectCustomField>> {
+        unimplemented!()
+    }
+    fn add_project_custom_field(
+        &self,
+        _key: &str,
+        _type_id: u64,
+        _name: &str,
+        _description: Option<&str>,
+        _required: Option<bool>,
+    ) -> Result<ProjectCustomField> {
+        unimplemented!()
+    }
+    fn update_project_custom_field(
+        &self,
+        _key: &str,
+        _custom_field_id: u64,
+        _name: Option<&str>,
+        _description: Option<&str>,
+        _required: Option<bool>,
+    ) -> Result<ProjectCustomField> {
+        unimplemented!()
+    }
+    fn delete_project_custom_field(
+        &self,
+        _key: &str,
+        _custom_field_id: u64,
+    ) -> Result<ProjectCustomField> {
+        unimplemented!()
+    }
+    fn add_project_custom_field_item(
+        &self,
+        _key: &str,
+        _custom_field_id: u64,
+        _name: &str,
+    ) -> Result<ProjectCustomField> {
+        unimplemented!()
+    }
+    fn update_project_custom_field_item(
+        &self,
+        _key: &str,
+        _custom_field_id: u64,
+        _item_id: u64,
+        _name: &str,
+    ) -> Result<ProjectCustomField> {
+        unimplemented!()
+    }
+    fn delete_project_custom_field_item(
+        &self,
+        _key: &str,
+        _custom_field_id: u64,
+        _item_id: u64,
+    ) -> Result<ProjectCustomField> {
         unimplemented!()
     }
     fn get_issues(&self, _params: &[(String, String)]) -> Result<Vec<Issue>> {
@@ -639,6 +694,68 @@ impl BacklogApi for BacklogClient {
 
     fn delete_project_administrator(&self, key: &str, user_id: u64) -> Result<ProjectUser> {
         self.delete_project_administrator(key, user_id)
+    }
+
+    fn get_project_custom_fields(&self, key: &str) -> Result<Vec<ProjectCustomField>> {
+        self.get_project_custom_fields(key)
+    }
+
+    fn add_project_custom_field(
+        &self,
+        key: &str,
+        type_id: u64,
+        name: &str,
+        description: Option<&str>,
+        required: Option<bool>,
+    ) -> Result<ProjectCustomField> {
+        self.add_project_custom_field(key, type_id, name, description, required)
+    }
+
+    fn update_project_custom_field(
+        &self,
+        key: &str,
+        custom_field_id: u64,
+        name: Option<&str>,
+        description: Option<&str>,
+        required: Option<bool>,
+    ) -> Result<ProjectCustomField> {
+        self.update_project_custom_field(key, custom_field_id, name, description, required)
+    }
+
+    fn delete_project_custom_field(
+        &self,
+        key: &str,
+        custom_field_id: u64,
+    ) -> Result<ProjectCustomField> {
+        self.delete_project_custom_field(key, custom_field_id)
+    }
+
+    fn add_project_custom_field_item(
+        &self,
+        key: &str,
+        custom_field_id: u64,
+        name: &str,
+    ) -> Result<ProjectCustomField> {
+        self.add_project_custom_field_item(key, custom_field_id, name)
+    }
+
+    fn update_project_custom_field_item(
+        &self,
+        key: &str,
+        custom_field_id: u64,
+        item_id: u64,
+        name: &str,
+    ) -> Result<ProjectCustomField> {
+        self.update_project_custom_field_item(key, custom_field_id, item_id, name)
+    }
+
+    fn delete_project_custom_field_item(
+        &self,
+        key: &str,
+        custom_field_id: u64,
+        item_id: u64,
+    ) -> Result<ProjectCustomField> {
+        self.delete_project_custom_field_item(key, custom_field_id, item_id)
     }
 
     fn get_issues(&self, params: &[(String, String)]) -> Result<Vec<Issue>> {

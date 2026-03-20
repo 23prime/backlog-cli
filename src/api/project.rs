@@ -72,6 +72,27 @@ pub struct ProjectIssueType {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct CustomFieldItem {
+    pub id: u64,
+    pub name: String,
+    pub display_order: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProjectCustomField {
+    pub id: u64,
+    pub type_id: u64,
+    pub name: String,
+    pub description: Option<String>,
+    pub required: bool,
+    pub applicable_issue_types: Vec<serde_json::Value>,
+    pub allow_add_item: Option<bool>,
+    pub items: Option<Vec<CustomFieldItem>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ProjectCategory {
     pub id: u64,
     pub project_id: u64,
@@ -539,6 +560,157 @@ impl BacklogClient {
         serde_json::from_value(value.clone()).map_err(|e| {
             anyhow::anyhow!(
                 "Failed to deserialize delete project administrator response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn get_project_custom_fields(&self, key: &str) -> Result<Vec<ProjectCustomField>> {
+        let value = self.get(&format!("/projects/{}/customFields", key))?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize project custom fields response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn add_project_custom_field(
+        &self,
+        key: &str,
+        type_id: u64,
+        name: &str,
+        description: Option<&str>,
+        required: Option<bool>,
+    ) -> Result<ProjectCustomField> {
+        let mut params = vec![
+            ("typeId".to_string(), type_id.to_string()),
+            ("name".to_string(), name.to_string()),
+        ];
+        if let Some(d) = description {
+            params.push(("description".to_string(), d.to_string()));
+        }
+        if let Some(r) = required {
+            params.push(("required".to_string(), r.to_string()));
+        }
+        let value = self.post_form(&format!("/projects/{}/customFields", key), &params)?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize add project custom field response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn update_project_custom_field(
+        &self,
+        key: &str,
+        custom_field_id: u64,
+        name: Option<&str>,
+        description: Option<&str>,
+        required: Option<bool>,
+    ) -> Result<ProjectCustomField> {
+        let mut params = vec![];
+        if let Some(n) = name {
+            params.push(("name".to_string(), n.to_string()));
+        }
+        if let Some(d) = description {
+            params.push(("description".to_string(), d.to_string()));
+        }
+        if let Some(r) = required {
+            params.push(("required".to_string(), r.to_string()));
+        }
+        let value = self.patch_form(
+            &format!("/projects/{}/customFields/{}", key, custom_field_id),
+            &params,
+        )?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize update project custom field response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn delete_project_custom_field(
+        &self,
+        key: &str,
+        custom_field_id: u64,
+    ) -> Result<ProjectCustomField> {
+        let value = self.delete_req(&format!(
+            "/projects/{}/customFields/{}",
+            key, custom_field_id
+        ))?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize delete project custom field response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn add_project_custom_field_item(
+        &self,
+        key: &str,
+        custom_field_id: u64,
+        name: &str,
+    ) -> Result<ProjectCustomField> {
+        let params = vec![("name".to_string(), name.to_string())];
+        let value = self.post_form(
+            &format!("/projects/{}/customFields/{}/items", key, custom_field_id),
+            &params,
+        )?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize add project custom field item response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn update_project_custom_field_item(
+        &self,
+        key: &str,
+        custom_field_id: u64,
+        item_id: u64,
+        name: &str,
+    ) -> Result<ProjectCustomField> {
+        let params = vec![("name".to_string(), name.to_string())];
+        let value = self.patch_form(
+            &format!(
+                "/projects/{}/customFields/{}/items/{}",
+                key, custom_field_id, item_id
+            ),
+            &params,
+        )?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize update project custom field item response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn delete_project_custom_field_item(
+        &self,
+        key: &str,
+        custom_field_id: u64,
+        item_id: u64,
+    ) -> Result<ProjectCustomField> {
+        let value = self.delete_req(&format!(
+            "/projects/{}/customFields/{}/items/{}",
+            key, custom_field_id, item_id
+        ))?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize delete project custom field item response: {}\nRaw JSON:\n{}",
                 e,
                 serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
             )
