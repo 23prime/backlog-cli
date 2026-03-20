@@ -17,7 +17,10 @@ updates:
     schedule:
       interval: "daily"
     cooldown:
-      default-days: 3
+      semver-major-days: 14
+      semver-minor-days: 7
+      semver-patch-days: 3
+      default-days: 7
     open-pull-requests-limit: 5
     commit-message:
       prefix: "deps"
@@ -28,7 +31,10 @@ updates:
     schedule:
       interval: "daily"
     cooldown:
-      default-days: 3
+      semver-major-days: 14
+      semver-minor-days: 7
+      semver-patch-days: 3
+      default-days: 7
     open-pull-requests-limit: 5
     commit-message:
       prefix: "deps"
