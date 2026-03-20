@@ -487,6 +487,51 @@ Example output:
 [12] Design
 ```
 
+## `bl project category add`
+
+Add a category to a project.
+
+```bash
+bl project category add <id-or-key> --name <name>
+bl project category add <id-or-key> --name <name> --json
+```
+
+Example output:
+
+```text
+Added: [11] Development
+```
+
+## `bl project category update`
+
+Update a project category.
+
+```bash
+bl project category update <id-or-key> --category-id <id> --name <name>
+bl project category update <id-or-key> --category-id <id> --name <name> --json
+```
+
+Example output:
+
+```text
+Updated: [11] Development
+```
+
+## `bl project category delete`
+
+Delete a project category.
+
+```bash
+bl project category delete <id-or-key> --category-id <id>
+bl project category delete <id-or-key> --category-id <id> --json
+```
+
+Example output:
+
+```text
+Deleted: [11] Development
+```
+
 ## `bl project version list`
 
 List versions (milestones) defined for a specific project.
@@ -1383,9 +1428,9 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | `bl project issue-type update <id-or-key> --issue-type-id <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/issueTypes/{id}` | ✅ Implemented |
 | `bl project issue-type delete <id-or-key> --issue-type-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/issueTypes/{id}` | ✅ Implemented |
 | `bl project category list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/categories` | ✅ Implemented |
-| `bl project category add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/categories` | Planned |
-| `bl project category update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/categories/{id}` | Planned |
-| `bl project category delete <id-or-key> <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/categories/{id}` | Planned |
+| `bl project category add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/categories` | ✅ Implemented |
+| `bl project category update <id-or-key> --category-id <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/categories/{id}` | ✅ Implemented |
+| `bl project category delete <id-or-key> --category-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/categories/{id}` | ✅ Implemented |
 | `bl project version list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/versions` | ✅ Implemented |
 | `bl project version add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/versions` | Planned |
 | `bl project version update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/versions/{id}` | Planned |

@@ -74,6 +74,7 @@ pub struct ProjectIssueType {
 #[serde(rename_all = "camelCase")]
 pub struct ProjectCategory {
     pub id: u64,
+    pub project_id: u64,
     pub name: String,
     pub display_order: u32,
 }
@@ -240,6 +241,49 @@ impl BacklogClient {
         serde_json::from_value(value.clone()).map_err(|e| {
             anyhow::anyhow!(
                 "Failed to deserialize project categories response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn add_project_category(&self, key: &str, name: &str) -> Result<ProjectCategory> {
+        let params = vec![("name".to_string(), name.to_string())];
+        let value = self.post_form(&format!("/projects/{}/categories", key), &params)?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize add project category response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn update_project_category(
+        &self,
+        key: &str,
+        category_id: u64,
+        name: &str,
+    ) -> Result<ProjectCategory> {
+        let params = vec![("name".to_string(), name.to_string())];
+        let value = self.patch_form(
+            &format!("/projects/{}/categories/{}", key, category_id),
+            &params,
+        )?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize update project category response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn delete_project_category(&self, key: &str, category_id: u64) -> Result<ProjectCategory> {
+        let value = self.delete_req(&format!("/projects/{}/categories/{}", key, category_id))?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize delete project category response: {}\nRaw JSON:\n{}",
                 e,
                 serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
             )
@@ -672,6 +716,7 @@ mod tests {
             when.method(GET).path("/projects/TEST/categories");
             then.status(200).json_body(json!([{
                 "id": 11,
+                "projectId": 1,
                 "name": "Development",
                 "displayOrder": 0
             }]));
