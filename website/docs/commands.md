@@ -419,6 +419,58 @@ Example output:
 [3] Feature Request
 ```
 
+## `bl project issue-type add`
+
+Add an issue type to a project.
+
+```bash
+bl project issue-type add <id-or-key> --name <name> --color <color>
+bl project issue-type add <id-or-key> --name <name> --color <color> --json
+```
+
+`--color` must be a 6-digit hex code with a `#` prefix (e.g. `#e30000`).
+
+Example output:
+
+```text
+Added: [1] Bug
+```
+
+## `bl project issue-type update`
+
+Update a project issue type.
+
+```bash
+bl project issue-type update <id-or-key> --issue-type-id <id> --name <name>
+bl project issue-type update <id-or-key> --issue-type-id <id> --color <color>
+bl project issue-type update <id-or-key> --issue-type-id <id> --name <name> --color <color> --json
+```
+
+At least one of `--name` or `--color` must be specified. `--color` must be a valid hex code.
+
+Example output:
+
+```text
+Updated: [1] Bug
+```
+
+## `bl project issue-type delete`
+
+Delete a project issue type. Issues using the deleted type are moved to the substitute type.
+
+```bash
+bl project issue-type delete <id-or-key> --issue-type-id <id> --substitute-issue-type-id <id>
+bl project issue-type delete <id-or-key> --issue-type-id <id> --substitute-issue-type-id <id> --json
+```
+
+`--substitute-issue-type-id` must differ from `--issue-type-id`.
+
+Example output:
+
+```text
+Deleted: [1] Bug
+```
+
 ## `bl project category list`
 
 List categories defined for a specific project.
@@ -1327,9 +1379,9 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | `bl project status delete <id-or-key> --status-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/statuses/{id}` | ✅ Implemented |
 | `bl project status reorder <id-or-key>` | `PATCH /api/v2/projects/{projectIdOrKey}/statuses/updateDisplayOrder` | ✅ Implemented |
 | `bl project issue-type list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/issueTypes` | ✅ Implemented |
-| `bl project issue-type add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/issueTypes` | Planned |
-| `bl project issue-type update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/issueTypes/{id}` | Planned |
-| `bl project issue-type delete <id-or-key> <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/issueTypes/{id}` | Planned |
+| `bl project issue-type add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/issueTypes` | ✅ Implemented |
+| `bl project issue-type update <id-or-key> --issue-type-id <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/issueTypes/{id}` | ✅ Implemented |
+| `bl project issue-type delete <id-or-key> --issue-type-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/issueTypes/{id}` | ✅ Implemented |
 | `bl project category list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/categories` | ✅ Implemented |
 | `bl project category add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/categories` | Planned |
 | `bl project category update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/categories/{id}` | Planned |

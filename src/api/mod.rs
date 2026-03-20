@@ -130,6 +130,30 @@ pub trait BacklogApi {
     fn get_project_issue_types(&self, _key: &str) -> Result<Vec<ProjectIssueType>> {
         unimplemented!()
     }
+    fn add_project_issue_type(
+        &self,
+        _key: &str,
+        _name: &str,
+        _color: &str,
+    ) -> Result<ProjectIssueType> {
+        unimplemented!()
+    }
+    fn update_project_issue_type(
+        &self,
+        _key: &str,
+        _issue_type_id: u64,
+        _params: &[(String, String)],
+    ) -> Result<ProjectIssueType> {
+        unimplemented!()
+    }
+    fn delete_project_issue_type(
+        &self,
+        _key: &str,
+        _issue_type_id: u64,
+        _substitute_issue_type_id: u64,
+    ) -> Result<ProjectIssueType> {
+        unimplemented!()
+    }
     fn get_project_categories(&self, _key: &str) -> Result<Vec<ProjectCategory>> {
         unimplemented!()
     }
@@ -456,6 +480,33 @@ impl BacklogApi for BacklogClient {
 
     fn get_project_issue_types(&self, key: &str) -> Result<Vec<ProjectIssueType>> {
         self.get_project_issue_types(key)
+    }
+
+    fn add_project_issue_type(
+        &self,
+        key: &str,
+        name: &str,
+        color: &str,
+    ) -> Result<ProjectIssueType> {
+        self.add_project_issue_type(key, name, color)
+    }
+
+    fn update_project_issue_type(
+        &self,
+        key: &str,
+        issue_type_id: u64,
+        params: &[(String, String)],
+    ) -> Result<ProjectIssueType> {
+        self.update_project_issue_type(key, issue_type_id, params)
+    }
+
+    fn delete_project_issue_type(
+        &self,
+        key: &str,
+        issue_type_id: u64,
+        substitute_issue_type_id: u64,
+    ) -> Result<ProjectIssueType> {
+        self.delete_project_issue_type(key, issue_type_id, substitute_issue_type_id)
     }
 
     fn get_project_categories(&self, key: &str) -> Result<Vec<ProjectCategory>> {

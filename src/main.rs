@@ -31,7 +31,10 @@ use cmd::notification::{NotificationCountArgs, NotificationListArgs, Notificatio
 use cmd::priority::PriorityListArgs;
 use cmd::project::admin::{ProjectAdminAddArgs, ProjectAdminDeleteArgs, ProjectAdminListArgs};
 use cmd::project::category::ProjectCategoryListArgs;
-use cmd::project::issue_type::ProjectIssueTypeListArgs;
+use cmd::project::issue_type::{
+    ProjectIssueTypeAddArgs, ProjectIssueTypeDeleteArgs, ProjectIssueTypeListArgs,
+    ProjectIssueTypeUpdateArgs,
+};
 use cmd::project::status::{
     ProjectStatusAddArgs, ProjectStatusDeleteArgs, ProjectStatusListArgs, ProjectStatusReorderArgs,
     ProjectStatusUpdateArgs,
@@ -541,6 +544,51 @@ enum ProjectIssueTypeCommands {
     List {
         /// Project ID or key
         id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Add an issue type to a project
+    Add {
+        /// Project ID or key
+        id_or_key: String,
+        /// Issue type name
+        #[arg(long)]
+        name: String,
+        /// Issue type color (hex code, e.g. #e30000)
+        #[arg(long)]
+        color: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Update a project issue type
+    Update {
+        /// Project ID or key
+        id_or_key: String,
+        /// Issue type ID to update
+        #[arg(long)]
+        issue_type_id: u64,
+        /// New issue type name
+        #[arg(long)]
+        name: Option<String>,
+        /// New issue type color (hex code)
+        #[arg(long)]
+        color: Option<String>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Delete a project issue type
+    Delete {
+        /// Project ID or key
+        id_or_key: String,
+        /// Issue type ID to delete
+        #[arg(long)]
+        issue_type_id: u64,
+        /// Issue type ID to substitute for issues with the deleted type
+        #[arg(long)]
+        substitute_issue_type_id: u64,
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -1586,6 +1634,38 @@ fn run() -> Result<()> {
                 ProjectIssueTypeCommands::List { id_or_key, json } => {
                     cmd::project::issue_type::list(&ProjectIssueTypeListArgs::new(id_or_key, json))
                 }
+                ProjectIssueTypeCommands::Add {
+                    id_or_key,
+                    name,
+                    color,
+                    json,
+                } => cmd::project::issue_type::add(&ProjectIssueTypeAddArgs::try_new(
+                    id_or_key, name, color, json,
+                )?),
+                ProjectIssueTypeCommands::Update {
+                    id_or_key,
+                    issue_type_id,
+                    name,
+                    color,
+                    json,
+                } => cmd::project::issue_type::update(&ProjectIssueTypeUpdateArgs::try_new(
+                    id_or_key,
+                    issue_type_id,
+                    name,
+                    color,
+                    json,
+                )?),
+                ProjectIssueTypeCommands::Delete {
+                    id_or_key,
+                    issue_type_id,
+                    substitute_issue_type_id,
+                    json,
+                } => cmd::project::issue_type::delete(&ProjectIssueTypeDeleteArgs::try_new(
+                    id_or_key,
+                    issue_type_id,
+                    substitute_issue_type_id,
+                    json,
+                )?),
             },
             ProjectCommands::Category { action } => match action {
                 ProjectCategoryCommands::List { id_or_key, json } => {
