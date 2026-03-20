@@ -1571,6 +1571,23 @@ Example output:
 [4] Cannot Reproduce
 ```
 
+## `bl rate-limit`
+
+Show the current API rate limit status.
+
+```bash
+bl rate-limit
+bl rate-limit --json
+```
+
+Example output:
+
+```text
+Limit:     600
+Remaining: 599
+Reset:     1698230400
+```
+
 ## Command coverage
 
 The table below maps Backlog API v2 endpoints to `bl` commands.
@@ -1798,4 +1815,4 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 
 | Command | API endpoint | Status |
 | --- | --- | --- |
-| `bl rate-limit` | `GET /api/v2/rateLimit` | Planned |
+| `bl rate-limit` | `GET /api/v2/rateLimit` | ✅ Implemented |

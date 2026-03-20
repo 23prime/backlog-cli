@@ -1575,6 +1575,23 @@ bl resolution list [--json]
 [4] 再現しない
 ```
 
+## `bl rate-limit`
+
+API レート制限の現在の状況を表示します。
+
+```bash
+bl rate-limit
+bl rate-limit --json
+```
+
+出力例:
+
+```text
+Limit:     600
+Remaining: 599
+Reset:     1698230400
+```
+
 ## コマンドカバレッジ
 
 Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
@@ -1802,4 +1819,4 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 
 | コマンド | API エンドポイント | 状態 |
 | --- | --- | --- |
-| `bl rate-limit` | `GET /api/v2/rateLimit` | 計画中 |
+| `bl rate-limit` | `GET /api/v2/rateLimit` | ✅ 実装済み |
