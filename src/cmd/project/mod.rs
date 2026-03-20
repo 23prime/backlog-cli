@@ -9,6 +9,7 @@ pub mod issue_type;
 mod list;
 mod show;
 pub mod status;
+pub mod team;
 mod update;
 pub mod user;
 pub mod version;

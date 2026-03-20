@@ -57,6 +57,40 @@ impl BacklogClient {
             )
         })
     }
+
+    pub fn get_project_teams(&self, key: &str) -> Result<Vec<Team>> {
+        let value = self.get(&format!("/projects/{key}/teams"))?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize project teams response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn add_project_team(&self, key: &str, team_id: u64) -> Result<Team> {
+        let params = vec![("teamId".to_string(), team_id.to_string())];
+        let value = self.post_form(&format!("/projects/{key}/teams"), &params)?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize add project team response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn delete_project_team(&self, key: &str, team_id: u64) -> Result<Team> {
+        let value = self.delete_req(&format!("/projects/{key}/teams/{team_id}"))?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize delete project team response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
 }
 
 #[cfg(test)]
@@ -151,5 +185,90 @@ mod tests {
         let team: Team = serde_json::from_value(v).unwrap();
         assert_eq!(team.display_order, None);
         assert_eq!(team.members[0].lang, None);
+    }
+
+    #[test]
+    fn get_project_teams_returns_list() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/projects/TEST/teams");
+            then.status(200).json_body(json!([team_json()]));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let teams = client.get_project_teams("TEST").unwrap();
+        assert_eq!(teams.len(), 1);
+        assert_eq!(teams[0].id, 1);
+        assert_eq!(teams[0].name, "dev-team");
+    }
+
+    #[test]
+    fn get_project_teams_returns_error_on_api_failure() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/projects/TEST/teams");
+            then.status(403)
+                .json_body(json!({"errors": [{"message": "Forbidden"}]}));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let err = client.get_project_teams("TEST").unwrap_err();
+        assert!(err.to_string().contains("Forbidden"));
+    }
+
+    #[test]
+    fn add_project_team_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST).path("/projects/TEST/teams");
+            then.status(200).json_body(team_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let team = client.add_project_team("TEST", 1).unwrap();
+        assert_eq!(team.id, 1);
+        assert_eq!(team.name, "dev-team");
+    }
+
+    #[test]
+    fn add_project_team_returns_error_on_api_failure() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST).path("/projects/TEST/teams");
+            then.status(403)
+                .json_body(json!({"errors": [{"message": "Forbidden"}]}));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let err = client.add_project_team("TEST", 1).unwrap_err();
+        assert!(err.to_string().contains("Forbidden"));
+    }
+
+    #[test]
+    fn delete_project_team_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(DELETE).path("/projects/TEST/teams/1");
+            then.status(200).json_body(team_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let team = client.delete_project_team("TEST", 1).unwrap();
+        assert_eq!(team.id, 1);
+        assert_eq!(team.name, "dev-team");
+    }
+
+    #[test]
+    fn delete_project_team_returns_error_on_api_failure() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(DELETE).path("/projects/TEST/teams/1");
+            then.status(404)
+                .json_body(json!({"errors": [{"message": "No team"}]}));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let err = client.delete_project_team("TEST", 1).unwrap_err();
+        assert!(err.to_string().contains("No team"));
     }
 }

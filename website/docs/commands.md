@@ -736,6 +736,41 @@ bl project custom-field item delete <id-or-key> --custom-field-id 1 --item-id 10
 | `--custom-field-id` | — | Custom field ID (required) |
 | `--item-id` | — | Item ID (required) |
 
+## `bl project team list`
+
+List teams assigned to a project.
+
+```bash
+bl project team list <id-or-key>
+bl project team list <id-or-key> --json
+```
+
+## `bl project team add`
+
+Add a team to a project.
+
+```bash
+bl project team add <id-or-key> --team-id 1
+bl project team add <id-or-key> --team-id 1 --json
+```
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--team-id` | — | Numeric team ID to add (required) |
+
+## `bl project team delete`
+
+Remove a team from a project.
+
+```bash
+bl project team delete <id-or-key> --team-id 1
+bl project team delete <id-or-key> --team-id 1 --json
+```
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--team-id` | — | Numeric team ID to remove (required) |
+
 ## `bl project create`
 
 Create a new project.
@@ -1652,9 +1687,9 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | `bl project webhook add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/webhooks` | Planned |
 | `bl project webhook update <id-or-key> <webhook-id>` | `PATCH /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | Planned |
 | `bl project webhook delete <id-or-key> <webhook-id>` | `DELETE /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | Planned |
-| `bl project team list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/teams` | Planned |
-| `bl project team add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/teams` | Planned |
-| `bl project team delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/teams` | Planned |
+| `bl project team list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/teams` | ✅ Implemented |
+| `bl project team add <id-or-key> --team-id <id>` | `POST /api/v2/projects/{projectIdOrKey}/teams` | ✅ Implemented |
+| `bl project team delete <id-or-key> --team-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/teams/{teamId}` | ✅ Implemented |
 
 ### Priorities & Resolutions
 
