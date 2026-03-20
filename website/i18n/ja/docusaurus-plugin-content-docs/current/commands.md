@@ -771,6 +771,68 @@ bl project team delete <id-or-key> --team-id 1 --json
 | --- | --- | --- |
 | `--team-id` | — | 削除するチームの数値 ID（必須） |
 
+## `bl project webhook list`
+
+プロジェクトに定義された Webhook の一覧を表示します。
+
+```bash
+bl project webhook list <id-or-key>
+bl project webhook list <id-or-key> --json
+```
+
+## `bl project webhook show`
+
+特定の Webhook の詳細を表示します。
+
+```bash
+bl project webhook show <id-or-key> <webhook-id>
+bl project webhook show <id-or-key> <webhook-id> --json
+```
+
+## `bl project webhook add`
+
+プロジェクトに Webhook を追加します。
+
+```bash
+bl project webhook add <id-or-key> --name "Deploy hook" --hook-url "https://example.com/hook"
+bl project webhook add <id-or-key> --name "All events" --hook-url "https://example.com/hook" --all-event true --json
+bl project webhook add <id-or-key> --name "Filtered" --hook-url "https://example.com/hook" --activity-type-id 1 --activity-type-id 2
+```
+
+| フラグ | デフォルト | 説明 |
+| --- | --- | --- |
+| `--name` | — | Webhook 名（必須） |
+| `--hook-url` | — | Webhook URL（必須） |
+| `--description` | — | 説明 |
+| `--all-event` | — | 全イベントで発火するか（`true`/`false`） |
+| `--activity-type-id` | — | 発火させるアクティビティタイプ ID（複数指定可） |
+
+## `bl project webhook update`
+
+Webhook を更新します。`--name`、`--hook-url`、`--description`、`--all-event`、`--activity-type-id` のいずれかが必須です。
+
+```bash
+bl project webhook update <id-or-key> <webhook-id> --name "New Name"
+bl project webhook update <id-or-key> <webhook-id> --hook-url "https://new.example.com/hook" --json
+```
+
+| フラグ | デフォルト | 説明 |
+| --- | --- | --- |
+| `--name` | — | 新しい Webhook 名 |
+| `--hook-url` | — | 新しい Webhook URL |
+| `--description` | — | 新しい説明 |
+| `--all-event` | — | 全イベントで発火するか（`true`/`false`） |
+| `--activity-type-id` | — | アクティビティタイプ ID（複数指定可；既存リストを置換） |
+
+## `bl project webhook delete`
+
+プロジェクトから Webhook を削除します。
+
+```bash
+bl project webhook delete <id-or-key> <webhook-id>
+bl project webhook delete <id-or-key> <webhook-id> --json
+```
+
 ## `bl project create`
 
 新しいプロジェクトを作成します。
@@ -1686,11 +1748,11 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl project custom-field item add <id-or-key> --custom-field-id <id>` | `POST /api/v2/projects/{projectIdOrKey}/customFields/{id}/items` | ✅ 実装済み |
 | `bl project custom-field item update <id-or-key> --custom-field-id <id> --item-id <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/customFields/{id}/items/{itemId}` | ✅ 実装済み |
 | `bl project custom-field item delete <id-or-key> --custom-field-id <id> --item-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/customFields/{id}/items/{itemId}` | ✅ 実装済み |
-| `bl project webhook list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/webhooks` | 計画中 |
-| `bl project webhook show <id-or-key> <webhook-id>` | `GET /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | 計画中 |
-| `bl project webhook add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/webhooks` | 計画中 |
-| `bl project webhook update <id-or-key> <webhook-id>` | `PATCH /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | 計画中 |
-| `bl project webhook delete <id-or-key> <webhook-id>` | `DELETE /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | 計画中 |
+| `bl project webhook list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/webhooks` | ✅ 実装済み |
+| `bl project webhook show <id-or-key> <webhook-id>` | `GET /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | ✅ 実装済み |
+| `bl project webhook add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/webhooks` | ✅ 実装済み |
+| `bl project webhook update <id-or-key> <webhook-id>` | `PATCH /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | ✅ 実装済み |
+| `bl project webhook delete <id-or-key> <webhook-id>` | `DELETE /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | ✅ 実装済み |
 | `bl project team list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/teams` | ✅ 実装済み |
 | `bl project team add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/teams` | ✅ 実装済み |
 | `bl project team delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/teams/{teamId}` | ✅ 実装済み |

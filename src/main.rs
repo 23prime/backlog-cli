@@ -53,6 +53,10 @@ use cmd::project::version::{
     ProjectVersionAddArgs, ProjectVersionDeleteArgs, ProjectVersionListArgs,
     ProjectVersionUpdateArgs,
 };
+use cmd::project::webhook::{
+    ProjectWebhookAddArgs, ProjectWebhookDeleteArgs, ProjectWebhookListArgs,
+    ProjectWebhookShowArgs, ProjectWebhookUpdateArgs,
+};
 use cmd::project::{
     ProjectActivitiesArgs, ProjectCreateArgs, ProjectDeleteArgs, ProjectDiskUsageArgs,
     ProjectListArgs, ProjectShowArgs, ProjectUpdateArgs,
@@ -424,10 +428,95 @@ enum ProjectCommands {
         #[command(subcommand)]
         action: ProjectTeamCommands,
     },
+    /// Manage project webhooks
+    Webhook {
+        #[command(subcommand)]
+        action: ProjectWebhookCommands,
+    },
     /// Manage project custom fields
     CustomField {
         #[command(subcommand)]
         action: ProjectCustomFieldCommands,
+    },
+}
+
+#[derive(Subcommand)]
+enum ProjectWebhookCommands {
+    /// List webhooks in a project
+    List {
+        /// Project ID or key
+        id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Show details of a webhook
+    Show {
+        /// Project ID or key
+        id_or_key: String,
+        /// Numeric webhook ID
+        webhook_id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Add a webhook to a project
+    Add {
+        /// Project ID or key
+        id_or_key: String,
+        /// Webhook name
+        #[arg(long)]
+        name: String,
+        /// Webhook URL
+        #[arg(long)]
+        hook_url: String,
+        /// Description
+        #[arg(long)]
+        description: Option<String>,
+        /// Trigger on all events
+        #[arg(long)]
+        all_event: Option<bool>,
+        /// Activity type IDs to trigger on (repeatable)
+        #[arg(long = "activity-type-id")]
+        activity_type_ids: Vec<u64>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Update a webhook
+    Update {
+        /// Project ID or key
+        id_or_key: String,
+        /// Numeric webhook ID
+        webhook_id: u64,
+        /// New webhook name
+        #[arg(long)]
+        name: Option<String>,
+        /// New webhook URL
+        #[arg(long)]
+        hook_url: Option<String>,
+        /// New description
+        #[arg(long)]
+        description: Option<String>,
+        /// Trigger on all events
+        #[arg(long)]
+        all_event: Option<bool>,
+        /// Activity type IDs to trigger on (repeatable; replaces existing list)
+        #[arg(long = "activity-type-id")]
+        activity_type_ids: Option<Vec<u64>>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Delete a webhook from a project
+    Delete {
+        /// Project ID or key
+        id_or_key: String,
+        /// Numeric webhook ID
+        webhook_id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
     },
 }
 
@@ -2033,6 +2122,61 @@ fn run() -> Result<()> {
                     json,
                 } => cmd::project::team::delete(&ProjectTeamDeleteArgs::new(
                     id_or_key, team_id, json,
+                )),
+            },
+            ProjectCommands::Webhook { action } => match action {
+                ProjectWebhookCommands::List { id_or_key, json } => {
+                    cmd::project::webhook::list(&ProjectWebhookListArgs::new(id_or_key, json))
+                }
+                ProjectWebhookCommands::Show {
+                    id_or_key,
+                    webhook_id,
+                    json,
+                } => cmd::project::webhook::show(&ProjectWebhookShowArgs::new(
+                    id_or_key, webhook_id, json,
+                )),
+                ProjectWebhookCommands::Add {
+                    id_or_key,
+                    name,
+                    hook_url,
+                    description,
+                    all_event,
+                    activity_type_ids,
+                    json,
+                } => cmd::project::webhook::add(&ProjectWebhookAddArgs::new(
+                    id_or_key,
+                    name,
+                    hook_url,
+                    description,
+                    all_event,
+                    activity_type_ids,
+                    json,
+                )),
+                ProjectWebhookCommands::Update {
+                    id_or_key,
+                    webhook_id,
+                    name,
+                    hook_url,
+                    description,
+                    all_event,
+                    activity_type_ids,
+                    json,
+                } => cmd::project::webhook::update(&ProjectWebhookUpdateArgs::try_new(
+                    id_or_key,
+                    webhook_id,
+                    name,
+                    hook_url,
+                    description,
+                    all_event,
+                    activity_type_ids,
+                    json,
+                )?),
+                ProjectWebhookCommands::Delete {
+                    id_or_key,
+                    webhook_id,
+                    json,
+                } => cmd::project::webhook::delete(&ProjectWebhookDeleteArgs::new(
+                    id_or_key, webhook_id, json,
                 )),
             },
             ProjectCommands::CustomField { action } => match action {
