@@ -43,7 +43,10 @@ use cmd::project::status::{
     ProjectStatusUpdateArgs,
 };
 use cmd::project::user::{ProjectUserAddArgs, ProjectUserDeleteArgs, ProjectUserListArgs};
-use cmd::project::version::ProjectVersionListArgs;
+use cmd::project::version::{
+    ProjectVersionAddArgs, ProjectVersionDeleteArgs, ProjectVersionListArgs,
+    ProjectVersionUpdateArgs,
+};
 use cmd::project::{
     ProjectActivitiesArgs, ProjectCreateArgs, ProjectDeleteArgs, ProjectDiskUsageArgs,
     ProjectListArgs, ProjectShowArgs, ProjectUpdateArgs,
@@ -652,6 +655,63 @@ enum ProjectVersionCommands {
     List {
         /// Project ID or key
         id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Add a version to a project
+    Add {
+        /// Project ID or key
+        id_or_key: String,
+        /// Version name
+        #[arg(long)]
+        name: String,
+        /// Description
+        #[arg(long)]
+        description: Option<String>,
+        /// Start date (YYYY-MM-DD)
+        #[arg(long)]
+        start_date: Option<String>,
+        /// Release due date (YYYY-MM-DD)
+        #[arg(long)]
+        release_due_date: Option<String>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Update a version in a project
+    Update {
+        /// Project ID or key
+        id_or_key: String,
+        /// Version ID
+        #[arg(long)]
+        version_id: u64,
+        /// Version name
+        #[arg(long)]
+        name: String,
+        /// Description
+        #[arg(long)]
+        description: Option<String>,
+        /// Start date (YYYY-MM-DD)
+        #[arg(long)]
+        start_date: Option<String>,
+        /// Release due date (YYYY-MM-DD)
+        #[arg(long)]
+        release_due_date: Option<String>,
+        /// Mark as archived
+        #[arg(long)]
+        archived: Option<bool>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Delete a version from a project
+    Delete {
+        /// Project ID or key
+        id_or_key: String,
+        /// Version ID
+        #[arg(long)]
+        version_id: u64,
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -1742,6 +1802,47 @@ fn run() -> Result<()> {
                 ProjectVersionCommands::List { id_or_key, json } => {
                     cmd::project::version::list(&ProjectVersionListArgs::new(id_or_key, json))
                 }
+                ProjectVersionCommands::Add {
+                    id_or_key,
+                    name,
+                    description,
+                    start_date,
+                    release_due_date,
+                    json,
+                } => cmd::project::version::add(&ProjectVersionAddArgs::new(
+                    id_or_key,
+                    name,
+                    description,
+                    start_date,
+                    release_due_date,
+                    json,
+                )),
+                ProjectVersionCommands::Update {
+                    id_or_key,
+                    version_id,
+                    name,
+                    description,
+                    start_date,
+                    release_due_date,
+                    archived,
+                    json,
+                } => cmd::project::version::update(&ProjectVersionUpdateArgs::new(
+                    id_or_key,
+                    version_id,
+                    name,
+                    description,
+                    start_date,
+                    release_due_date,
+                    archived,
+                    json,
+                )),
+                ProjectVersionCommands::Delete {
+                    id_or_key,
+                    version_id,
+                    json,
+                } => cmd::project::version::delete(&ProjectVersionDeleteArgs::new(
+                    id_or_key, version_id, json,
+                )),
             },
         },
         Commands::Issue { action } => match action {

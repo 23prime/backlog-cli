@@ -548,6 +548,72 @@ bl project version list <id-or-key> --json
 [4] Version 0.2 [archived]
 ```
 
+## `bl project version add`
+
+プロジェクトにバージョン（マイルストーン）を追加します。
+
+```bash
+bl project version add <id-or-key> --name "v1.0"
+bl project version add <id-or-key> --name "v1.0" --start-date 2024-01-01 --release-due-date 2024-03-31
+bl project version add <id-or-key> --name "v1.0" --description "最初のリリース" --json
+```
+
+| フラグ | デフォルト | 説明 |
+| --- | --- | --- |
+| `--name` | — | バージョン名（必須） |
+| `--description` | — | 説明 |
+| `--start-date` | — | 開始日（YYYY-MM-DD） |
+| `--release-due-date` | — | リリース期限日（YYYY-MM-DD） |
+
+出力例:
+
+```text
+Added: [5] v1.0 (2024-01-01 → 2024-03-31)
+```
+
+## `bl project version update`
+
+プロジェクトのバージョンを更新します。
+
+```bash
+bl project version update <id-or-key> --version-id 5 --name "v1.0.1"
+bl project version update <id-or-key> --version-id 5 --name "v1.0" --archived true --json
+```
+
+| フラグ | デフォルト | 説明 |
+| --- | --- | --- |
+| `--version-id` | — | バージョン ID（必須） |
+| `--name` | — | バージョン名（必須） |
+| `--description` | — | 説明 |
+| `--start-date` | — | 開始日（YYYY-MM-DD） |
+| `--release-due-date` | — | リリース期限日（YYYY-MM-DD） |
+| `--archived` | — | `true` でアーカイブ、`false` で解除 |
+
+出力例:
+
+```text
+Updated: [5] v1.0.1 (2024-01-01 → 2024-03-31)
+```
+
+## `bl project version delete`
+
+プロジェクトからバージョンを削除します。
+
+```bash
+bl project version delete <id-or-key> --version-id 5
+bl project version delete <id-or-key> --version-id 5 --json
+```
+
+| フラグ | デフォルト | 説明 |
+| --- | --- | --- |
+| `--version-id` | — | バージョン ID（必須） |
+
+出力例:
+
+```text
+Deleted: [5] v1.0
+```
+
 ## `bl project create`
 
 新しいプロジェクトを作成します。
@@ -1436,9 +1502,9 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl project category update <id-or-key> --category-id <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/categories/{id}` | ✅ 実装済み |
 | `bl project category delete <id-or-key> --category-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/categories/{id}` | ✅ 実装済み |
 | `bl project version list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/versions` | ✅ 実装済み |
-| `bl project version add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/versions` | 計画中 |
-| `bl project version update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/versions/{id}` | 計画中 |
-| `bl project version delete <id-or-key> <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/versions/{id}` | 計画中 |
+| `bl project version add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/versions` | ✅ 実装済み |
+| `bl project version update <id-or-key> --version-id <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/versions/{id}` | ✅ 実装済み |
+| `bl project version delete <id-or-key> --version-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/versions/{id}` | ✅ 実装済み |
 | `bl project custom-field list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/customFields` | 計画中 |
 | `bl project custom-field add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/customFields` | 計画中 |
 | `bl project custom-field update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/customFields/{id}` | 計画中 |

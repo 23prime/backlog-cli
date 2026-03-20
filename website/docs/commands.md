@@ -548,6 +548,72 @@ Example output:
 [4] Version 0.2 [archived]
 ```
 
+## `bl project version add`
+
+Add a version (milestone) to a project.
+
+```bash
+bl project version add <id-or-key> --name "v1.0"
+bl project version add <id-or-key> --name "v1.0" --start-date 2024-01-01 --release-due-date 2024-03-31
+bl project version add <id-or-key> --name "v1.0" --description "First release" --json
+```
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--name` | — | Version name (required) |
+| `--description` | — | Description |
+| `--start-date` | — | Start date (YYYY-MM-DD) |
+| `--release-due-date` | — | Release due date (YYYY-MM-DD) |
+
+Example output:
+
+```text
+Added: [5] v1.0 (2024-01-01 → 2024-03-31)
+```
+
+## `bl project version update`
+
+Update a version in a project.
+
+```bash
+bl project version update <id-or-key> --version-id 5 --name "v1.0.1"
+bl project version update <id-or-key> --version-id 5 --name "v1.0" --archived true --json
+```
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--version-id` | — | Version ID (required) |
+| `--name` | — | Version name (required) |
+| `--description` | — | Description |
+| `--start-date` | — | Start date (YYYY-MM-DD) |
+| `--release-due-date` | — | Release due date (YYYY-MM-DD) |
+| `--archived` | — | `true` to archive, `false` to unarchive |
+
+Example output:
+
+```text
+Updated: [5] v1.0.1 (2024-01-01 → 2024-03-31)
+```
+
+## `bl project version delete`
+
+Delete a version from a project.
+
+```bash
+bl project version delete <id-or-key> --version-id 5
+bl project version delete <id-or-key> --version-id 5 --json
+```
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--version-id` | — | Version ID (required) |
+
+Example output:
+
+```text
+Deleted: [5] v1.0
+```
+
 ## `bl project create`
 
 Create a new project.
@@ -1432,9 +1498,9 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | `bl project category update <id-or-key> --category-id <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/categories/{id}` | ✅ Implemented |
 | `bl project category delete <id-or-key> --category-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/categories/{id}` | ✅ Implemented |
 | `bl project version list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/versions` | ✅ Implemented |
-| `bl project version add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/versions` | Planned |
-| `bl project version update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/versions/{id}` | Planned |
-| `bl project version delete <id-or-key> <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/versions/{id}` | Planned |
+| `bl project version add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/versions` | ✅ Implemented |
+| `bl project version update <id-or-key> --version-id <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/versions/{id}` | ✅ Implemented |
+| `bl project version delete <id-or-key> --version-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/versions/{id}` | ✅ Implemented |
 | `bl project custom-field list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/customFields` | Planned |
 | `bl project custom-field add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/customFields` | Planned |
 | `bl project custom-field update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/customFields/{id}` | Planned |

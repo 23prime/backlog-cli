@@ -14,6 +14,86 @@ impl ProjectVersionListArgs {
     }
 }
 
+pub struct ProjectVersionAddArgs {
+    key: String,
+    name: String,
+    description: Option<String>,
+    start_date: Option<String>,
+    release_due_date: Option<String>,
+    json: bool,
+}
+
+impl ProjectVersionAddArgs {
+    pub fn new(
+        key: String,
+        name: String,
+        description: Option<String>,
+        start_date: Option<String>,
+        release_due_date: Option<String>,
+        json: bool,
+    ) -> Self {
+        Self {
+            key,
+            name,
+            description,
+            start_date,
+            release_due_date,
+            json,
+        }
+    }
+}
+
+pub struct ProjectVersionUpdateArgs {
+    key: String,
+    version_id: u64,
+    name: String,
+    description: Option<String>,
+    start_date: Option<String>,
+    release_due_date: Option<String>,
+    archived: Option<bool>,
+    json: bool,
+}
+
+impl ProjectVersionUpdateArgs {
+    pub fn new(
+        key: String,
+        version_id: u64,
+        name: String,
+        description: Option<String>,
+        start_date: Option<String>,
+        release_due_date: Option<String>,
+        archived: Option<bool>,
+        json: bool,
+    ) -> Self {
+        Self {
+            key,
+            version_id,
+            name,
+            description,
+            start_date,
+            release_due_date,
+            archived,
+            json,
+        }
+    }
+}
+
+pub struct ProjectVersionDeleteArgs {
+    key: String,
+    version_id: u64,
+    json: bool,
+}
+
+impl ProjectVersionDeleteArgs {
+    pub fn new(key: String, version_id: u64, json: bool) -> Self {
+        Self {
+            key,
+            version_id,
+            json,
+        }
+    }
+}
+
 pub fn list(args: &ProjectVersionListArgs) -> Result<()> {
     let client = BacklogClient::from_config()?;
     list_with(args, &client)
@@ -30,6 +110,74 @@ pub fn list_with(args: &ProjectVersionListArgs, api: &dyn BacklogApi) -> Result<
         for v in &versions {
             println!("{}", format_version_row(v));
         }
+    }
+    Ok(())
+}
+
+pub fn add(args: &ProjectVersionAddArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    add_with(args, &client)
+}
+
+pub fn add_with(args: &ProjectVersionAddArgs, api: &dyn BacklogApi) -> Result<()> {
+    let version = api.add_project_version(
+        &args.key,
+        &args.name,
+        args.description.as_deref(),
+        args.start_date.as_deref(),
+        args.release_due_date.as_deref(),
+    )?;
+    if args.json {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&version).context("Failed to serialize JSON")?
+        );
+    } else {
+        println!("Added: {}", format_version_row(&version));
+    }
+    Ok(())
+}
+
+pub fn update(args: &ProjectVersionUpdateArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    update_with(args, &client)
+}
+
+pub fn update_with(args: &ProjectVersionUpdateArgs, api: &dyn BacklogApi) -> Result<()> {
+    let version = api.update_project_version(
+        &args.key,
+        args.version_id,
+        &args.name,
+        args.description.as_deref(),
+        args.start_date.as_deref(),
+        args.release_due_date.as_deref(),
+        args.archived,
+    )?;
+    if args.json {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&version).context("Failed to serialize JSON")?
+        );
+    } else {
+        println!("Updated: {}", format_version_row(&version));
+    }
+    Ok(())
+}
+
+pub fn delete(args: &ProjectVersionDeleteArgs) -> Result<()> {
+    let client = BacklogClient::from_config()?;
+    delete_with(args, &client)
+}
+
+pub fn delete_with(args: &ProjectVersionDeleteArgs, api: &dyn BacklogApi) -> Result<()> {
+    let version = api.delete_project_version(&args.key, args.version_id)?;
+    if args.json {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&version).context("Failed to serialize JSON")?
+        );
+    } else {
+        println!("Deleted: {}", format_version_row(&version));
     }
     Ok(())
 }
@@ -51,12 +199,49 @@ mod tests {
     use anyhow::anyhow;
 
     struct MockApi {
-        versions: Option<Vec<ProjectVersion>>,
+        list: Option<Vec<ProjectVersion>>,
+        single: Option<ProjectVersion>,
+    }
+
+    fn mock(list: Option<Vec<ProjectVersion>>, single: Option<ProjectVersion>) -> MockApi {
+        MockApi { list, single }
     }
 
     impl crate::api::BacklogApi for MockApi {
         fn get_project_versions(&self, _key: &str) -> anyhow::Result<Vec<ProjectVersion>> {
-            self.versions.clone().ok_or_else(|| anyhow!("no versions"))
+            self.list.clone().ok_or_else(|| anyhow!("list failed"))
+        }
+
+        fn add_project_version(
+            &self,
+            _key: &str,
+            _name: &str,
+            _description: Option<&str>,
+            _start_date: Option<&str>,
+            _release_due_date: Option<&str>,
+        ) -> anyhow::Result<ProjectVersion> {
+            self.single.clone().ok_or_else(|| anyhow!("add failed"))
+        }
+
+        fn update_project_version(
+            &self,
+            _key: &str,
+            _version_id: u64,
+            _name: &str,
+            _description: Option<&str>,
+            _start_date: Option<&str>,
+            _release_due_date: Option<&str>,
+            _archived: Option<bool>,
+        ) -> anyhow::Result<ProjectVersion> {
+            self.single.clone().ok_or_else(|| anyhow!("update failed"))
+        }
+
+        fn delete_project_version(
+            &self,
+            _key: &str,
+            _version_id: u64,
+        ) -> anyhow::Result<ProjectVersion> {
+            self.single.clone().ok_or_else(|| anyhow!("delete failed"))
         }
     }
 
@@ -107,9 +292,7 @@ mod tests {
 
     #[test]
     fn list_with_text_output_succeeds() {
-        let api = MockApi {
-            versions: Some(vec![sample_version()]),
-        };
+        let api = mock(Some(vec![sample_version()]), None);
         assert!(
             list_with(
                 &ProjectVersionListArgs::new("TEST".to_string(), false),
@@ -121,20 +304,132 @@ mod tests {
 
     #[test]
     fn list_with_json_output_succeeds() {
-        let api = MockApi {
-            versions: Some(vec![sample_version()]),
-        };
+        let api = mock(Some(vec![sample_version()]), None);
         assert!(list_with(&ProjectVersionListArgs::new("TEST".to_string(), true), &api).is_ok());
     }
 
     #[test]
     fn list_with_propagates_api_error() {
-        let api = MockApi { versions: None };
+        let api = mock(None, None);
         let err = list_with(
             &ProjectVersionListArgs::new("TEST".to_string(), false),
             &api,
         )
         .unwrap_err();
-        assert!(err.to_string().contains("no versions"));
+        assert!(err.to_string().contains("list failed"));
+    }
+
+    #[test]
+    fn add_with_text_output_succeeds() {
+        let api = mock(None, Some(sample_version()));
+        let args = ProjectVersionAddArgs::new(
+            "TEST".to_string(),
+            "v1.0".to_string(),
+            None,
+            None,
+            None,
+            false,
+        );
+        assert!(add_with(&args, &api).is_ok());
+    }
+
+    #[test]
+    fn add_with_json_output_succeeds() {
+        let api = mock(None, Some(sample_version()));
+        let args = ProjectVersionAddArgs::new(
+            "TEST".to_string(),
+            "v1.0".to_string(),
+            None,
+            None,
+            None,
+            true,
+        );
+        assert!(add_with(&args, &api).is_ok());
+    }
+
+    #[test]
+    fn add_with_propagates_api_error() {
+        let api = mock(None, None);
+        let args = ProjectVersionAddArgs::new(
+            "TEST".to_string(),
+            "v1.0".to_string(),
+            None,
+            None,
+            None,
+            false,
+        );
+        let err = add_with(&args, &api).unwrap_err();
+        assert!(err.to_string().contains("add failed"));
+    }
+
+    #[test]
+    fn update_with_text_output_succeeds() {
+        let api = mock(None, Some(sample_version()));
+        let args = ProjectVersionUpdateArgs::new(
+            "TEST".to_string(),
+            3,
+            "v1.1".to_string(),
+            None,
+            None,
+            None,
+            None,
+            false,
+        );
+        assert!(update_with(&args, &api).is_ok());
+    }
+
+    #[test]
+    fn update_with_json_output_succeeds() {
+        let api = mock(None, Some(sample_version()));
+        let args = ProjectVersionUpdateArgs::new(
+            "TEST".to_string(),
+            3,
+            "v1.1".to_string(),
+            None,
+            None,
+            None,
+            Some(true),
+            true,
+        );
+        assert!(update_with(&args, &api).is_ok());
+    }
+
+    #[test]
+    fn update_with_propagates_api_error() {
+        let api = mock(None, None);
+        let args = ProjectVersionUpdateArgs::new(
+            "TEST".to_string(),
+            3,
+            "v1.1".to_string(),
+            None,
+            None,
+            None,
+            None,
+            false,
+        );
+        let err = update_with(&args, &api).unwrap_err();
+        assert!(err.to_string().contains("update failed"));
+    }
+
+    #[test]
+    fn delete_with_text_output_succeeds() {
+        let api = mock(None, Some(sample_version()));
+        let args = ProjectVersionDeleteArgs::new("TEST".to_string(), 3, false);
+        assert!(delete_with(&args, &api).is_ok());
+    }
+
+    #[test]
+    fn delete_with_json_output_succeeds() {
+        let api = mock(None, Some(sample_version()));
+        let args = ProjectVersionDeleteArgs::new("TEST".to_string(), 3, true);
+        assert!(delete_with(&args, &api).is_ok());
+    }
+
+    #[test]
+    fn delete_with_propagates_api_error() {
+        let api = mock(None, None);
+        let args = ProjectVersionDeleteArgs::new("TEST".to_string(), 3, false);
+        let err = delete_with(&args, &api).unwrap_err();
+        assert!(err.to_string().contains("delete failed"));
     }
 }
