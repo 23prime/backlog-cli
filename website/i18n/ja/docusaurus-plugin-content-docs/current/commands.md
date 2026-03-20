@@ -1692,8 +1692,8 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl project webhook update <id-or-key> <webhook-id>` | `PATCH /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | 計画中 |
 | `bl project webhook delete <id-or-key> <webhook-id>` | `DELETE /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | 計画中 |
 | `bl project team list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/teams` | ✅ 実装済み |
-| `bl project team add <id-or-key> --team-id <id>` | `POST /api/v2/projects/{projectIdOrKey}/teams` | ✅ 実装済み |
-| `bl project team delete <id-or-key> --team-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/teams/{teamId}` | ✅ 実装済み |
+| `bl project team add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/teams` | ✅ 実装済み |
+| `bl project team delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/teams/{teamId}` | ✅ 実装済み |
 
 ### Priorities & Resolutions
 

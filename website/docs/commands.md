@@ -1688,8 +1688,8 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | `bl project webhook update <id-or-key> <webhook-id>` | `PATCH /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | Planned |
 | `bl project webhook delete <id-or-key> <webhook-id>` | `DELETE /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | Planned |
 | `bl project team list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/teams` | ✅ Implemented |
-| `bl project team add <id-or-key> --team-id <id>` | `POST /api/v2/projects/{projectIdOrKey}/teams` | ✅ Implemented |
-| `bl project team delete <id-or-key> --team-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/teams/{teamId}` | ✅ Implemented |
+| `bl project team add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/teams` | ✅ Implemented |
+| `bl project team delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/teams/{teamId}` | ✅ Implemented |
 
 ### Priorities & Resolutions
 
