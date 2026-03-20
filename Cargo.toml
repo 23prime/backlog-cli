@@ -28,5 +28,5 @@ getrandom = "0.4"
 keyring = { version = "3", features = ["windows-native"] }
 
 [dev-dependencies]
-httpmock = { version = "0.7", default-features = false }
+httpmock = { version = "0.8", default-features = false }
 tempfile = "3"
