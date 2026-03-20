@@ -713,6 +713,7 @@ bl project custom-field item add <id-or-key> --custom-field-id 1 --name "High" -
 
 ```bash
 bl project custom-field item update <id-or-key> --custom-field-id 1 --item-id 10 --name "Very High"
+bl project custom-field item update <id-or-key> --custom-field-id 1 --item-id 10 --name "Very High" --json
 ```
 
 | フラグ | デフォルト | 説明 |
@@ -727,6 +728,7 @@ bl project custom-field item update <id-or-key> --custom-field-id 1 --item-id 10
 
 ```bash
 bl project custom-field item delete <id-or-key> --custom-field-id 1 --item-id 10
+bl project custom-field item delete <id-or-key> --custom-field-id 1 --item-id 10 --json
 ```
 
 | フラグ | デフォルト | 説明 |

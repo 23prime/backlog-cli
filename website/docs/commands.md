@@ -713,6 +713,7 @@ Update an item in a list-type custom field.
 
 ```bash
 bl project custom-field item update <id-or-key> --custom-field-id 1 --item-id 10 --name "Very High"
+bl project custom-field item update <id-or-key> --custom-field-id 1 --item-id 10 --name "Very High" --json
 ```
 
 | Flag | Default | Description |
@@ -727,6 +728,7 @@ Delete an item from a list-type custom field.
 
 ```bash
 bl project custom-field item delete <id-or-key> --custom-field-id 1 --item-id 10
+bl project custom-field item delete <id-or-key> --custom-field-id 1 --item-id 10 --json
 ```
 
 | Flag | Default | Description |
