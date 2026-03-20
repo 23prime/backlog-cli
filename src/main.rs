@@ -56,6 +56,7 @@ use cmd::project::{
     ProjectActivitiesArgs, ProjectCreateArgs, ProjectDeleteArgs, ProjectDiskUsageArgs,
     ProjectListArgs, ProjectShowArgs, ProjectUpdateArgs,
 };
+use cmd::rate_limit::RateLimitArgs;
 use cmd::resolution::ResolutionListArgs;
 use cmd::space::{
     SpaceActivitiesArgs, SpaceDiskUsageArgs, SpaceLicenceArgs, SpaceNotificationArgs,
@@ -154,6 +155,12 @@ enum Commands {
     Resolution {
         #[command(subcommand)]
         action: ResolutionCommands,
+    },
+    /// Show API rate limit status
+    RateLimit {
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
     },
 }
 
@@ -2509,6 +2516,7 @@ fn run() -> Result<()> {
                 cmd::resolution::list(&ResolutionListArgs::new(json))
             }
         },
+        Commands::RateLimit { json } => cmd::rate_limit::show(&RateLimitArgs::new(json)),
         Commands::Space { action, json } => match action {
             None => cmd::space::show(&SpaceShowArgs::new(json)),
             Some(SpaceCommands::Activities {

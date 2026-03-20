@@ -4,6 +4,7 @@ pub mod issue;
 pub mod notification;
 pub mod priority;
 pub mod project;
+pub mod rate_limit;
 pub mod resolution;
 pub mod space;
 pub mod team;

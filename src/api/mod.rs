@@ -13,6 +13,7 @@ pub mod licence;
 pub mod notification;
 pub mod priority;
 pub mod project;
+pub mod rate_limit;
 pub mod resolution;
 pub mod space;
 pub mod space_notification;
@@ -34,6 +35,7 @@ use project::{
     Project, ProjectCategory, ProjectCustomField, ProjectDiskUsage, ProjectIssueType,
     ProjectStatus, ProjectUser, ProjectVersion,
 };
+use rate_limit::RateLimit;
 use resolution::Resolution;
 use space::Space;
 use space_notification::SpaceNotification;
@@ -59,6 +61,9 @@ use wiki::{Wiki, WikiAttachment, WikiHistory, WikiListItem};
 ///    `unimplemented!()` fires automatically if an untested method is called.
 pub trait BacklogApi {
     fn get_space(&self) -> Result<Space> {
+        unimplemented!()
+    }
+    fn get_rate_limit(&self) -> Result<RateLimit> {
         unimplemented!()
     }
     fn get_myself(&self) -> Result<User> {
@@ -488,6 +493,10 @@ pub trait BacklogApi {
 impl BacklogApi for BacklogClient {
     fn get_space(&self) -> Result<Space> {
         self.get_space()
+    }
+
+    fn get_rate_limit(&self) -> Result<RateLimit> {
+        self.get_rate_limit()
     }
 
     fn get_myself(&self) -> Result<User> {
