@@ -94,11 +94,23 @@ fn builds_correct_params() {
 
 ## httpmock method constants
 
-`httpmock::prelude::*` (v0.7) exports `GET`, `POST`, `PUT`, `DELETE`, `OPTIONS` —
+`httpmock::prelude::*` exports `GET`, `POST`, `PUT`, `DELETE`, `OPTIONS` —
 but **not `PATCH`**. Use the fully-qualified path for PATCH requests:
 
 ```rust
 when.method(httpmock::Method::PATCH).path("/projects/TEST");
+```
+
+## httpmock body matching
+
+`body_contains` was removed in httpmock 0.8.x. Use `body_includes` instead:
+
+```rust
+// ✅ httpmock 0.8.x
+when.body_includes("content=New+notification+text.");
+
+// ❌ removed in 0.8.x
+when.body_contains("content=New+notification+text.");
 ```
 
 ## Tests that change the working directory
