@@ -39,8 +39,16 @@ pub fn print_document_detail(doc: &Document) {
     if let Some(plain) = &doc.plain {
         println!("Content:\n{plain}");
     }
-    println!("Created: {} ({})", doc.created_user.name, doc.created);
-    println!("Updated: {} ({})", doc.updated_user.name, doc.updated);
+    if let Some(u) = &doc.created_user {
+        println!("Created: {} ({})", u.name, doc.created);
+    } else {
+        println!("Created: {}", doc.created);
+    }
+    if let Some(u) = &doc.updated_user {
+        println!("Updated: {} ({})", u.name, doc.updated);
+    } else {
+        println!("Updated: {}", doc.updated);
+    }
     if !doc.tags.is_empty() {
         let tag_names: Vec<&str> = doc.tags.iter().map(|t| t.name.as_str()).collect();
         println!("Tags: {}", tag_names.join(", "));

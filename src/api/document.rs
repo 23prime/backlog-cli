@@ -47,9 +47,9 @@ pub struct Document {
     pub attachments: Vec<DocumentAttachment>,
     #[serde(default)]
     pub tags: Vec<DocumentTag>,
-    pub created_user: DocumentUser,
+    pub created_user: Option<DocumentUser>,
     pub created: String,
-    pub updated_user: DocumentUser,
+    pub updated_user: Option<DocumentUser>,
     pub updated: String,
     #[serde(flatten)]
     pub extra: BTreeMap<String, serde_json::Value>,
@@ -151,9 +151,9 @@ pub mod tests_helper {
             emoji: None,
             attachments: vec![],
             tags: vec![],
-            created_user: sample_document_user(),
+            created_user: Some(sample_document_user()),
             created: "2024-01-01T00:00:00Z".to_string(),
-            updated_user: sample_document_user(),
+            updated_user: Some(sample_document_user()),
             updated: "2024-01-01T00:00:00Z".to_string(),
             extra: BTreeMap::new(),
         }
