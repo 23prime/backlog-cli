@@ -30,7 +30,10 @@ use cmd::issue::{
 use cmd::notification::{NotificationCountArgs, NotificationListArgs, NotificationReadArgs};
 use cmd::priority::PriorityListArgs;
 use cmd::project::admin::{ProjectAdminAddArgs, ProjectAdminDeleteArgs, ProjectAdminListArgs};
-use cmd::project::category::ProjectCategoryListArgs;
+use cmd::project::category::{
+    ProjectCategoryAddArgs, ProjectCategoryDeleteArgs, ProjectCategoryListArgs,
+    ProjectCategoryUpdateArgs,
+};
 use cmd::project::issue_type::{
     ProjectIssueTypeAddArgs, ProjectIssueTypeDeleteArgs, ProjectIssueTypeListArgs,
     ProjectIssueTypeUpdateArgs,
@@ -601,6 +604,42 @@ enum ProjectCategoryCommands {
     List {
         /// Project ID or key
         id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Add a category to a project
+    Add {
+        /// Project ID or key
+        id_or_key: String,
+        /// Category name
+        #[arg(long)]
+        name: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Update a project category
+    Update {
+        /// Project ID or key
+        id_or_key: String,
+        /// Category ID to update
+        #[arg(long)]
+        category_id: u64,
+        /// New category name
+        #[arg(long)]
+        name: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Delete a project category
+    Delete {
+        /// Project ID or key
+        id_or_key: String,
+        /// Category ID to delete
+        #[arg(long)]
+        category_id: u64,
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -1671,6 +1710,33 @@ fn run() -> Result<()> {
                 ProjectCategoryCommands::List { id_or_key, json } => {
                     cmd::project::category::list(&ProjectCategoryListArgs::new(id_or_key, json))
                 }
+                ProjectCategoryCommands::Add {
+                    id_or_key,
+                    name,
+                    json,
+                } => {
+                    cmd::project::category::add(&ProjectCategoryAddArgs::new(id_or_key, name, json))
+                }
+                ProjectCategoryCommands::Update {
+                    id_or_key,
+                    category_id,
+                    name,
+                    json,
+                } => cmd::project::category::update(&ProjectCategoryUpdateArgs::new(
+                    id_or_key,
+                    category_id,
+                    name,
+                    json,
+                )),
+                ProjectCategoryCommands::Delete {
+                    id_or_key,
+                    category_id,
+                    json,
+                } => cmd::project::category::delete(&ProjectCategoryDeleteArgs::new(
+                    id_or_key,
+                    category_id,
+                    json,
+                )),
             },
             ProjectCommands::Version { action } => match action {
                 ProjectVersionCommands::List { id_or_key, json } => {

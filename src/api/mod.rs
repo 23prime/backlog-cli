@@ -157,6 +157,20 @@ pub trait BacklogApi {
     fn get_project_categories(&self, _key: &str) -> Result<Vec<ProjectCategory>> {
         unimplemented!()
     }
+    fn add_project_category(&self, _key: &str, _name: &str) -> Result<ProjectCategory> {
+        unimplemented!()
+    }
+    fn update_project_category(
+        &self,
+        _key: &str,
+        _category_id: u64,
+        _name: &str,
+    ) -> Result<ProjectCategory> {
+        unimplemented!()
+    }
+    fn delete_project_category(&self, _key: &str, _category_id: u64) -> Result<ProjectCategory> {
+        unimplemented!()
+    }
     fn get_project_versions(&self, _key: &str) -> Result<Vec<ProjectVersion>> {
         unimplemented!()
     }
@@ -511,6 +525,23 @@ impl BacklogApi for BacklogClient {
 
     fn get_project_categories(&self, key: &str) -> Result<Vec<ProjectCategory>> {
         self.get_project_categories(key)
+    }
+
+    fn add_project_category(&self, key: &str, name: &str) -> Result<ProjectCategory> {
+        self.add_project_category(key, name)
+    }
+
+    fn update_project_category(
+        &self,
+        key: &str,
+        category_id: u64,
+        name: &str,
+    ) -> Result<ProjectCategory> {
+        self.update_project_category(key, category_id, name)
+    }
+
+    fn delete_project_category(&self, key: &str, category_id: u64) -> Result<ProjectCategory> {
+        self.delete_project_category(key, category_id)
     }
 
     fn get_project_versions(&self, key: &str) -> Result<Vec<ProjectVersion>> {

@@ -487,6 +487,51 @@ bl project category list <id-or-key> --json
 [12] Design
 ```
 
+## `bl project category add`
+
+プロジェクトにカテゴリーを追加します。
+
+```bash
+bl project category add <id-or-key> --name <name>
+bl project category add <id-or-key> --name <name> --json
+```
+
+出力例:
+
+```text
+Added: [11] Development
+```
+
+## `bl project category update`
+
+プロジェクトのカテゴリーを更新します。
+
+```bash
+bl project category update <id-or-key> --category-id <id> --name <name>
+bl project category update <id-or-key> --category-id <id> --name <name> --json
+```
+
+出力例:
+
+```text
+Updated: [11] Development
+```
+
+## `bl project category delete`
+
+プロジェクトのカテゴリーを削除します。
+
+```bash
+bl project category delete <id-or-key> --category-id <id>
+bl project category delete <id-or-key> --category-id <id> --json
+```
+
+出力例:
+
+```text
+Deleted: [11] Development
+```
+
 ## `bl project version list`
 
 特定のプロジェクトのバージョン（マイルストーン）を一覧表示します。
@@ -1387,9 +1432,9 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl project issue-type update <id-or-key> --issue-type-id <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/issueTypes/{id}` | ✅ 実装済み |
 | `bl project issue-type delete <id-or-key> --issue-type-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/issueTypes/{id}` | ✅ 実装済み |
 | `bl project category list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/categories` | ✅ 実装済み |
-| `bl project category add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/categories` | 計画中 |
-| `bl project category update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/categories/{id}` | 計画中 |
-| `bl project category delete <id-or-key> <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/categories/{id}` | 計画中 |
+| `bl project category add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/categories` | ✅ 実装済み |
+| `bl project category update <id-or-key> --category-id <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/categories/{id}` | ✅ 実装済み |
+| `bl project category delete <id-or-key> --category-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/categories/{id}` | ✅ 実装済み |
 | `bl project version list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/versions` | ✅ 実装済み |
 | `bl project version add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/versions` | 計画中 |
 | `bl project version update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/versions/{id}` | 計画中 |
