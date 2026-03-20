@@ -1186,11 +1186,14 @@ bl document tree TEST --json
 Example output:
 
 ```text
-Root
-  Design Document
-    Frontend
-    Backend
-  Trash
+Project: 1
+Active:
+Root [root-id]
+  Design Document [abc123]
+    Frontend [def456]
+    Backend [ghi789]
+Trash:
+Trash [trash-id]
 ```
 
 ## `bl document show`
@@ -1205,10 +1208,14 @@ bl document show abc123 --json
 Example output:
 
 ```text
-[abc123] Design Document
-  Status:  1
-  Created: 2024-01-01T00:00:00Z
-  Updated: 2024-06-01T00:00:00Z
+ID: abc123
+Title: Design Document
+Project ID: 1
+Status: 1
+Content:
+Hello world
+Created: Taro (2024-01-01T00:00:00Z)
+Updated: Taro (2024-06-01T00:00:00Z)
 ```
 
 ## `bl document create`

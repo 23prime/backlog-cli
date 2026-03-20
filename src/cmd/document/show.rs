@@ -36,6 +36,7 @@ pub fn print_document_detail(doc: &Document) {
     println!("ID: {}", doc.id);
     println!("Title: {}", doc.title);
     println!("Project ID: {}", doc.project_id);
+    println!("Status: {}", doc.status_id);
     if let Some(plain) = &doc.plain {
         println!("Content:\n{plain}");
     }
