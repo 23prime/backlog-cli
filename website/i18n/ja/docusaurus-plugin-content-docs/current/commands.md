@@ -419,6 +419,58 @@ bl project issue-type list <id-or-key> --json
 [3] Feature Request
 ```
 
+## `bl project issue-type add`
+
+プロジェクトに課題種別を追加します。
+
+```bash
+bl project issue-type add <id-or-key> --name <name> --color <color>
+bl project issue-type add <id-or-key> --name <name> --color <color> --json
+```
+
+`--color` は `#` プレフィックス付きの6桁 hex コード（例: `#e30000`）を指定してください。
+
+出力例:
+
+```text
+Added: [1] Bug
+```
+
+## `bl project issue-type update`
+
+プロジェクトの課題種別を更新します。
+
+```bash
+bl project issue-type update <id-or-key> --issue-type-id <id> --name <name>
+bl project issue-type update <id-or-key> --issue-type-id <id> --color <color>
+bl project issue-type update <id-or-key> --issue-type-id <id> --name <name> --color <color> --json
+```
+
+`--name` または `--color` の少なくとも一方を指定してください。`--color` は有効な hex コードである必要があります。
+
+出力例:
+
+```text
+Updated: [1] Bug
+```
+
+## `bl project issue-type delete`
+
+プロジェクトの課題種別を削除します。削除された種別の課題は代替種別に移動されます。
+
+```bash
+bl project issue-type delete <id-or-key> --issue-type-id <id> --substitute-issue-type-id <id>
+bl project issue-type delete <id-or-key> --issue-type-id <id> --substitute-issue-type-id <id> --json
+```
+
+`--substitute-issue-type-id` は `--issue-type-id` と異なる値を指定してください。
+
+出力例:
+
+```text
+Deleted: [1] Bug
+```
+
 ## `bl project category list`
 
 特定のプロジェクトのカテゴリーを一覧表示します。
@@ -1331,9 +1383,9 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl project status delete <id-or-key> --status-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/statuses/{id}` | ✅ 実装済み |
 | `bl project status reorder <id-or-key>` | `PATCH /api/v2/projects/{projectIdOrKey}/statuses/updateDisplayOrder` | ✅ 実装済み |
 | `bl project issue-type list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/issueTypes` | ✅ 実装済み |
-| `bl project issue-type add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/issueTypes` | 計画中 |
-| `bl project issue-type update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/issueTypes/{id}` | 計画中 |
-| `bl project issue-type delete <id-or-key> <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/issueTypes/{id}` | 計画中 |
+| `bl project issue-type add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/issueTypes` | ✅ 実装済み |
+| `bl project issue-type update <id-or-key> --issue-type-id <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/issueTypes/{id}` | ✅ 実装済み |
+| `bl project issue-type delete <id-or-key> --issue-type-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/issueTypes/{id}` | ✅ 実装済み |
 | `bl project category list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/categories` | ✅ 実装済み |
 | `bl project category add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/categories` | 計画中 |
 | `bl project category update <id-or-key> <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/categories/{id}` | 計画中 |

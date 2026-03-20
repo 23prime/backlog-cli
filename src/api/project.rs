@@ -173,6 +173,68 @@ impl BacklogClient {
         })
     }
 
+    pub fn add_project_issue_type(
+        &self,
+        key: &str,
+        name: &str,
+        color: &str,
+    ) -> Result<ProjectIssueType> {
+        let params = vec![
+            ("name".to_string(), name.to_string()),
+            ("color".to_string(), color.to_string()),
+        ];
+        let value = self.post_form(&format!("/projects/{}/issueTypes", key), &params)?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize add project issue type response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn update_project_issue_type(
+        &self,
+        key: &str,
+        issue_type_id: u64,
+        params: &[(String, String)],
+    ) -> Result<ProjectIssueType> {
+        let value = self.patch_form(
+            &format!("/projects/{}/issueTypes/{}", key, issue_type_id),
+            params,
+        )?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize update project issue type response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn delete_project_issue_type(
+        &self,
+        key: &str,
+        issue_type_id: u64,
+        substitute_issue_type_id: u64,
+    ) -> Result<ProjectIssueType> {
+        let params = vec![(
+            "substituteIssueTypeId".to_string(),
+            substitute_issue_type_id.to_string(),
+        )];
+        let value = self.delete_form(
+            &format!("/projects/{}/issueTypes/{}", key, issue_type_id),
+            &params,
+        )?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize delete project issue type response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
     pub fn get_project_categories(&self, key: &str) -> Result<Vec<ProjectCategory>> {
         let value = self.get(&format!("/projects/{}/categories", key))?;
         serde_json::from_value(value.clone()).map_err(|e| {
