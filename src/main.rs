@@ -34,6 +34,11 @@ use cmd::project::category::{
     ProjectCategoryAddArgs, ProjectCategoryDeleteArgs, ProjectCategoryListArgs,
     ProjectCategoryUpdateArgs,
 };
+use cmd::project::custom_field::{
+    ProjectCustomFieldAddArgs, ProjectCustomFieldDeleteArgs, ProjectCustomFieldItemAddArgs,
+    ProjectCustomFieldItemDeleteArgs, ProjectCustomFieldItemUpdateArgs, ProjectCustomFieldListArgs,
+    ProjectCustomFieldUpdateArgs,
+};
 use cmd::project::issue_type::{
     ProjectIssueTypeAddArgs, ProjectIssueTypeDeleteArgs, ProjectIssueTypeListArgs,
     ProjectIssueTypeUpdateArgs,
@@ -406,6 +411,11 @@ enum ProjectCommands {
         #[command(subcommand)]
         action: ProjectVersionCommands,
     },
+    /// Manage project custom fields
+    CustomField {
+        #[command(subcommand)]
+        action: ProjectCustomFieldCommands,
+    },
 }
 
 #[derive(Subcommand)]
@@ -712,6 +722,123 @@ enum ProjectVersionCommands {
         /// Version ID
         #[arg(long)]
         version_id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum ProjectCustomFieldCommands {
+    /// List custom fields in a project
+    List {
+        /// Project ID or key
+        id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Add a custom field to a project
+    Add {
+        /// Project ID or key
+        id_or_key: String,
+        /// Field type ID (1=Text, 2=Sentence, 3=Number, 4=Date, 5=SingleList, 6=MultipleList, 7=Checkbox, 8=Radio)
+        #[arg(long)]
+        type_id: u64,
+        /// Field name
+        #[arg(long)]
+        name: String,
+        /// Description
+        #[arg(long)]
+        description: Option<String>,
+        /// Mark as required
+        #[arg(long)]
+        required: Option<bool>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Update a custom field in a project
+    Update {
+        /// Project ID or key
+        id_or_key: String,
+        /// Custom field ID
+        #[arg(long)]
+        custom_field_id: u64,
+        /// Field name
+        #[arg(long)]
+        name: Option<String>,
+        /// Description
+        #[arg(long)]
+        description: Option<String>,
+        /// Mark as required
+        #[arg(long)]
+        required: Option<bool>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Delete a custom field from a project
+    Delete {
+        /// Project ID or key
+        id_or_key: String,
+        /// Custom field ID
+        #[arg(long)]
+        custom_field_id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Manage list items of a custom field
+    Item {
+        #[command(subcommand)]
+        action: ProjectCustomFieldItemCommands,
+    },
+}
+
+#[derive(Subcommand)]
+enum ProjectCustomFieldItemCommands {
+    /// Add an item to a list custom field
+    Add {
+        /// Project ID or key
+        id_or_key: String,
+        /// Custom field ID
+        #[arg(long)]
+        custom_field_id: u64,
+        /// Item name
+        #[arg(long)]
+        name: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Update an item in a list custom field
+    Update {
+        /// Project ID or key
+        id_or_key: String,
+        /// Custom field ID
+        #[arg(long)]
+        custom_field_id: u64,
+        /// Item ID
+        #[arg(long)]
+        item_id: u64,
+        /// Item name
+        #[arg(long)]
+        name: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Delete an item from a list custom field
+    Delete {
+        /// Project ID or key
+        id_or_key: String,
+        /// Custom field ID
+        #[arg(long)]
+        custom_field_id: u64,
+        /// Item ID
+        #[arg(long)]
+        item_id: u64,
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -1843,6 +1970,93 @@ fn run() -> Result<()> {
                 } => cmd::project::version::delete(&ProjectVersionDeleteArgs::new(
                     id_or_key, version_id, json,
                 )),
+            },
+            ProjectCommands::CustomField { action } => match action {
+                ProjectCustomFieldCommands::List { id_or_key, json } => {
+                    cmd::project::custom_field::list(&ProjectCustomFieldListArgs::new(
+                        id_or_key, json,
+                    ))
+                }
+                ProjectCustomFieldCommands::Add {
+                    id_or_key,
+                    type_id,
+                    name,
+                    description,
+                    required,
+                    json,
+                } => cmd::project::custom_field::add(&ProjectCustomFieldAddArgs::new(
+                    id_or_key,
+                    type_id,
+                    name,
+                    description,
+                    required,
+                    json,
+                )),
+                ProjectCustomFieldCommands::Update {
+                    id_or_key,
+                    custom_field_id,
+                    name,
+                    description,
+                    required,
+                    json,
+                } => cmd::project::custom_field::update(&ProjectCustomFieldUpdateArgs::try_new(
+                    id_or_key,
+                    custom_field_id,
+                    name,
+                    description,
+                    required,
+                    json,
+                )?),
+                ProjectCustomFieldCommands::Delete {
+                    id_or_key,
+                    custom_field_id,
+                    json,
+                } => cmd::project::custom_field::delete(&ProjectCustomFieldDeleteArgs::new(
+                    id_or_key,
+                    custom_field_id,
+                    json,
+                )),
+                ProjectCustomFieldCommands::Item { action } => match action {
+                    ProjectCustomFieldItemCommands::Add {
+                        id_or_key,
+                        custom_field_id,
+                        name,
+                        json,
+                    } => cmd::project::custom_field::item_add(&ProjectCustomFieldItemAddArgs::new(
+                        id_or_key,
+                        custom_field_id,
+                        name,
+                        json,
+                    )),
+                    ProjectCustomFieldItemCommands::Update {
+                        id_or_key,
+                        custom_field_id,
+                        item_id,
+                        name,
+                        json,
+                    } => cmd::project::custom_field::item_update(
+                        &ProjectCustomFieldItemUpdateArgs::new(
+                            id_or_key,
+                            custom_field_id,
+                            item_id,
+                            name,
+                            json,
+                        ),
+                    ),
+                    ProjectCustomFieldItemCommands::Delete {
+                        id_or_key,
+                        custom_field_id,
+                        item_id,
+                        json,
+                    } => cmd::project::custom_field::item_delete(
+                        &ProjectCustomFieldItemDeleteArgs::new(
+                            id_or_key,
+                            custom_field_id,
+                            item_id,
+                            json,
+                        ),
+                    ),
+                },
             },
         },
         Commands::Issue { action } => match action {

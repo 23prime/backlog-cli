@@ -72,6 +72,27 @@ pub struct ProjectIssueType {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct CustomFieldItem {
+    pub id: u64,
+    pub name: String,
+    pub display_order: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProjectCustomField {
+    pub id: u64,
+    pub type_id: u64,
+    pub name: String,
+    pub description: Option<String>,
+    pub required: bool,
+    pub applicable_issue_types: Vec<serde_json::Value>,
+    pub allow_add_item: Option<bool>,
+    pub items: Option<Vec<CustomFieldItem>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ProjectCategory {
     pub id: u64,
     pub project_id: u64,
@@ -539,6 +560,157 @@ impl BacklogClient {
         serde_json::from_value(value.clone()).map_err(|e| {
             anyhow::anyhow!(
                 "Failed to deserialize delete project administrator response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn get_project_custom_fields(&self, key: &str) -> Result<Vec<ProjectCustomField>> {
+        let value = self.get(&format!("/projects/{}/customFields", key))?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize project custom fields response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn add_project_custom_field(
+        &self,
+        key: &str,
+        type_id: u64,
+        name: &str,
+        description: Option<&str>,
+        required: Option<bool>,
+    ) -> Result<ProjectCustomField> {
+        let mut params = vec![
+            ("typeId".to_string(), type_id.to_string()),
+            ("name".to_string(), name.to_string()),
+        ];
+        if let Some(d) = description {
+            params.push(("description".to_string(), d.to_string()));
+        }
+        if let Some(r) = required {
+            params.push(("required".to_string(), r.to_string()));
+        }
+        let value = self.post_form(&format!("/projects/{}/customFields", key), &params)?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize add project custom field response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn update_project_custom_field(
+        &self,
+        key: &str,
+        custom_field_id: u64,
+        name: Option<&str>,
+        description: Option<&str>,
+        required: Option<bool>,
+    ) -> Result<ProjectCustomField> {
+        let mut params = vec![];
+        if let Some(n) = name {
+            params.push(("name".to_string(), n.to_string()));
+        }
+        if let Some(d) = description {
+            params.push(("description".to_string(), d.to_string()));
+        }
+        if let Some(r) = required {
+            params.push(("required".to_string(), r.to_string()));
+        }
+        let value = self.patch_form(
+            &format!("/projects/{}/customFields/{}", key, custom_field_id),
+            &params,
+        )?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize update project custom field response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn delete_project_custom_field(
+        &self,
+        key: &str,
+        custom_field_id: u64,
+    ) -> Result<ProjectCustomField> {
+        let value = self.delete_req(&format!(
+            "/projects/{}/customFields/{}",
+            key, custom_field_id
+        ))?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize delete project custom field response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn add_project_custom_field_item(
+        &self,
+        key: &str,
+        custom_field_id: u64,
+        name: &str,
+    ) -> Result<ProjectCustomField> {
+        let params = vec![("name".to_string(), name.to_string())];
+        let value = self.post_form(
+            &format!("/projects/{}/customFields/{}/items", key, custom_field_id),
+            &params,
+        )?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize add project custom field item response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn update_project_custom_field_item(
+        &self,
+        key: &str,
+        custom_field_id: u64,
+        item_id: u64,
+        name: &str,
+    ) -> Result<ProjectCustomField> {
+        let params = vec![("name".to_string(), name.to_string())];
+        let value = self.patch_form(
+            &format!(
+                "/projects/{}/customFields/{}/items/{}",
+                key, custom_field_id, item_id
+            ),
+            &params,
+        )?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize update project custom field item response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn delete_project_custom_field_item(
+        &self,
+        key: &str,
+        custom_field_id: u64,
+        item_id: u64,
+    ) -> Result<ProjectCustomField> {
+        let value = self.delete_req(&format!(
+            "/projects/{}/customFields/{}/items/{}",
+            key, custom_field_id, item_id
+        ))?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize delete project custom field item response: {}\nRaw JSON:\n{}",
                 e,
                 serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
             )
@@ -1092,5 +1264,144 @@ mod tests {
         let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
         let err = client.delete_project_administrator("TEST", 1).unwrap_err();
         assert!(err.to_string().contains("No user"));
+    }
+
+    fn custom_field_json() -> serde_json::Value {
+        json!({
+            "id": 1,
+            "typeId": 6,
+            "name": "Priority",
+            "description": null,
+            "required": false,
+            "applicableIssueTypes": [],
+            "allowAddItem": true,
+            "items": []
+        })
+    }
+
+    #[test]
+    fn get_project_custom_fields_returns_parsed_list() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/projects/TEST/customFields");
+            then.status(200).json_body(json!([custom_field_json()]));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let fields = client.get_project_custom_fields("TEST").unwrap();
+        assert_eq!(fields.len(), 1);
+        assert_eq!(fields[0].name, "Priority");
+        assert_eq!(fields[0].type_id, 6);
+    }
+
+    #[test]
+    fn add_project_custom_field_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST).path("/projects/TEST/customFields");
+            then.status(200).json_body(custom_field_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let field = client
+            .add_project_custom_field("TEST", 6, "Priority", None, None)
+            .unwrap();
+        assert_eq!(field.id, 1);
+        assert_eq!(field.name, "Priority");
+    }
+
+    #[test]
+    fn add_project_custom_field_returns_error_on_api_failure() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST).path("/projects/TEST/customFields");
+            then.status(403)
+                .json_body(json!({"errors": [{"message": "Forbidden"}]}));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let err = client
+            .add_project_custom_field("TEST", 6, "Priority", None, None)
+            .unwrap_err();
+        assert!(err.to_string().contains("Forbidden"));
+    }
+
+    #[test]
+    fn update_project_custom_field_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(httpmock::Method::PATCH)
+                .path("/projects/TEST/customFields/1");
+            then.status(200).json_body(custom_field_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let field = client
+            .update_project_custom_field("TEST", 1, Some("Priority"), None, None)
+            .unwrap();
+        assert_eq!(field.id, 1);
+        assert_eq!(field.name, "Priority");
+    }
+
+    #[test]
+    fn delete_project_custom_field_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(DELETE).path("/projects/TEST/customFields/1");
+            then.status(200).json_body(custom_field_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let field = client.delete_project_custom_field("TEST", 1).unwrap();
+        assert_eq!(field.id, 1);
+        assert_eq!(field.name, "Priority");
+    }
+
+    #[test]
+    fn add_project_custom_field_item_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST)
+                .path("/projects/TEST/customFields/1/items");
+            then.status(200).json_body(custom_field_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let field = client
+            .add_project_custom_field_item("TEST", 1, "High")
+            .unwrap();
+        assert_eq!(field.id, 1);
+    }
+
+    #[test]
+    fn update_project_custom_field_item_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(httpmock::Method::PATCH)
+                .path("/projects/TEST/customFields/1/items/10");
+            then.status(200).json_body(custom_field_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let field = client
+            .update_project_custom_field_item("TEST", 1, 10, "Very High")
+            .unwrap();
+        assert_eq!(field.id, 1);
+    }
+
+    #[test]
+    fn delete_project_custom_field_item_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(DELETE)
+                .path("/projects/TEST/customFields/1/items/10");
+            then.status(200).json_body(custom_field_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let field = client
+            .delete_project_custom_field_item("TEST", 1, 10)
+            .unwrap();
+        assert_eq!(field.id, 1);
     }
 }
