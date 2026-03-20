@@ -8,6 +8,7 @@ const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 
 pub mod activity;
 pub mod disk_usage;
+pub mod document;
 pub mod issue;
 pub mod licence;
 pub mod notification;
@@ -24,6 +25,7 @@ pub mod wiki;
 
 use activity::Activity;
 use disk_usage::DiskUsage;
+use document::{Document, DocumentTree};
 use issue::{
     Issue, IssueAttachment, IssueComment, IssueCommentCount, IssueCommentNotification, IssueCount,
     IssueParticipant, IssueSharedFile,
@@ -395,6 +397,28 @@ pub trait BacklogApi {
         _comment_id: u64,
         _params: &[(String, String)],
     ) -> Result<Vec<IssueCommentNotification>> {
+        unimplemented!()
+    }
+    fn get_documents(&self, _params: &[(String, String)]) -> Result<Vec<Document>> {
+        unimplemented!()
+    }
+    fn get_document_tree(&self, _params: &[(String, String)]) -> Result<DocumentTree> {
+        unimplemented!()
+    }
+    fn get_document(&self, _document_id: &str) -> Result<Document> {
+        unimplemented!()
+    }
+    fn create_document(&self, _params: &[(String, String)]) -> Result<Document> {
+        unimplemented!()
+    }
+    fn delete_document(&self, _document_id: &str) -> Result<Document> {
+        unimplemented!()
+    }
+    fn download_document_attachment(
+        &self,
+        _document_id: &str,
+        _attachment_id: u64,
+    ) -> Result<(Vec<u8>, String)> {
         unimplemented!()
     }
     fn get_wikis(&self, _params: &[(String, String)]) -> Result<Vec<WikiListItem>> {
@@ -933,6 +957,34 @@ impl BacklogApi for BacklogClient {
         params: &[(String, String)],
     ) -> Result<Vec<IssueCommentNotification>> {
         self.add_issue_comment_notifications(key, comment_id, params)
+    }
+
+    fn get_documents(&self, params: &[(String, String)]) -> Result<Vec<Document>> {
+        self.get_documents(params)
+    }
+
+    fn get_document_tree(&self, params: &[(String, String)]) -> Result<DocumentTree> {
+        self.get_document_tree(params)
+    }
+
+    fn get_document(&self, document_id: &str) -> Result<Document> {
+        self.get_document(document_id)
+    }
+
+    fn create_document(&self, params: &[(String, String)]) -> Result<Document> {
+        self.create_document(params)
+    }
+
+    fn delete_document(&self, document_id: &str) -> Result<Document> {
+        self.delete_document(document_id)
+    }
+
+    fn download_document_attachment(
+        &self,
+        document_id: &str,
+        attachment_id: u64,
+    ) -> Result<(Vec<u8>, String)> {
+        self.download_document_attachment(document_id, attachment_id)
     }
 
     fn get_wikis(&self, params: &[(String, String)]) -> Result<Vec<WikiListItem>> {

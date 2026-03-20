@@ -1157,6 +1157,87 @@ bl issue shared-file unlink TEST-1 1
 bl issue shared-file unlink TEST-1 1 --json
 ```
 
+## `bl document list`
+
+List documents in a project.
+
+```bash
+bl document list --project-id 1
+bl document list --project-id 1 --keyword design
+bl document list --project-id 1 --count 50 --offset 0 --json
+```
+
+Example output:
+
+```text
+[abc123] Design Document
+[def456] API Reference
+```
+
+## `bl document tree`
+
+Show the document tree for a project.
+
+```bash
+bl document tree TEST
+bl document tree TEST --json
+```
+
+Example output:
+
+```text
+Root
+  Design Document
+    Frontend
+    Backend
+  Trash
+```
+
+## `bl document show`
+
+Show details of a document.
+
+```bash
+bl document show abc123
+bl document show abc123 --json
+```
+
+Example output:
+
+```text
+[abc123] Design Document
+  Status:  1
+  Created: 2024-01-01T00:00:00Z
+  Updated: 2024-06-01T00:00:00Z
+```
+
+## `bl document create`
+
+Create a new document.
+
+```bash
+bl document create --project-id 1 --title "New Doc" --content "# New Doc"
+bl document create --project-id 1 --title "Child Doc" --parent-id abc123 --json
+```
+
+## `bl document delete`
+
+Delete a document.
+
+```bash
+bl document delete abc123
+bl document delete abc123 --json
+```
+
+## `bl document attachment get`
+
+Download a document attachment.
+
+```bash
+bl document attachment get abc123 1
+bl document attachment get abc123 1 --output /path/to/file.pdf
+```
+
 ## `bl wiki list`
 
 List wiki pages in a project.
@@ -1790,12 +1871,12 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 
 | Command | API endpoint | Status |
 | --- | --- | --- |
-| `bl document list` | `GET /api/v2/documents` | Planned |
-| `bl document tree` | `GET /api/v2/documents/tree` | Planned |
-| `bl document show <id>` | `GET /api/v2/documents/{documentId}` | Planned |
-| `bl document create` | `POST /api/v2/documents` | Planned |
-| `bl document delete <id>` | `DELETE /api/v2/documents/{documentId}` | Planned |
-| `bl document attachment get <id> <attachment-id>` | `GET /api/v2/documents/{documentId}/attachments/{attachmentId}` | Planned |
+| `bl document list` | `GET /api/v2/documents` | ✅ Implemented |
+| `bl document tree` | `GET /api/v2/documents/tree` | ✅ Implemented |
+| `bl document show <id>` | `GET /api/v2/documents/{documentId}` | ✅ Implemented |
+| `bl document create` | `POST /api/v2/documents` | ✅ Implemented |
+| `bl document delete <id>` | `DELETE /api/v2/documents/{documentId}` | ✅ Implemented |
+| `bl document attachment get <id> <attachment-id>` | `GET /api/v2/documents/{documentId}/attachments/{attachmentId}` | ✅ Implemented |
 
 ### Wiki
 
