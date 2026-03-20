@@ -399,6 +399,15 @@ pub trait BacklogApi {
     fn get_team(&self, _team_id: u64) -> Result<Team> {
         unimplemented!()
     }
+    fn get_project_teams(&self, _key: &str) -> Result<Vec<Team>> {
+        unimplemented!()
+    }
+    fn add_project_team(&self, _key: &str, _team_id: u64) -> Result<Team> {
+        unimplemented!()
+    }
+    fn delete_project_team(&self, _key: &str, _team_id: u64) -> Result<Team> {
+        unimplemented!()
+    }
     fn get_user_activities(
         &self,
         _user_id: u64,
@@ -907,6 +916,18 @@ impl BacklogApi for BacklogClient {
 
     fn get_team(&self, team_id: u64) -> Result<Team> {
         self.get_team(team_id)
+    }
+
+    fn get_project_teams(&self, key: &str) -> Result<Vec<Team>> {
+        self.get_project_teams(key)
+    }
+
+    fn add_project_team(&self, key: &str, team_id: u64) -> Result<Team> {
+        self.add_project_team(key, team_id)
+    }
+
+    fn delete_project_team(&self, key: &str, team_id: u64) -> Result<Team> {
+        self.delete_project_team(key, team_id)
     }
 
     fn get_user_activities(

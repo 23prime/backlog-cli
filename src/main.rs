@@ -47,6 +47,7 @@ use cmd::project::status::{
     ProjectStatusAddArgs, ProjectStatusDeleteArgs, ProjectStatusListArgs, ProjectStatusReorderArgs,
     ProjectStatusUpdateArgs,
 };
+use cmd::project::team::{ProjectTeamAddArgs, ProjectTeamDeleteArgs, ProjectTeamListArgs};
 use cmd::project::user::{ProjectUserAddArgs, ProjectUserDeleteArgs, ProjectUserListArgs};
 use cmd::project::version::{
     ProjectVersionAddArgs, ProjectVersionDeleteArgs, ProjectVersionListArgs,
@@ -418,10 +419,49 @@ enum ProjectCommands {
         #[command(subcommand)]
         action: ProjectVersionCommands,
     },
+    /// Manage project teams
+    Team {
+        #[command(subcommand)]
+        action: ProjectTeamCommands,
+    },
     /// Manage project custom fields
     CustomField {
         #[command(subcommand)]
         action: ProjectCustomFieldCommands,
+    },
+}
+
+#[derive(Subcommand)]
+enum ProjectTeamCommands {
+    /// List teams in a project
+    List {
+        /// Project ID or key
+        id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Add a team to a project
+    Add {
+        /// Project ID or key
+        id_or_key: String,
+        /// Numeric team ID to add
+        #[arg(long)]
+        team_id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Remove a team from a project
+    Delete {
+        /// Project ID or key
+        id_or_key: String,
+        /// Numeric team ID to remove
+        #[arg(long)]
+        team_id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
     },
 }
 
@@ -1976,6 +2016,23 @@ fn run() -> Result<()> {
                     json,
                 } => cmd::project::version::delete(&ProjectVersionDeleteArgs::new(
                     id_or_key, version_id, json,
+                )),
+            },
+            ProjectCommands::Team { action } => match action {
+                ProjectTeamCommands::List { id_or_key, json } => {
+                    cmd::project::team::list(&ProjectTeamListArgs::new(id_or_key, json))
+                }
+                ProjectTeamCommands::Add {
+                    id_or_key,
+                    team_id,
+                    json,
+                } => cmd::project::team::add(&ProjectTeamAddArgs::new(id_or_key, team_id, json)),
+                ProjectTeamCommands::Delete {
+                    id_or_key,
+                    team_id,
+                    json,
+                } => cmd::project::team::delete(&ProjectTeamDeleteArgs::new(
+                    id_or_key, team_id, json,
                 )),
             },
             ProjectCommands::CustomField { action } => match action {

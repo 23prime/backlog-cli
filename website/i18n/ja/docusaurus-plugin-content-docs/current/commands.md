@@ -736,6 +736,41 @@ bl project custom-field item delete <id-or-key> --custom-field-id 1 --item-id 10
 | `--custom-field-id` | — | カスタム属性 ID（必須） |
 | `--item-id` | — | 項目 ID（必須） |
 
+## `bl project team list`
+
+プロジェクトに割り当てられたチームの一覧を表示します。
+
+```bash
+bl project team list <id-or-key>
+bl project team list <id-or-key> --json
+```
+
+## `bl project team add`
+
+プロジェクトにチームを追加します。
+
+```bash
+bl project team add <id-or-key> --team-id 1
+bl project team add <id-or-key> --team-id 1 --json
+```
+
+| フラグ | デフォルト | 説明 |
+| --- | --- | --- |
+| `--team-id` | — | 追加するチームの数値 ID（必須） |
+
+## `bl project team delete`
+
+プロジェクトからチームを削除します。
+
+```bash
+bl project team delete <id-or-key> --team-id 1
+bl project team delete <id-or-key> --team-id 1 --json
+```
+
+| フラグ | デフォルト | 説明 |
+| --- | --- | --- |
+| `--team-id` | — | 削除するチームの数値 ID（必須） |
+
 ## `bl project create`
 
 新しいプロジェクトを作成します。
@@ -1656,9 +1691,9 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl project webhook add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/webhooks` | 計画中 |
 | `bl project webhook update <id-or-key> <webhook-id>` | `PATCH /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | 計画中 |
 | `bl project webhook delete <id-or-key> <webhook-id>` | `DELETE /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | 計画中 |
-| `bl project team list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/teams` | 計画中 |
-| `bl project team add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/teams` | 計画中 |
-| `bl project team delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/teams` | 計画中 |
+| `bl project team list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/teams` | ✅ 実装済み |
+| `bl project team add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/teams` | ✅ 実装済み |
+| `bl project team delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/teams/{teamId}` | ✅ 実装済み |
 
 ### Priorities & Resolutions
 
