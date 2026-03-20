@@ -264,3 +264,12 @@ and positional arguments:
 - **GET commands**: safe to run directly
 - **POST / PATCH / DELETE commands**: always confirm with the user before executing — these create,
   modify, or delete real data
+
+## Document API specifics
+
+- Document IDs are `String` (UUID-like), not `u64` like most other resources.
+- POST `/api/v2/documents` returns a simplified response with `createdUserId`/`updatedUserId`
+  (flat integer fields) instead of embedded `createdUser`/`updatedUser` objects.
+  Model these as `Option<DocumentUser>` on the struct so both POST and GET responses deserialize.
+- The document list endpoint requires `count` and `offset` params (400 error if omitted).
+  Always send them — default to `count=20, offset=0`.
