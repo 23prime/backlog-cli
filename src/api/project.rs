@@ -1265,4 +1265,143 @@ mod tests {
         let err = client.delete_project_administrator("TEST", 1).unwrap_err();
         assert!(err.to_string().contains("No user"));
     }
+
+    fn custom_field_json() -> serde_json::Value {
+        json!({
+            "id": 1,
+            "typeId": 6,
+            "name": "Priority",
+            "description": null,
+            "required": false,
+            "applicableIssueTypes": [],
+            "allowAddItem": true,
+            "items": []
+        })
+    }
+
+    #[test]
+    fn get_project_custom_fields_returns_parsed_list() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/projects/TEST/customFields");
+            then.status(200).json_body(json!([custom_field_json()]));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let fields = client.get_project_custom_fields("TEST").unwrap();
+        assert_eq!(fields.len(), 1);
+        assert_eq!(fields[0].name, "Priority");
+        assert_eq!(fields[0].type_id, 6);
+    }
+
+    #[test]
+    fn add_project_custom_field_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST).path("/projects/TEST/customFields");
+            then.status(200).json_body(custom_field_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let field = client
+            .add_project_custom_field("TEST", 6, "Priority", None, None)
+            .unwrap();
+        assert_eq!(field.id, 1);
+        assert_eq!(field.name, "Priority");
+    }
+
+    #[test]
+    fn add_project_custom_field_returns_error_on_api_failure() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST).path("/projects/TEST/customFields");
+            then.status(403)
+                .json_body(json!({"errors": [{"message": "Forbidden"}]}));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let err = client
+            .add_project_custom_field("TEST", 6, "Priority", None, None)
+            .unwrap_err();
+        assert!(err.to_string().contains("Forbidden"));
+    }
+
+    #[test]
+    fn update_project_custom_field_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(httpmock::Method::PATCH)
+                .path("/projects/TEST/customFields/1");
+            then.status(200).json_body(custom_field_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let field = client
+            .update_project_custom_field("TEST", 1, Some("Priority"), None, None)
+            .unwrap();
+        assert_eq!(field.id, 1);
+        assert_eq!(field.name, "Priority");
+    }
+
+    #[test]
+    fn delete_project_custom_field_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(DELETE).path("/projects/TEST/customFields/1");
+            then.status(200).json_body(custom_field_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let field = client.delete_project_custom_field("TEST", 1).unwrap();
+        assert_eq!(field.id, 1);
+        assert_eq!(field.name, "Priority");
+    }
+
+    #[test]
+    fn add_project_custom_field_item_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST)
+                .path("/projects/TEST/customFields/1/items");
+            then.status(200).json_body(custom_field_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let field = client
+            .add_project_custom_field_item("TEST", 1, "High")
+            .unwrap();
+        assert_eq!(field.id, 1);
+    }
+
+    #[test]
+    fn update_project_custom_field_item_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(httpmock::Method::PATCH)
+                .path("/projects/TEST/customFields/1/items/10");
+            then.status(200).json_body(custom_field_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let field = client
+            .update_project_custom_field_item("TEST", 1, 10, "Very High")
+            .unwrap();
+        assert_eq!(field.id, 1);
+    }
+
+    #[test]
+    fn delete_project_custom_field_item_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(DELETE)
+                .path("/projects/TEST/customFields/1/items/10");
+            then.status(200).json_body(custom_field_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let field = client
+            .delete_project_custom_field_item("TEST", 1, 10)
+            .unwrap();
+        assert_eq!(field.id, 1);
+    }
 }
