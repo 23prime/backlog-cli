@@ -213,6 +213,50 @@ Don't preemptively make all fields `Option`. Instead:
 3. Make only the confirmed-null field `Option<T>`
 4. Add a test case with the null value
 
+## `show` vs `list` text output convention
+
+`list` commands display a compact single-line row per item (e.g. `[id] name (url)`).
+`show` commands should display a **detailed** multi-line view that includes all
+meaningful fields (description, configuration, etc.).
+
+Define two separate formatters:
+
+```rust
+fn format_webhook_row(h: &ProjectWebhook) -> String {
+    format!("[{}] {} ({})", h.id, h.name, h.hook_url)  // used by list, add, update, delete
+}
+
+fn format_webhook_detail(h: &ProjectWebhook) -> String {
+    // used by show — include description, event config, etc.
+    format!("ID: {}\nName: {}\nURL: {}\nDescription: {}\nEvents: {}",
+        h.id, h.name, h.hook_url, h.description, ...)
+}
+```
+
+This pattern prevents `show` from looking identical to `list` in non-JSON mode,
+which is confusing to users.
+
+## Project-scoped API methods — module placement
+
+When a project-scoped endpoint (e.g. `/projects/{key}/teams`) returns a type
+defined in a dedicated module (e.g. `Team` in `team.rs`), implement the method
+in that module — **not** in `project.rs`. Moving it to `project.rs` would
+introduce a cross-module import of `Team` from `team.rs` with no benefit.
+
+Keep all methods returning `Team` in `src/api/team.rs`, even if the path starts
+with `/projects/`.
+
+## Command coverage table conventions
+
+In `website/docs/commands.md` and the JA equivalent, the command column of the
+coverage table should **not** include required flags. List only the subcommand
+and positional arguments:
+
+```markdown
+| `bl project team add <id-or-key>` | ... |       ✅ correct
+| `bl project team add <id-or-key> --team-id <id>` | ... |  ❌ too verbose
+```
+
 ## Real API test safety
 
 `mise run rs-run` calls the real Backlog API. Before running:

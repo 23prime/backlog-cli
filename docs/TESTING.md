@@ -122,6 +122,21 @@ let _guard = DirGuard(original); // restored on drop, even on panic
 Without this, a panicking test leaves the process in the wrong directory and breaks
 subsequent tests that write relative paths.
 
+## Test coverage for JSON vs text output branches
+
+Every `*_with` function that prints differently based on `args.json` must have
+**two** success tests: one with `json: false` and one with `json: true`. Omitting
+the `json: true` test leaves the serialization path untested and is routinely
+flagged by reviewers.
+
+```rust
+#[test]
+fn add_with_text_output_succeeds() { /* json: false */ }
+
+#[test]
+fn add_with_json_output_succeeds() { /* json: true */ }
+```
+
 ## Rules
 
 - **Never** call `BacklogClient::from_config()` in tests — it requires real credentials on disk.
