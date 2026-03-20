@@ -1,7 +1,10 @@
 use anstream::println;
 use anyhow::{Context, Result};
 
-use crate::api::{BacklogApi, BacklogClient, project::ProjectVersion};
+use crate::api::{
+    BacklogApi, BacklogClient,
+    project::{ProjectVersion, UpdateProjectVersionParams},
+};
 
 pub struct ProjectVersionListArgs {
     key: String,
@@ -55,6 +58,7 @@ pub struct ProjectVersionUpdateArgs {
 }
 
 impl ProjectVersionUpdateArgs {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         key: String,
         version_id: u64,
@@ -144,15 +148,14 @@ pub fn update(args: &ProjectVersionUpdateArgs) -> Result<()> {
 }
 
 pub fn update_with(args: &ProjectVersionUpdateArgs, api: &dyn BacklogApi) -> Result<()> {
-    let version = api.update_project_version(
-        &args.key,
-        args.version_id,
-        &args.name,
-        args.description.as_deref(),
-        args.start_date.as_deref(),
-        args.release_due_date.as_deref(),
-        args.archived,
-    )?;
+    let params = UpdateProjectVersionParams {
+        name: &args.name,
+        description: args.description.as_deref(),
+        start_date: args.start_date.as_deref(),
+        release_due_date: args.release_due_date.as_deref(),
+        archived: args.archived,
+    };
+    let version = api.update_project_version(&args.key, args.version_id, &params)?;
     if args.json {
         println!(
             "{}",
@@ -227,11 +230,7 @@ mod tests {
             &self,
             _key: &str,
             _version_id: u64,
-            _name: &str,
-            _description: Option<&str>,
-            _start_date: Option<&str>,
-            _release_due_date: Option<&str>,
-            _archived: Option<bool>,
+            _params: &crate::api::project::UpdateProjectVersionParams<'_>,
         ) -> anyhow::Result<ProjectVersion> {
             self.single.clone().ok_or_else(|| anyhow!("update failed"))
         }

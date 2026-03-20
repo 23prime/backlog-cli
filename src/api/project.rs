@@ -143,6 +143,22 @@ pub struct ProjectVersion {
     pub display_order: u32,
 }
 
+pub struct UpdateProjectWebhookParams<'a> {
+    pub name: Option<&'a str>,
+    pub hook_url: Option<&'a str>,
+    pub description: Option<&'a str>,
+    pub all_event: Option<bool>,
+    pub activity_type_ids: Option<&'a [u64]>,
+}
+
+pub struct UpdateProjectVersionParams<'a> {
+    pub name: &'a str,
+    pub description: Option<&'a str>,
+    pub start_date: Option<&'a str>,
+    pub release_due_date: Option<&'a str>,
+    pub archived: Option<bool>,
+}
+
 impl BacklogClient {
     pub fn get_projects(&self) -> Result<Vec<Project>> {
         let value = self.get("/projects")?;
@@ -373,29 +389,23 @@ impl BacklogClient {
         &self,
         key: &str,
         version_id: u64,
-        name: &str,
-        description: Option<&str>,
-        start_date: Option<&str>,
-        release_due_date: Option<&str>,
-        archived: Option<bool>,
+        params: &UpdateProjectVersionParams<'_>,
     ) -> Result<ProjectVersion> {
-        let mut params = vec![("name".to_string(), name.to_string())];
-        if let Some(d) = description {
-            params.push(("description".to_string(), d.to_string()));
+        let mut form = vec![("name".to_string(), params.name.to_string())];
+        if let Some(d) = params.description {
+            form.push(("description".to_string(), d.to_string()));
         }
-        if let Some(s) = start_date {
-            params.push(("startDate".to_string(), s.to_string()));
+        if let Some(s) = params.start_date {
+            form.push(("startDate".to_string(), s.to_string()));
         }
-        if let Some(r) = release_due_date {
-            params.push(("releaseDueDate".to_string(), r.to_string()));
+        if let Some(r) = params.release_due_date {
+            form.push(("releaseDueDate".to_string(), r.to_string()));
         }
-        if let Some(a) = archived {
-            params.push(("archived".to_string(), a.to_string()));
+        if let Some(a) = params.archived {
+            form.push(("archived".to_string(), a.to_string()));
         }
-        let value = self.patch_form(
-            &format!("/projects/{}/versions/{}", key, version_id),
-            &params,
-        )?;
+        let value =
+            self.patch_form(&format!("/projects/{}/versions/{}", key, version_id), &form)?;
         serde_json::from_value(value.clone()).map_err(|e| {
             anyhow::anyhow!(
                 "Failed to deserialize update project version response: {}\nRaw JSON:\n{}",
@@ -805,31 +815,27 @@ impl BacklogClient {
         &self,
         key: &str,
         webhook_id: u64,
-        name: Option<&str>,
-        hook_url: Option<&str>,
-        description: Option<&str>,
-        all_event: Option<bool>,
-        activity_type_ids: Option<&[u64]>,
+        params: &UpdateProjectWebhookParams<'_>,
     ) -> Result<ProjectWebhook> {
-        let mut params = vec![];
-        if let Some(n) = name {
-            params.push(("name".to_string(), n.to_string()));
+        let mut form = vec![];
+        if let Some(n) = params.name {
+            form.push(("name".to_string(), n.to_string()));
         }
-        if let Some(u) = hook_url {
-            params.push(("hookUrl".to_string(), u.to_string()));
+        if let Some(u) = params.hook_url {
+            form.push(("hookUrl".to_string(), u.to_string()));
         }
-        if let Some(d) = description {
-            params.push(("description".to_string(), d.to_string()));
+        if let Some(d) = params.description {
+            form.push(("description".to_string(), d.to_string()));
         }
-        if let Some(a) = all_event {
-            params.push(("allEvent".to_string(), a.to_string()));
+        if let Some(a) = params.all_event {
+            form.push(("allEvent".to_string(), a.to_string()));
         }
-        if let Some(ids) = activity_type_ids {
+        if let Some(ids) = params.activity_type_ids {
             for id in ids {
-                params.push(("activityTypeIds[]".to_string(), id.to_string()));
+                form.push(("activityTypeIds[]".to_string(), id.to_string()));
             }
         }
-        let value = self.patch_form(&format!("/projects/{key}/webhooks/{webhook_id}"), &params)?;
+        let value = self.patch_form(&format!("/projects/{key}/webhooks/{webhook_id}"), &form)?;
         serde_json::from_value(value.clone()).map_err(|e| {
             anyhow::anyhow!(
                 "Failed to deserialize update project webhook response: {}\nRaw JSON:\n{}",
@@ -1634,7 +1640,17 @@ mod tests {
 
         let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
         let hook = client
-            .update_project_webhook("TEST", 1, Some("New Name"), None, None, None, None)
+            .update_project_webhook(
+                "TEST",
+                1,
+                &crate::api::project::UpdateProjectWebhookParams {
+                    name: Some("New Name"),
+                    hook_url: None,
+                    description: None,
+                    all_event: None,
+                    activity_type_ids: None,
+                },
+            )
             .unwrap();
         assert_eq!(hook.id, 1);
     }
