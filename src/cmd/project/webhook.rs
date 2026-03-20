@@ -1,7 +1,10 @@
 use anstream::println;
 use anyhow::{Context, Result, bail};
 
-use crate::api::{BacklogApi, BacklogClient, project::ProjectWebhook};
+use crate::api::{
+    BacklogApi, BacklogClient,
+    project::{ProjectWebhook, UpdateProjectWebhookParams},
+};
 
 pub struct ProjectWebhookListArgs {
     key: String,
@@ -138,6 +141,7 @@ pub struct ProjectWebhookUpdateArgs {
 }
 
 impl ProjectWebhookUpdateArgs {
+    #[allow(clippy::too_many_arguments)]
     pub fn try_new(
         key: String,
         webhook_id: u64,
@@ -177,15 +181,14 @@ pub fn update(args: &ProjectWebhookUpdateArgs) -> Result<()> {
 }
 
 pub fn update_with(args: &ProjectWebhookUpdateArgs, api: &dyn BacklogApi) -> Result<()> {
-    let hook = api.update_project_webhook(
-        &args.key,
-        args.webhook_id,
-        args.name.as_deref(),
-        args.hook_url.as_deref(),
-        args.description.as_deref(),
-        args.all_event,
-        args.activity_type_ids.as_deref(),
-    )?;
+    let params = UpdateProjectWebhookParams {
+        name: args.name.as_deref(),
+        hook_url: args.hook_url.as_deref(),
+        description: args.description.as_deref(),
+        all_event: args.all_event,
+        activity_type_ids: args.activity_type_ids.as_deref(),
+    };
+    let hook = api.update_project_webhook(&args.key, args.webhook_id, &params)?;
     if args.json {
         println!(
             "{}",
@@ -293,11 +296,7 @@ mod tests {
             &self,
             _key: &str,
             _webhook_id: u64,
-            _name: Option<&str>,
-            _hook_url: Option<&str>,
-            _description: Option<&str>,
-            _all_event: Option<bool>,
-            _activity_type_ids: Option<&[u64]>,
+            _params: &crate::api::project::UpdateProjectWebhookParams<'_>,
         ) -> anyhow::Result<ProjectWebhook> {
             self.hook.clone().ok_or_else(|| anyhow!("update failed"))
         }

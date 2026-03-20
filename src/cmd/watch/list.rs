@@ -15,6 +15,7 @@ pub struct WatchListArgs {
 }
 
 impl WatchListArgs {
+    #[allow(clippy::too_many_arguments)]
     pub fn try_new(
         user_id: u64,
         order: Option<String>,

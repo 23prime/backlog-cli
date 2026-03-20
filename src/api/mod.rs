@@ -33,7 +33,8 @@ use notification::{Notification, NotificationCount};
 use priority::Priority;
 use project::{
     Project, ProjectCategory, ProjectCustomField, ProjectDiskUsage, ProjectIssueType,
-    ProjectStatus, ProjectUser, ProjectVersion, ProjectWebhook,
+    ProjectStatus, ProjectUser, ProjectVersion, ProjectWebhook, UpdateProjectVersionParams,
+    UpdateProjectWebhookParams,
 };
 use rate_limit::RateLimit;
 use resolution::Resolution;
@@ -193,11 +194,7 @@ pub trait BacklogApi {
         &self,
         _key: &str,
         _version_id: u64,
-        _name: &str,
-        _description: Option<&str>,
-        _start_date: Option<&str>,
-        _release_due_date: Option<&str>,
-        _archived: Option<bool>,
+        _params: &UpdateProjectVersionParams<'_>,
     ) -> Result<ProjectVersion> {
         unimplemented!()
     }
@@ -304,11 +301,7 @@ pub trait BacklogApi {
         &self,
         _key: &str,
         _webhook_id: u64,
-        _name: Option<&str>,
-        _hook_url: Option<&str>,
-        _description: Option<&str>,
-        _all_event: Option<bool>,
-        _activity_type_ids: Option<&[u64]>,
+        _params: &UpdateProjectWebhookParams<'_>,
     ) -> Result<ProjectWebhook> {
         unimplemented!()
     }
@@ -693,21 +686,9 @@ impl BacklogApi for BacklogClient {
         &self,
         key: &str,
         version_id: u64,
-        name: &str,
-        description: Option<&str>,
-        start_date: Option<&str>,
-        release_due_date: Option<&str>,
-        archived: Option<bool>,
+        params: &UpdateProjectVersionParams<'_>,
     ) -> Result<ProjectVersion> {
-        self.update_project_version(
-            key,
-            version_id,
-            name,
-            description,
-            start_date,
-            release_due_date,
-            archived,
-        )
+        self.update_project_version(key, version_id, params)
     }
 
     fn delete_project_version(&self, key: &str, version_id: u64) -> Result<ProjectVersion> {
@@ -839,21 +820,9 @@ impl BacklogApi for BacklogClient {
         &self,
         key: &str,
         webhook_id: u64,
-        name: Option<&str>,
-        hook_url: Option<&str>,
-        description: Option<&str>,
-        all_event: Option<bool>,
-        activity_type_ids: Option<&[u64]>,
+        params: &UpdateProjectWebhookParams<'_>,
     ) -> Result<ProjectWebhook> {
-        self.update_project_webhook(
-            key,
-            webhook_id,
-            name,
-            hook_url,
-            description,
-            all_event,
-            activity_type_ids,
-        )
+        self.update_project_webhook(key, webhook_id, params)
     }
 
     fn delete_project_webhook(&self, key: &str, webhook_id: u64) -> Result<ProjectWebhook> {
