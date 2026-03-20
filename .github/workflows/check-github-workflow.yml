@@ -2,6 +2,8 @@ name: Check GitHub workflow
 
 on:
   push:
+    branches:
+      - main
     paths:
       - ".github/workflows/*.yml"
   pull_request:
