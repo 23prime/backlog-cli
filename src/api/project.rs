@@ -290,6 +290,81 @@ impl BacklogClient {
         })
     }
 
+    pub fn add_project_version(
+        &self,
+        key: &str,
+        name: &str,
+        description: Option<&str>,
+        start_date: Option<&str>,
+        release_due_date: Option<&str>,
+    ) -> Result<ProjectVersion> {
+        let mut params = vec![("name".to_string(), name.to_string())];
+        if let Some(d) = description {
+            params.push(("description".to_string(), d.to_string()));
+        }
+        if let Some(s) = start_date {
+            params.push(("startDate".to_string(), s.to_string()));
+        }
+        if let Some(r) = release_due_date {
+            params.push(("releaseDueDate".to_string(), r.to_string()));
+        }
+        let value = self.post_form(&format!("/projects/{}/versions", key), &params)?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize add project version response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn update_project_version(
+        &self,
+        key: &str,
+        version_id: u64,
+        name: &str,
+        description: Option<&str>,
+        start_date: Option<&str>,
+        release_due_date: Option<&str>,
+        archived: Option<bool>,
+    ) -> Result<ProjectVersion> {
+        let mut params = vec![("name".to_string(), name.to_string())];
+        if let Some(d) = description {
+            params.push(("description".to_string(), d.to_string()));
+        }
+        if let Some(s) = start_date {
+            params.push(("startDate".to_string(), s.to_string()));
+        }
+        if let Some(r) = release_due_date {
+            params.push(("releaseDueDate".to_string(), r.to_string()));
+        }
+        if let Some(a) = archived {
+            params.push(("archived".to_string(), a.to_string()));
+        }
+        let value = self.patch_form(
+            &format!("/projects/{}/versions/{}", key, version_id),
+            &params,
+        )?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize update project version response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn delete_project_version(&self, key: &str, version_id: u64) -> Result<ProjectVersion> {
+        let value = self.delete_req(&format!("/projects/{}/versions/{}", key, version_id))?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize delete project version response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
     pub fn get_project_versions(&self, key: &str) -> Result<Vec<ProjectVersion>> {
         let value = self.get(&format!("/projects/{}/versions", key))?;
         serde_json::from_value(value.clone()).map_err(|e| {

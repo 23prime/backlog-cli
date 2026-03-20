@@ -174,6 +174,31 @@ pub trait BacklogApi {
     fn get_project_versions(&self, _key: &str) -> Result<Vec<ProjectVersion>> {
         unimplemented!()
     }
+    fn add_project_version(
+        &self,
+        _key: &str,
+        _name: &str,
+        _description: Option<&str>,
+        _start_date: Option<&str>,
+        _release_due_date: Option<&str>,
+    ) -> Result<ProjectVersion> {
+        unimplemented!()
+    }
+    fn update_project_version(
+        &self,
+        _key: &str,
+        _version_id: u64,
+        _name: &str,
+        _description: Option<&str>,
+        _start_date: Option<&str>,
+        _release_due_date: Option<&str>,
+        _archived: Option<bool>,
+    ) -> Result<ProjectVersion> {
+        unimplemented!()
+    }
+    fn delete_project_version(&self, _key: &str, _version_id: u64) -> Result<ProjectVersion> {
+        unimplemented!()
+    }
     fn create_project(&self, _params: &[(String, String)]) -> Result<Project> {
         unimplemented!()
     }
@@ -546,6 +571,42 @@ impl BacklogApi for BacklogClient {
 
     fn get_project_versions(&self, key: &str) -> Result<Vec<ProjectVersion>> {
         self.get_project_versions(key)
+    }
+
+    fn add_project_version(
+        &self,
+        key: &str,
+        name: &str,
+        description: Option<&str>,
+        start_date: Option<&str>,
+        release_due_date: Option<&str>,
+    ) -> Result<ProjectVersion> {
+        self.add_project_version(key, name, description, start_date, release_due_date)
+    }
+
+    fn update_project_version(
+        &self,
+        key: &str,
+        version_id: u64,
+        name: &str,
+        description: Option<&str>,
+        start_date: Option<&str>,
+        release_due_date: Option<&str>,
+        archived: Option<bool>,
+    ) -> Result<ProjectVersion> {
+        self.update_project_version(
+            key,
+            version_id,
+            name,
+            description,
+            start_date,
+            release_due_date,
+            archived,
+        )
+    }
+
+    fn delete_project_version(&self, key: &str, version_id: u64) -> Result<ProjectVersion> {
+        self.delete_project_version(key, version_id)
     }
 
     fn create_project(&self, params: &[(String, String)]) -> Result<Project> {
