@@ -771,6 +771,68 @@ bl project team delete <id-or-key> --team-id 1 --json
 | --- | --- | --- |
 | `--team-id` | — | Numeric team ID to remove (required) |
 
+## `bl project webhook list`
+
+List webhooks defined for a project.
+
+```bash
+bl project webhook list <id-or-key>
+bl project webhook list <id-or-key> --json
+```
+
+## `bl project webhook show`
+
+Show details of a specific webhook.
+
+```bash
+bl project webhook show <id-or-key> <webhook-id>
+bl project webhook show <id-or-key> <webhook-id> --json
+```
+
+## `bl project webhook add`
+
+Add a webhook to a project.
+
+```bash
+bl project webhook add <id-or-key> --name "Deploy hook" --hook-url "https://example.com/hook"
+bl project webhook add <id-or-key> --name "All events" --hook-url "https://example.com/hook" --all-event true --json
+bl project webhook add <id-or-key> --name "Filtered" --hook-url "https://example.com/hook" --activity-type-id 1 --activity-type-id 2
+```
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--name` | — | Webhook name (required) |
+| `--hook-url` | — | Webhook URL (required) |
+| `--description` | — | Description |
+| `--all-event` | — | Trigger on all events (`true`/`false`) |
+| `--activity-type-id` | — | Activity type ID to trigger on (repeatable) |
+
+## `bl project webhook update`
+
+Update a webhook. At least one of `--name`, `--hook-url`, `--description`, `--all-event`, or `--activity-type-id` must be provided.
+
+```bash
+bl project webhook update <id-or-key> <webhook-id> --name "New Name"
+bl project webhook update <id-or-key> <webhook-id> --hook-url "https://new.example.com/hook" --json
+```
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--name` | — | New webhook name |
+| `--hook-url` | — | New webhook URL |
+| `--description` | — | New description |
+| `--all-event` | — | Trigger on all events (`true`/`false`) |
+| `--activity-type-id` | — | Activity type IDs (repeatable; replaces existing list) |
+
+## `bl project webhook delete`
+
+Delete a webhook from a project.
+
+```bash
+bl project webhook delete <id-or-key> <webhook-id>
+bl project webhook delete <id-or-key> <webhook-id> --json
+```
+
 ## `bl project create`
 
 Create a new project.
@@ -1682,11 +1744,11 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | `bl project custom-field item add <id-or-key> --custom-field-id <id>` | `POST /api/v2/projects/{projectIdOrKey}/customFields/{id}/items` | ✅ Implemented |
 | `bl project custom-field item update <id-or-key> --custom-field-id <id> --item-id <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/customFields/{id}/items/{itemId}` | ✅ Implemented |
 | `bl project custom-field item delete <id-or-key> --custom-field-id <id> --item-id <id>` | `DELETE /api/v2/projects/{projectIdOrKey}/customFields/{id}/items/{itemId}` | ✅ Implemented |
-| `bl project webhook list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/webhooks` | Planned |
-| `bl project webhook show <id-or-key> <webhook-id>` | `GET /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | Planned |
-| `bl project webhook add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/webhooks` | Planned |
-| `bl project webhook update <id-or-key> <webhook-id>` | `PATCH /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | Planned |
-| `bl project webhook delete <id-or-key> <webhook-id>` | `DELETE /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | Planned |
+| `bl project webhook list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/webhooks` | ✅ Implemented |
+| `bl project webhook show <id-or-key> <webhook-id>` | `GET /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | ✅ Implemented |
+| `bl project webhook add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/webhooks` | ✅ Implemented |
+| `bl project webhook update <id-or-key> <webhook-id>` | `PATCH /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | ✅ Implemented |
+| `bl project webhook delete <id-or-key> <webhook-id>` | `DELETE /api/v2/projects/{projectIdOrKey}/webhooks/{webhookId}` | ✅ Implemented |
 | `bl project team list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/teams` | ✅ Implemented |
 | `bl project team add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/teams` | ✅ Implemented |
 | `bl project team delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/teams/{teamId}` | ✅ Implemented |

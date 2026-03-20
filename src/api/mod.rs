@@ -33,7 +33,7 @@ use notification::{Notification, NotificationCount};
 use priority::Priority;
 use project::{
     Project, ProjectCategory, ProjectCustomField, ProjectDiskUsage, ProjectIssueType,
-    ProjectStatus, ProjectUser, ProjectVersion,
+    ProjectStatus, ProjectUser, ProjectVersion, ProjectWebhook,
 };
 use rate_limit::RateLimit;
 use resolution::Resolution;
@@ -281,6 +281,38 @@ pub trait BacklogApi {
         _custom_field_id: u64,
         _item_id: u64,
     ) -> Result<ProjectCustomField> {
+        unimplemented!()
+    }
+    fn get_project_webhooks(&self, _key: &str) -> Result<Vec<ProjectWebhook>> {
+        unimplemented!()
+    }
+    fn get_project_webhook(&self, _key: &str, _webhook_id: u64) -> Result<ProjectWebhook> {
+        unimplemented!()
+    }
+    fn add_project_webhook(
+        &self,
+        _key: &str,
+        _name: &str,
+        _hook_url: &str,
+        _description: Option<&str>,
+        _all_event: Option<bool>,
+        _activity_type_ids: &[u64],
+    ) -> Result<ProjectWebhook> {
+        unimplemented!()
+    }
+    fn update_project_webhook(
+        &self,
+        _key: &str,
+        _webhook_id: u64,
+        _name: Option<&str>,
+        _hook_url: Option<&str>,
+        _description: Option<&str>,
+        _all_event: Option<bool>,
+        _activity_type_ids: Option<&[u64]>,
+    ) -> Result<ProjectWebhook> {
+        unimplemented!()
+    }
+    fn delete_project_webhook(&self, _key: &str, _webhook_id: u64) -> Result<ProjectWebhook> {
         unimplemented!()
     }
     fn get_issues(&self, _params: &[(String, String)]) -> Result<Vec<Issue>> {
@@ -774,6 +806,58 @@ impl BacklogApi for BacklogClient {
         item_id: u64,
     ) -> Result<ProjectCustomField> {
         self.delete_project_custom_field_item(key, custom_field_id, item_id)
+    }
+
+    fn get_project_webhooks(&self, key: &str) -> Result<Vec<ProjectWebhook>> {
+        self.get_project_webhooks(key)
+    }
+
+    fn get_project_webhook(&self, key: &str, webhook_id: u64) -> Result<ProjectWebhook> {
+        self.get_project_webhook(key, webhook_id)
+    }
+
+    fn add_project_webhook(
+        &self,
+        key: &str,
+        name: &str,
+        hook_url: &str,
+        description: Option<&str>,
+        all_event: Option<bool>,
+        activity_type_ids: &[u64],
+    ) -> Result<ProjectWebhook> {
+        self.add_project_webhook(
+            key,
+            name,
+            hook_url,
+            description,
+            all_event,
+            activity_type_ids,
+        )
+    }
+
+    fn update_project_webhook(
+        &self,
+        key: &str,
+        webhook_id: u64,
+        name: Option<&str>,
+        hook_url: Option<&str>,
+        description: Option<&str>,
+        all_event: Option<bool>,
+        activity_type_ids: Option<&[u64]>,
+    ) -> Result<ProjectWebhook> {
+        self.update_project_webhook(
+            key,
+            webhook_id,
+            name,
+            hook_url,
+            description,
+            all_event,
+            activity_type_ids,
+        )
+    }
+
+    fn delete_project_webhook(&self, key: &str, webhook_id: u64) -> Result<ProjectWebhook> {
+        self.delete_project_webhook(key, webhook_id)
     }
 
     fn get_issues(&self, params: &[(String, String)]) -> Result<Vec<Issue>> {

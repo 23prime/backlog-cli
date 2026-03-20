@@ -13,6 +13,7 @@ pub mod team;
 mod update;
 pub mod user;
 pub mod version;
+pub mod webhook;
 
 pub use activities::{ProjectActivitiesArgs, activities};
 pub use create::{ProjectCreateArgs, create};

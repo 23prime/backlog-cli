@@ -93,6 +93,36 @@ pub struct ProjectCustomField {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct WebhookUser {
+    pub id: u64,
+    pub user_id: Option<String>,
+    pub name: String,
+    pub role_type: u8,
+    pub lang: Option<String>,
+    pub mail_address: Option<String>,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, serde_json::Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProjectWebhook {
+    pub id: u64,
+    pub name: String,
+    pub description: String,
+    pub hook_url: String,
+    pub all_event: bool,
+    pub activity_type_ids: Vec<u64>,
+    pub created_user: WebhookUser,
+    pub created: String,
+    pub updated_user: WebhookUser,
+    pub updated: String,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, serde_json::Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ProjectCategory {
     pub id: u64,
     pub project_id: u64,
@@ -711,6 +741,109 @@ impl BacklogClient {
         serde_json::from_value(value.clone()).map_err(|e| {
             anyhow::anyhow!(
                 "Failed to deserialize delete project custom field item response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn get_project_webhooks(&self, key: &str) -> Result<Vec<ProjectWebhook>> {
+        let value = self.get(&format!("/projects/{key}/webhooks"))?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize project webhooks response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn get_project_webhook(&self, key: &str, webhook_id: u64) -> Result<ProjectWebhook> {
+        let value = self.get(&format!("/projects/{key}/webhooks/{webhook_id}"))?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize project webhook response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn add_project_webhook(
+        &self,
+        key: &str,
+        name: &str,
+        hook_url: &str,
+        description: Option<&str>,
+        all_event: Option<bool>,
+        activity_type_ids: &[u64],
+    ) -> Result<ProjectWebhook> {
+        let mut params = vec![
+            ("name".to_string(), name.to_string()),
+            ("hookUrl".to_string(), hook_url.to_string()),
+        ];
+        if let Some(d) = description {
+            params.push(("description".to_string(), d.to_string()));
+        }
+        if let Some(a) = all_event {
+            params.push(("allEvent".to_string(), a.to_string()));
+        }
+        for id in activity_type_ids {
+            params.push(("activityTypeIds[]".to_string(), id.to_string()));
+        }
+        let value = self.post_form(&format!("/projects/{key}/webhooks"), &params)?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize add project webhook response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn update_project_webhook(
+        &self,
+        key: &str,
+        webhook_id: u64,
+        name: Option<&str>,
+        hook_url: Option<&str>,
+        description: Option<&str>,
+        all_event: Option<bool>,
+        activity_type_ids: Option<&[u64]>,
+    ) -> Result<ProjectWebhook> {
+        let mut params = vec![];
+        if let Some(n) = name {
+            params.push(("name".to_string(), n.to_string()));
+        }
+        if let Some(u) = hook_url {
+            params.push(("hookUrl".to_string(), u.to_string()));
+        }
+        if let Some(d) = description {
+            params.push(("description".to_string(), d.to_string()));
+        }
+        if let Some(a) = all_event {
+            params.push(("allEvent".to_string(), a.to_string()));
+        }
+        if let Some(ids) = activity_type_ids {
+            for id in ids {
+                params.push(("activityTypeIds[]".to_string(), id.to_string()));
+            }
+        }
+        let value = self.patch_form(&format!("/projects/{key}/webhooks/{webhook_id}"), &params)?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize update project webhook response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn delete_project_webhook(&self, key: &str, webhook_id: u64) -> Result<ProjectWebhook> {
+        let value = self.delete_req(&format!("/projects/{key}/webhooks/{webhook_id}"))?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize delete project webhook response: {}\nRaw JSON:\n{}",
                 e,
                 serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
             )
@@ -1403,5 +1536,119 @@ mod tests {
             .delete_project_custom_field_item("TEST", 1, 10)
             .unwrap();
         assert_eq!(field.id, 1);
+    }
+
+    fn webhook_user_json() -> serde_json::Value {
+        json!({"id": 1, "userId": "admin", "name": "Admin", "roleType": 1, "lang": null, "mailAddress": "admin@example.com"})
+    }
+
+    fn webhook_json() -> serde_json::Value {
+        json!({
+            "id": 1,
+            "name": "My Webhook",
+            "description": "webhook desc",
+            "hookUrl": "https://example.com/hook",
+            "allEvent": false,
+            "activityTypeIds": [1, 2],
+            "createdUser": webhook_user_json(),
+            "created": "2024-01-01T00:00:00Z",
+            "updatedUser": webhook_user_json(),
+            "updated": "2024-06-01T00:00:00Z"
+        })
+    }
+
+    #[test]
+    fn get_project_webhooks_returns_list() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/projects/TEST/webhooks");
+            then.status(200).json_body(json!([webhook_json()]));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let hooks = client.get_project_webhooks("TEST").unwrap();
+        assert_eq!(hooks.len(), 1);
+        assert_eq!(hooks[0].id, 1);
+        assert_eq!(hooks[0].name, "My Webhook");
+    }
+
+    #[test]
+    fn get_project_webhooks_returns_error_on_api_failure() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/projects/TEST/webhooks");
+            then.status(403)
+                .json_body(json!({"errors": [{"message": "Forbidden"}]}));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let err = client.get_project_webhooks("TEST").unwrap_err();
+        assert!(err.to_string().contains("Forbidden"));
+    }
+
+    #[test]
+    fn get_project_webhook_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/projects/TEST/webhooks/1");
+            then.status(200).json_body(webhook_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let hook = client.get_project_webhook("TEST", 1).unwrap();
+        assert_eq!(hook.id, 1);
+        assert_eq!(hook.hook_url, "https://example.com/hook");
+    }
+
+    #[test]
+    fn add_project_webhook_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST).path("/projects/TEST/webhooks");
+            then.status(200).json_body(webhook_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let hook = client
+            .add_project_webhook(
+                "TEST",
+                "My Webhook",
+                "https://example.com/hook",
+                None,
+                None,
+                &[],
+            )
+            .unwrap();
+        assert_eq!(hook.id, 1);
+        assert_eq!(hook.name, "My Webhook");
+    }
+
+    #[test]
+    fn update_project_webhook_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(httpmock::Method::PATCH)
+                .path("/projects/TEST/webhooks/1");
+            then.status(200).json_body(webhook_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let hook = client
+            .update_project_webhook("TEST", 1, Some("New Name"), None, None, None, None)
+            .unwrap();
+        assert_eq!(hook.id, 1);
+    }
+
+    #[test]
+    fn delete_project_webhook_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(DELETE).path("/projects/TEST/webhooks/1");
+            then.status(200).json_body(webhook_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let hook = client.delete_project_webhook("TEST", 1).unwrap();
+        assert_eq!(hook.id, 1);
     }
 }
