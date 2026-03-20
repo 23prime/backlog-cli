@@ -85,7 +85,7 @@ mod tests {
         let put_mock = server.mock(|when, then| {
             when.method(PUT)
                 .path("/space/notification")
-                .body_contains("content=New+notification+text.");
+                .body_includes("content=New+notification+text.");
             then.status(200).json_body(json!({
                 "content": "New notification text.",
                 "updated": "2024-07-01T00:00:00Z"
