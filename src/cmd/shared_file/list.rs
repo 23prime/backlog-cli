@@ -57,9 +57,12 @@ pub fn list_with(args: &SharedFileListArgs, api: &dyn BacklogApi) -> Result<()> 
         );
     } else {
         for f in &files {
+            let sep = if f.dir.ends_with('/') { "" } else { "/" };
             match f.size {
-                Some(size) => println!("[{}] {}{} ({} bytes)", f.id, f.dir, f.name, size),
-                None => println!("[{}] {}{}", f.id, f.dir, f.name),
+                Some(size) => {
+                    println!("[{}] {}{}{} ({} bytes)", f.id, f.dir, sep, f.name, size)
+                }
+                None => println!("[{}] {}{}{}", f.id, f.dir, sep, f.name),
             }
         }
     }

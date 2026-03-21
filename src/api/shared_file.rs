@@ -6,6 +6,28 @@ use serde::{Deserialize, Serialize};
 use super::BacklogClient;
 use crate::api::user::User;
 
+/// Percent-encode a path for use in a URL, preserving `/` separators.
+/// Each segment is encoded individually; unreserved characters are left as-is.
+fn encode_path(path: &str) -> String {
+    // Strip leading slash so callers can pass "/docs" or "docs" interchangeably.
+    let path = path.trim_start_matches('/');
+    path.split('/')
+        .map(|segment| {
+            segment
+                .bytes()
+                .flat_map(|b| {
+                    if b.is_ascii_alphanumeric() || matches!(b, b'-' | b'_' | b'.' | b'~') {
+                        vec![b as char]
+                    } else {
+                        format!("%{b:02X}").chars().collect()
+                    }
+                })
+                .collect::<String>()
+        })
+        .collect::<Vec<_>>()
+        .join("/")
+}
+
 fn deserialize<T: serde::de::DeserializeOwned>(value: serde_json::Value, ctx: &str) -> Result<T> {
     serde_json::from_value(value.clone()).map_err(|e| {
         anyhow::anyhow!(
@@ -41,8 +63,9 @@ impl BacklogClient {
         path: &str,
         params: &[(String, String)],
     ) -> Result<Vec<SharedFile>> {
+        let encoded = encode_path(path);
         let value = self.get_with_query(
-            &format!("/projects/{project_id_or_key}/files/metadata/{path}"),
+            &format!("/projects/{project_id_or_key}/files/metadata/{encoded}"),
             params,
         )?;
         deserialize(value, "shared files response")
@@ -137,5 +160,30 @@ mod tests {
         let client = BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
         let err = client.download_shared_file("TEST", 99).unwrap_err();
         assert!(err.to_string().contains("Not found"));
+    }
+
+    #[test]
+    fn encode_path_encodes_non_ascii() {
+        assert_eq!(encode_path("非機能"), "%E9%9D%9E%E6%A9%9F%E8%83%BD");
+    }
+
+    #[test]
+    fn encode_path_preserves_slash_separators() {
+        assert_eq!(encode_path("docs/api"), "docs/api");
+    }
+
+    #[test]
+    fn encode_path_strips_leading_slash() {
+        assert_eq!(encode_path("/docs"), "docs");
+    }
+
+    #[test]
+    fn encode_path_encodes_spaces() {
+        assert_eq!(encode_path("my docs"), "my%20docs");
+    }
+
+    #[test]
+    fn encode_path_empty_is_empty() {
+        assert_eq!(encode_path(""), "");
     }
 }
