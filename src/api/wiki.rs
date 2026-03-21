@@ -4,6 +4,24 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 use super::BacklogClient;
+use crate::api::shared_file::SharedFile;
+use crate::api::user::Star;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WikiCount {
+    pub count: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WikiSharedFile {
+    pub id: u64,
+    pub dir: String,
+    pub name: String,
+    pub size: u64,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, serde_json::Value>,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -114,6 +132,82 @@ impl BacklogClient {
 
     pub fn get_wiki_attachments(&self, wiki_id: u64) -> Result<Vec<WikiAttachment>> {
         let value = self.get(&format!("/wikis/{}/attachments", wiki_id))?;
+        deserialize(value)
+    }
+
+    pub fn get_wiki_count(&self, params: &[(String, String)]) -> Result<WikiCount> {
+        let value = self.get_with_query("/wikis/count", params)?;
+        deserialize(value)
+    }
+
+    pub fn get_wiki_tags(&self, params: &[(String, String)]) -> Result<Vec<WikiTag>> {
+        let value = self.get_with_query("/wikis/tags", params)?;
+        deserialize(value)
+    }
+
+    pub fn get_wiki_stars(&self, wiki_id: u64) -> Result<Vec<Star>> {
+        let value = self.get(&format!("/wikis/{}/stars", wiki_id))?;
+        deserialize(value)
+    }
+
+    pub fn add_wiki_attachments(
+        &self,
+        wiki_id: u64,
+        attachment_ids: &[u64],
+    ) -> Result<Vec<WikiAttachment>> {
+        let params: Vec<(String, String)> = attachment_ids
+            .iter()
+            .map(|id| ("attachmentId[]".to_string(), id.to_string()))
+            .collect();
+        let value = self.post_form(&format!("/wikis/{}/attachments", wiki_id), &params)?;
+        deserialize(value)
+    }
+
+    pub fn download_wiki_attachment(
+        &self,
+        wiki_id: u64,
+        attachment_id: u64,
+    ) -> Result<(Vec<u8>, String)> {
+        self.download(&format!("/wikis/{}/attachments/{}", wiki_id, attachment_id))
+    }
+
+    pub fn delete_wiki_attachment(
+        &self,
+        wiki_id: u64,
+        attachment_id: u64,
+    ) -> Result<WikiAttachment> {
+        let value =
+            self.delete_req(&format!("/wikis/{}/attachments/{}", wiki_id, attachment_id))?;
+        deserialize(value)
+    }
+
+    pub fn get_wiki_shared_files(&self, wiki_id: u64) -> Result<Vec<WikiSharedFile>> {
+        let value = self.get(&format!("/wikis/{}/sharedFiles", wiki_id))?;
+        deserialize(value)
+    }
+
+    pub fn link_wiki_shared_files(
+        &self,
+        wiki_id: u64,
+        shared_file_ids: &[u64],
+    ) -> Result<Vec<SharedFile>> {
+        let params: Vec<(String, String)> = shared_file_ids
+            .iter()
+            .map(|id| ("fileId[]".to_string(), id.to_string()))
+            .collect();
+        let value = self.post_form(&format!("/wikis/{}/sharedFiles", wiki_id), &params)?;
+        deserialize(value)
+    }
+
+    pub fn unlink_wiki_shared_file(
+        &self,
+        wiki_id: u64,
+        shared_file_id: u64,
+    ) -> Result<WikiSharedFile> {
+        let value = self.delete_req(&format!(
+            "/wikis/{}/sharedFiles/{}",
+            wiki_id, shared_file_id
+        ))?;
         deserialize(value)
     }
 }

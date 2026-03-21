@@ -1329,6 +1329,54 @@ v2 Home — 2024-03-15T00:00:00Z
 v1 Home — 2024-01-01T00:00:00Z
 ```
 
+## `bl wiki count`
+
+Count wiki pages in a project.
+
+```bash
+bl wiki count
+bl wiki count TEST
+bl wiki count TEST --json
+```
+
+Example output:
+
+```text
+42
+```
+
+## `bl wiki tag list`
+
+List tags used in wiki pages.
+
+```bash
+bl wiki tag list
+bl wiki tag list TEST
+bl wiki tag list TEST --json
+```
+
+Example output:
+
+```text
+[1] guide
+[2] api
+```
+
+## `bl wiki star list`
+
+List stars on a wiki page.
+
+```bash
+bl wiki star list 12345
+bl wiki star list 12345 --json
+```
+
+Example output:
+
+```text
+[1] Home (John Doe)
+```
+
 ## `bl wiki attachment list`
 
 List attachments of a wiki page.
@@ -1343,6 +1391,66 @@ Example output:
 ```text
 [1] diagram.png (204800 bytes)
 [2] notes.txt (1024 bytes)
+```
+
+## `bl wiki attachment add`
+
+Add attachments to a wiki page by pre-uploaded attachment ID.
+
+```bash
+bl wiki attachment add 12345 --attachment-id 1
+bl wiki attachment add 12345 --attachment-id 1 --attachment-id 2 --json
+```
+
+## `bl wiki attachment get`
+
+Download an attachment from a wiki page.
+
+```bash
+bl wiki attachment get 12345 1
+bl wiki attachment get 12345 1 --output ./downloads/diagram.png
+```
+
+## `bl wiki attachment delete`
+
+Delete an attachment from a wiki page.
+
+```bash
+bl wiki attachment delete 12345 1
+bl wiki attachment delete 12345 1 --json
+```
+
+## `bl wiki shared-file list`
+
+List shared files linked to a wiki page.
+
+```bash
+bl wiki shared-file list 12345
+bl wiki shared-file list 12345 --json
+```
+
+Example output:
+
+```text
+[1] /docs/spec.pdf (204800 bytes)
+```
+
+## `bl wiki shared-file link`
+
+Link shared files to a wiki page.
+
+```bash
+bl wiki shared-file link 12345 --shared-file-id 1
+bl wiki shared-file link 12345 --shared-file-id 1 --shared-file-id 2 --json
+```
+
+## `bl wiki shared-file unlink`
+
+Unlink a shared file from a wiki page.
+
+```bash
+bl wiki shared-file unlink 12345 1
+bl wiki shared-file unlink 12345 1 --json
 ```
 
 ## `bl team list`
@@ -1965,21 +2073,21 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | Command | API endpoint | Status |
 | --- | --- | --- |
 | `bl wiki list` | `GET /api/v2/wikis` | ✅ Implemented |
-| `bl wiki count` | `GET /api/v2/wikis/count` | Planned |
-| `bl wiki tag list` | `GET /api/v2/wikis/tags` | Planned |
+| `bl wiki count` | `GET /api/v2/wikis/count` | ✅ Implemented |
+| `bl wiki tag list` | `GET /api/v2/wikis/tags` | ✅ Implemented |
 | `bl wiki show <id>` | `GET /api/v2/wikis/{wikiId}` | ✅ Implemented |
 | `bl wiki create` | `POST /api/v2/wikis` | ✅ Implemented |
 | `bl wiki update <id>` | `PATCH /api/v2/wikis/{wikiId}` | ✅ Implemented |
 | `bl wiki delete <id>` | `DELETE /api/v2/wikis/{wikiId}` | ✅ Implemented |
 | `bl wiki history <id>` | `GET /api/v2/wikis/{wikiId}/history` | ✅ Implemented |
-| `bl wiki star list <id>` | `GET /api/v2/wikis/{wikiId}/stars` | Planned |
+| `bl wiki star list <id>` | `GET /api/v2/wikis/{wikiId}/stars` | ✅ Implemented |
 | `bl wiki attachment list <id>` | `GET /api/v2/wikis/{wikiId}/attachments` | ✅ Implemented |
-| `bl wiki attachment add <id>` | `POST /api/v2/wikis/{wikiId}/attachments` | Planned |
-| `bl wiki attachment get <id> <attachment-id>` | `GET /api/v2/wikis/{wikiId}/attachments/{attachmentId}` | Planned |
-| `bl wiki attachment delete <id> <attachment-id>` | `DELETE /api/v2/wikis/{wikiId}/attachments/{attachmentId}` | Planned |
-| `bl wiki shared-file list <id>` | `GET /api/v2/wikis/{wikiId}/sharedFiles` | Planned |
-| `bl wiki shared-file link <id>` | `POST /api/v2/wikis/{wikiId}/sharedFiles` | Planned |
-| `bl wiki shared-file unlink <id> <shared-file-id>` | `DELETE /api/v2/wikis/{wikiId}/sharedFiles/{id}` | Planned |
+| `bl wiki attachment add <id>` | `POST /api/v2/wikis/{wikiId}/attachments` | ✅ Implemented |
+| `bl wiki attachment get <id> <attachment-id>` | `GET /api/v2/wikis/{wikiId}/attachments/{attachmentId}` | ✅ Implemented |
+| `bl wiki attachment delete <id> <attachment-id>` | `DELETE /api/v2/wikis/{wikiId}/attachments/{attachmentId}` | ✅ Implemented |
+| `bl wiki shared-file list <id>` | `GET /api/v2/wikis/{wikiId}/sharedFiles` | ✅ Implemented |
+| `bl wiki shared-file link <id>` | `POST /api/v2/wikis/{wikiId}/sharedFiles` | ✅ Implemented |
+| `bl wiki shared-file unlink <id> <shared-file-id>` | `DELETE /api/v2/wikis/{wikiId}/sharedFiles/{id}` | ✅ Implemented |
 
 ### Shared Files
 

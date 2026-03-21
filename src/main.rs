@@ -83,9 +83,17 @@ use cmd::watch::{
     WatchAddArgs, WatchCountArgs, WatchDeleteArgs, WatchListArgs, WatchReadArgs, WatchShowArgs,
     WatchUpdateArgs,
 };
-use cmd::wiki::attachment::WikiAttachmentListArgs;
+use cmd::wiki::attachment::{
+    WikiAttachmentAddArgs, WikiAttachmentDeleteArgs, WikiAttachmentGetArgs, WikiAttachmentListArgs,
+};
+use cmd::wiki::shared_file::{
+    WikiSharedFileLinkArgs, WikiSharedFileListArgs, WikiSharedFileUnlinkArgs,
+};
+use cmd::wiki::star::WikiStarListArgs;
+use cmd::wiki::tag::WikiTagListArgs;
 use cmd::wiki::{
-    WikiCreateArgs, WikiDeleteArgs, WikiHistoryArgs, WikiListArgs, WikiShowArgs, WikiUpdateArgs,
+    WikiCountArgs, WikiCreateArgs, WikiDeleteArgs, WikiHistoryArgs, WikiListArgs, WikiShowArgs,
+    WikiUpdateArgs,
 };
 
 #[derive(Parser)]
@@ -1412,10 +1420,57 @@ enum WikiCommands {
         #[arg(long)]
         json: bool,
     },
+    /// Count wiki pages in a project
+    Count {
+        /// Project ID or key (optional filter)
+        project_id_or_key: Option<String>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Manage wiki tags
+    Tag {
+        #[command(subcommand)]
+        action: WikiTagCommands,
+    },
+    /// List stars on a wiki page
+    Star {
+        #[command(subcommand)]
+        action: WikiStarCommands,
+    },
     /// Manage wiki attachments
     Attachment {
         #[command(subcommand)]
         action: WikiAttachmentCommands,
+    },
+    /// Manage shared files linked to a wiki page
+    SharedFile {
+        #[command(subcommand)]
+        action: WikiSharedFileCommands,
+    },
+}
+
+#[derive(Subcommand)]
+enum WikiTagCommands {
+    /// List tags used in wiki pages
+    List {
+        /// Project ID or key (optional filter)
+        project_id_or_key: Option<String>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum WikiStarCommands {
+    /// List stars on a wiki page
+    List {
+        /// Wiki page ID
+        wiki_id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
     },
 }
 
@@ -1425,6 +1480,70 @@ enum WikiAttachmentCommands {
     List {
         /// Wiki page ID
         wiki_id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Add attachments to a wiki page (by pre-uploaded attachment ID)
+    Add {
+        /// Wiki page ID
+        wiki_id: u64,
+        /// Attachment ID (repeatable)
+        #[arg(long = "attachment-id", value_name = "ID")]
+        attachment_ids: Vec<u64>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Download a wiki attachment
+    Get {
+        /// Wiki page ID
+        wiki_id: u64,
+        /// Attachment ID
+        attachment_id: u64,
+        /// Output file path (defaults to original filename)
+        #[arg(long)]
+        output: Option<std::path::PathBuf>,
+    },
+    /// Delete an attachment from a wiki page
+    Delete {
+        /// Wiki page ID
+        wiki_id: u64,
+        /// Attachment ID
+        attachment_id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum WikiSharedFileCommands {
+    /// List shared files linked to a wiki page
+    List {
+        /// Wiki page ID
+        wiki_id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Link shared files to a wiki page
+    Link {
+        /// Wiki page ID
+        wiki_id: u64,
+        /// Shared file ID (repeatable)
+        #[arg(long = "shared-file-id", value_name = "ID")]
+        shared_file_ids: Vec<u64>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Unlink a shared file from a wiki page
+    Unlink {
+        /// Wiki page ID
+        wiki_id: u64,
+        /// Shared file ID
+        shared_file_id: u64,
         /// Output as JSON
         #[arg(long)]
         json: bool,
@@ -2740,10 +2859,75 @@ fn run() -> Result<()> {
             WikiCommands::History { wiki_id, json } => {
                 cmd::wiki::history(&WikiHistoryArgs::new(wiki_id, json))
             }
+            WikiCommands::Count {
+                project_id_or_key,
+                json,
+            } => cmd::wiki::count(&WikiCountArgs::new(project_id_or_key, json)),
+            WikiCommands::Tag { action } => match action {
+                WikiTagCommands::List {
+                    project_id_or_key,
+                    json,
+                } => cmd::wiki::tag::list(&WikiTagListArgs::new(project_id_or_key, json)),
+            },
+            WikiCommands::Star { action } => match action {
+                WikiStarCommands::List { wiki_id, json } => {
+                    cmd::wiki::star::list(&WikiStarListArgs::new(wiki_id, json))
+                }
+            },
             WikiCommands::Attachment { action } => match action {
                 WikiAttachmentCommands::List { wiki_id, json } => {
                     cmd::wiki::attachment::list(&WikiAttachmentListArgs::new(wiki_id, json))
                 }
+                WikiAttachmentCommands::Add {
+                    wiki_id,
+                    attachment_ids,
+                    json,
+                } => cmd::wiki::attachment::add(&WikiAttachmentAddArgs::try_new(
+                    wiki_id,
+                    attachment_ids,
+                    json,
+                )?),
+                WikiAttachmentCommands::Get {
+                    wiki_id,
+                    attachment_id,
+                    output,
+                } => cmd::wiki::attachment::get(&WikiAttachmentGetArgs::new(
+                    wiki_id,
+                    attachment_id,
+                    output,
+                )),
+                WikiAttachmentCommands::Delete {
+                    wiki_id,
+                    attachment_id,
+                    json,
+                } => cmd::wiki::attachment::delete(&WikiAttachmentDeleteArgs::new(
+                    wiki_id,
+                    attachment_id,
+                    json,
+                )),
+            },
+            WikiCommands::SharedFile { action } => match action {
+                WikiSharedFileCommands::List { wiki_id, json } => {
+                    cmd::wiki::shared_file::list(&WikiSharedFileListArgs::new(wiki_id, json))
+                }
+                WikiSharedFileCommands::Link {
+                    wiki_id,
+                    shared_file_ids,
+                    json,
+                } => cmd::wiki::shared_file::link(&WikiSharedFileLinkArgs::try_new(
+                    wiki_id,
+                    shared_file_ids,
+                    json,
+                )?),
+                WikiSharedFileCommands::Unlink {
+                    wiki_id,
+                    shared_file_id,
+                    json,
+                } => cmd::wiki::shared_file::unlink(&WikiSharedFileUnlinkArgs::new(
+                    wiki_id,
+                    shared_file_id,
+                    json,
+                )),
             },
         },
         Commands::User { action } => match action {

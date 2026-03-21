@@ -1329,6 +1329,54 @@ v2 Home — 2024-03-15T00:00:00Z
 v1 Home — 2024-01-01T00:00:00Z
 ```
 
+## `bl wiki count`
+
+プロジェクト内の Wiki ページ数を取得します。
+
+```bash
+bl wiki count
+bl wiki count TEST
+bl wiki count TEST --json
+```
+
+出力例:
+
+```text
+42
+```
+
+## `bl wiki tag list`
+
+Wiki ページで使われているタグを一覧表示します。
+
+```bash
+bl wiki tag list
+bl wiki tag list TEST
+bl wiki tag list TEST --json
+```
+
+出力例:
+
+```text
+[1] guide
+[2] api
+```
+
+## `bl wiki star list`
+
+Wiki ページのスターを一覧表示します。
+
+```bash
+bl wiki star list 12345
+bl wiki star list 12345 --json
+```
+
+出力例:
+
+```text
+[1] Home (John Doe)
+```
+
 ## `bl wiki attachment list`
 
 Wiki ページの添付ファイルを一覧表示します。
@@ -1343,6 +1391,66 @@ bl wiki attachment list 12345 --json
 ```text
 [1] diagram.png (204800 bytes)
 [2] notes.txt (1024 bytes)
+```
+
+## `bl wiki attachment add`
+
+事前アップロード済みの添付ファイル ID を指定して Wiki ページに添付ファイルを追加します。
+
+```bash
+bl wiki attachment add 12345 --attachment-id 1
+bl wiki attachment add 12345 --attachment-id 1 --attachment-id 2 --json
+```
+
+## `bl wiki attachment get`
+
+Wiki ページの添付ファイルをダウンロードします。
+
+```bash
+bl wiki attachment get 12345 1
+bl wiki attachment get 12345 1 --output ./downloads/diagram.png
+```
+
+## `bl wiki attachment delete`
+
+Wiki ページから添付ファイルを削除します。
+
+```bash
+bl wiki attachment delete 12345 1
+bl wiki attachment delete 12345 1 --json
+```
+
+## `bl wiki shared-file list`
+
+Wiki ページにリンクされている共有ファイルを一覧表示します。
+
+```bash
+bl wiki shared-file list 12345
+bl wiki shared-file list 12345 --json
+```
+
+出力例:
+
+```text
+[1] /docs/spec.pdf (204800 bytes)
+```
+
+## `bl wiki shared-file link`
+
+共有ファイルを Wiki ページにリンクします。
+
+```bash
+bl wiki shared-file link 12345 --shared-file-id 1
+bl wiki shared-file link 12345 --shared-file-id 1 --shared-file-id 2 --json
+```
+
+## `bl wiki shared-file unlink`
+
+Wiki ページから共有ファイルのリンクを解除します。
+
+```bash
+bl wiki shared-file unlink 12345 1
+bl wiki shared-file unlink 12345 1 --json
 ```
 
 ## `bl team list`
@@ -1969,21 +2077,21 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | コマンド | API エンドポイント | 状態 |
 | --- | --- | --- |
 | `bl wiki list` | `GET /api/v2/wikis` | ✅ 実装済み |
-| `bl wiki count` | `GET /api/v2/wikis/count` | 計画中 |
-| `bl wiki tag list` | `GET /api/v2/wikis/tags` | 計画中 |
+| `bl wiki count` | `GET /api/v2/wikis/count` | ✅ 実装済み |
+| `bl wiki tag list` | `GET /api/v2/wikis/tags` | ✅ 実装済み |
 | `bl wiki show <id>` | `GET /api/v2/wikis/{wikiId}` | ✅ 実装済み |
 | `bl wiki create` | `POST /api/v2/wikis` | ✅ 実装済み |
 | `bl wiki update <id>` | `PATCH /api/v2/wikis/{wikiId}` | ✅ 実装済み |
 | `bl wiki delete <id>` | `DELETE /api/v2/wikis/{wikiId}` | ✅ 実装済み |
 | `bl wiki history <id>` | `GET /api/v2/wikis/{wikiId}/history` | ✅ 実装済み |
-| `bl wiki star list <id>` | `GET /api/v2/wikis/{wikiId}/stars` | 計画中 |
+| `bl wiki star list <id>` | `GET /api/v2/wikis/{wikiId}/stars` | ✅ 実装済み |
 | `bl wiki attachment list <id>` | `GET /api/v2/wikis/{wikiId}/attachments` | ✅ 実装済み |
-| `bl wiki attachment add <id>` | `POST /api/v2/wikis/{wikiId}/attachments` | 計画中 |
-| `bl wiki attachment get <id> <attachment-id>` | `GET /api/v2/wikis/{wikiId}/attachments/{attachmentId}` | 計画中 |
-| `bl wiki attachment delete <id> <attachment-id>` | `DELETE /api/v2/wikis/{wikiId}/attachments/{attachmentId}` | 計画中 |
-| `bl wiki shared-file list <id>` | `GET /api/v2/wikis/{wikiId}/sharedFiles` | 計画中 |
-| `bl wiki shared-file link <id>` | `POST /api/v2/wikis/{wikiId}/sharedFiles` | 計画中 |
-| `bl wiki shared-file unlink <id> <shared-file-id>` | `DELETE /api/v2/wikis/{wikiId}/sharedFiles/{id}` | 計画中 |
+| `bl wiki attachment add <id>` | `POST /api/v2/wikis/{wikiId}/attachments` | ✅ 実装済み |
+| `bl wiki attachment get <id> <attachment-id>` | `GET /api/v2/wikis/{wikiId}/attachments/{attachmentId}` | ✅ 実装済み |
+| `bl wiki attachment delete <id> <attachment-id>` | `DELETE /api/v2/wikis/{wikiId}/attachments/{attachmentId}` | ✅ 実装済み |
+| `bl wiki shared-file list <id>` | `GET /api/v2/wikis/{wikiId}/sharedFiles` | ✅ 実装済み |
+| `bl wiki shared-file link <id>` | `POST /api/v2/wikis/{wikiId}/sharedFiles` | ✅ 実装済み |
+| `bl wiki shared-file unlink <id> <shared-file-id>` | `DELETE /api/v2/wikis/{wikiId}/sharedFiles/{id}` | ✅ 実装済み |
 
 ### Shared Files
 
