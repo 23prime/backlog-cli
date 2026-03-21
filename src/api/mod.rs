@@ -47,7 +47,7 @@ use space_notification::SpaceNotification;
 use team::Team;
 use user::{RecentlyViewedIssue, RecentlyViewedProject, RecentlyViewedWiki, Star, StarCount, User};
 use watch::{Watching, WatchingCount};
-use wiki::{Wiki, WikiAttachment, WikiHistory, WikiListItem};
+use wiki::{Wiki, WikiAttachment, WikiCount, WikiHistory, WikiListItem, WikiSharedFile, WikiTag};
 
 /// Abstraction over the Backlog HTTP API.
 ///
@@ -457,6 +457,49 @@ pub trait BacklogApi {
         unimplemented!()
     }
     fn get_wiki_attachments(&self, _wiki_id: u64) -> Result<Vec<WikiAttachment>> {
+        unimplemented!()
+    }
+    fn get_wiki_count(&self, _params: &[(String, String)]) -> Result<WikiCount> {
+        unimplemented!()
+    }
+    fn get_wiki_tags(&self, _params: &[(String, String)]) -> Result<Vec<WikiTag>> {
+        unimplemented!()
+    }
+    fn get_wiki_stars(&self, _wiki_id: u64) -> Result<Vec<Star>> {
+        unimplemented!()
+    }
+    fn add_wiki_attachments(
+        &self,
+        _wiki_id: u64,
+        _attachment_ids: &[u64],
+    ) -> Result<Vec<WikiAttachment>> {
+        unimplemented!()
+    }
+    fn download_wiki_attachment(
+        &self,
+        _wiki_id: u64,
+        _attachment_id: u64,
+    ) -> Result<(Vec<u8>, String)> {
+        unimplemented!()
+    }
+    fn delete_wiki_attachment(&self, _wiki_id: u64, _attachment_id: u64) -> Result<WikiAttachment> {
+        unimplemented!()
+    }
+    fn get_wiki_shared_files(&self, _wiki_id: u64) -> Result<Vec<WikiSharedFile>> {
+        unimplemented!()
+    }
+    fn link_wiki_shared_files(
+        &self,
+        _wiki_id: u64,
+        _shared_file_ids: &[u64],
+    ) -> Result<Vec<WikiSharedFile>> {
+        unimplemented!()
+    }
+    fn unlink_wiki_shared_file(
+        &self,
+        _wiki_id: u64,
+        _shared_file_id: u64,
+    ) -> Result<WikiSharedFile> {
         unimplemented!()
     }
     fn get_teams(&self, _params: &[(String, String)]) -> Result<Vec<Team>> {
@@ -1053,6 +1096,54 @@ impl BacklogApi for BacklogClient {
 
     fn get_wiki_attachments(&self, wiki_id: u64) -> Result<Vec<WikiAttachment>> {
         self.get_wiki_attachments(wiki_id)
+    }
+
+    fn get_wiki_count(&self, params: &[(String, String)]) -> Result<WikiCount> {
+        self.get_wiki_count(params)
+    }
+
+    fn get_wiki_tags(&self, params: &[(String, String)]) -> Result<Vec<WikiTag>> {
+        self.get_wiki_tags(params)
+    }
+
+    fn get_wiki_stars(&self, wiki_id: u64) -> Result<Vec<Star>> {
+        self.get_wiki_stars(wiki_id)
+    }
+
+    fn add_wiki_attachments(
+        &self,
+        wiki_id: u64,
+        attachment_ids: &[u64],
+    ) -> Result<Vec<WikiAttachment>> {
+        self.add_wiki_attachments(wiki_id, attachment_ids)
+    }
+
+    fn download_wiki_attachment(
+        &self,
+        wiki_id: u64,
+        attachment_id: u64,
+    ) -> Result<(Vec<u8>, String)> {
+        self.download_wiki_attachment(wiki_id, attachment_id)
+    }
+
+    fn delete_wiki_attachment(&self, wiki_id: u64, attachment_id: u64) -> Result<WikiAttachment> {
+        self.delete_wiki_attachment(wiki_id, attachment_id)
+    }
+
+    fn get_wiki_shared_files(&self, wiki_id: u64) -> Result<Vec<WikiSharedFile>> {
+        self.get_wiki_shared_files(wiki_id)
+    }
+
+    fn link_wiki_shared_files(
+        &self,
+        wiki_id: u64,
+        shared_file_ids: &[u64],
+    ) -> Result<Vec<WikiSharedFile>> {
+        self.link_wiki_shared_files(wiki_id, shared_file_ids)
+    }
+
+    fn unlink_wiki_shared_file(&self, wiki_id: u64, shared_file_id: u64) -> Result<WikiSharedFile> {
+        self.unlink_wiki_shared_file(wiki_id, shared_file_id)
     }
 
     fn get_teams(&self, params: &[(String, String)]) -> Result<Vec<Team>> {
