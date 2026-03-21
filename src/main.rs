@@ -67,6 +67,7 @@ use cmd::project::{
 };
 use cmd::rate_limit::RateLimitArgs;
 use cmd::resolution::ResolutionListArgs;
+use cmd::shared_file::{SharedFileGetArgs, SharedFileListArgs};
 use cmd::space::{
     SpaceActivitiesArgs, SpaceDiskUsageArgs, SpaceLicenceArgs, SpaceNotificationArgs,
     SpaceShowArgs, SpaceUpdateNotificationArgs,
@@ -176,6 +177,11 @@ enum Commands {
         /// Output as JSON
         #[arg(long)]
         json: bool,
+    },
+    /// Manage shared files in a project
+    SharedFile {
+        #[command(subcommand)]
+        action: SharedFileCommands,
     },
     /// Manage stars
     Star {
@@ -1875,6 +1881,40 @@ enum ResolutionCommands {
 }
 
 #[derive(Subcommand)]
+enum SharedFileCommands {
+    /// List shared files in a project directory
+    List {
+        /// Project ID or key
+        id_or_key: String,
+        /// Directory path (default: root)
+        #[arg(long)]
+        path: Option<String>,
+        /// Number of files to retrieve (1–100)
+        #[arg(long, default_value = "20")]
+        count: u32,
+        /// Sort order
+        #[arg(long)]
+        order: Option<Order>,
+        /// Offset for pagination
+        #[arg(long)]
+        offset: Option<u64>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Download a shared file
+    Get {
+        /// Project ID or key
+        id_or_key: String,
+        /// Shared file ID
+        id: u64,
+        /// Save path (default: original filename)
+        #[arg(long, short)]
+        output: Option<std::path::PathBuf>,
+    },
+}
+
+#[derive(Subcommand)]
 enum StarCommands {
     /// Add a star to an issue, comment, wiki page, pull request, or pull request comment
     Add {
@@ -2906,6 +2946,28 @@ fn run() -> Result<()> {
             }
         },
         Commands::RateLimit { json } => cmd::rate_limit::show(&RateLimitArgs::new(json)),
+        Commands::SharedFile { action } => match action {
+            SharedFileCommands::List {
+                id_or_key,
+                path,
+                count,
+                order,
+                offset,
+                json,
+            } => cmd::shared_file::list(&SharedFileListArgs::try_new(
+                id_or_key,
+                path,
+                count,
+                order.map(|o| o.as_str().to_string()),
+                offset,
+                json,
+            )?),
+            SharedFileCommands::Get {
+                id_or_key,
+                id,
+                output,
+            } => cmd::shared_file::get(&SharedFileGetArgs::new(id_or_key, id, output)),
+        },
         Commands::Star { action } => match action {
             StarCommands::Add {
                 issue_id,

@@ -16,6 +16,7 @@ pub mod priority;
 pub mod project;
 pub mod rate_limit;
 pub mod resolution;
+pub mod shared_file;
 pub mod space;
 pub mod space_notification;
 pub mod team;
@@ -40,6 +41,7 @@ use project::{
 };
 use rate_limit::RateLimit;
 use resolution::Resolution;
+use shared_file::SharedFile;
 use space::Space;
 use space_notification::SpaceNotification;
 use team::Team;
@@ -376,6 +378,21 @@ pub trait BacklogApi {
         _key: &str,
         _shared_file_id: u64,
     ) -> Result<IssueSharedFile> {
+        unimplemented!()
+    }
+    fn list_shared_files(
+        &self,
+        _project_id_or_key: &str,
+        _path: &str,
+        _params: &[(String, String)],
+    ) -> Result<Vec<SharedFile>> {
+        unimplemented!()
+    }
+    fn download_shared_file(
+        &self,
+        _project_id_or_key: &str,
+        _shared_file_id: u64,
+    ) -> Result<(Vec<u8>, String)> {
         unimplemented!()
     }
     fn count_issue_comments(&self, _key: &str) -> Result<IssueCommentCount> {
@@ -938,6 +955,23 @@ impl BacklogApi for BacklogClient {
 
     fn unlink_issue_shared_file(&self, key: &str, shared_file_id: u64) -> Result<IssueSharedFile> {
         self.unlink_issue_shared_file(key, shared_file_id)
+    }
+
+    fn list_shared_files(
+        &self,
+        project_id_or_key: &str,
+        path: &str,
+        params: &[(String, String)],
+    ) -> Result<Vec<SharedFile>> {
+        self.list_shared_files(project_id_or_key, path, params)
+    }
+
+    fn download_shared_file(
+        &self,
+        project_id_or_key: &str,
+        shared_file_id: u64,
+    ) -> Result<(Vec<u8>, String)> {
+        self.download_shared_file(project_id_or_key, shared_file_id)
     }
 
     fn count_issue_comments(&self, key: &str) -> Result<IssueCommentCount> {

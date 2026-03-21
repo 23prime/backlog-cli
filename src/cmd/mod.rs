@@ -7,6 +7,7 @@ pub mod priority;
 pub mod project;
 pub mod rate_limit;
 pub mod resolution;
+pub mod shared_file;
 pub mod space;
 pub mod star;
 pub mod team;

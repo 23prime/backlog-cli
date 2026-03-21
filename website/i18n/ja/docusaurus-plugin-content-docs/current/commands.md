@@ -1502,6 +1502,48 @@ bl user recently-viewed-wikis --json
 [2] API Reference (project: 2)
 ```
 
+## `bl shared-file list`
+
+プロジェクトのディレクトリ内の共有ファイル一覧を表示します。
+
+```bash
+bl shared-file list <id-or-key>
+bl shared-file list <id-or-key> --path docs --count 50 --order asc --json
+```
+
+| オプション | デフォルト | 説明 |
+| --- | --- | --- |
+| `--path` | ルート | ディレクトリパス |
+| `--count` | 20 | 取得件数（1–100） |
+| `--order` | — | 並び順（`asc` または `desc`） |
+| `--offset` | — | ページネーションのオフセット |
+
+出力例:
+
+```text
+[1] /test.txt (1024 bytes)
+[2] /docs/readme.txt (512 bytes)
+```
+
+## `bl shared-file get`
+
+共有ファイルをダウンロードします。
+
+```bash
+bl shared-file get <id-or-key> <id>
+bl shared-file get <id-or-key> <id> --output /tmp/file.txt
+```
+
+| オプション | デフォルト | 説明 |
+| --- | --- | --- |
+| `--output` / `-o` | 元のファイル名 | 保存先パス |
+
+出力例:
+
+```text
+Saved: file.txt (1024 bytes)
+```
+
 ## `bl star add`
 
 課題・コメント・Wiki・プルリクエスト・プルリクエストコメントにスターを追加します。
@@ -1947,8 +1989,8 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 
 | コマンド | API エンドポイント | 状態 |
 | --- | --- | --- |
-| `bl shared-file list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/files/metadata/{path}` | 計画中 |
-| `bl shared-file get <id-or-key> <id>` | `GET /api/v2/projects/{projectIdOrKey}/files/{sharedFileId}` | 計画中 |
+| `bl shared-file list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/files/metadata/{path}` | ✅ 実装済み |
+| `bl shared-file get <id-or-key> <id>` | `GET /api/v2/projects/{projectIdOrKey}/files/{sharedFileId}` | ✅ 実装済み |
 
 ### Stars
 

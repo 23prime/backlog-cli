@@ -1499,6 +1499,48 @@ Example output:
 [2] API Reference (project: 2)
 ```
 
+## `bl shared-file list`
+
+List shared files in a project directory.
+
+```bash
+bl shared-file list <id-or-key>
+bl shared-file list <id-or-key> --path docs --count 50 --order asc --json
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `--path` | root | Directory path |
+| `--count` | 20 | Number of files to retrieve (1–100) |
+| `--order` | — | Sort order (`asc` or `desc`) |
+| `--offset` | — | Offset for pagination |
+
+Example output:
+
+```text
+[1] /test.txt (1024 bytes)
+[2] /docs/readme.txt (512 bytes)
+```
+
+## `bl shared-file get`
+
+Download a shared file.
+
+```bash
+bl shared-file get <id-or-key> <id>
+bl shared-file get <id-or-key> <id> --output /tmp/file.txt
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `--output` / `-o` | original filename | Save path |
+
+Example output:
+
+```text
+Saved: file.txt (1024 bytes)
+```
+
 ## `bl star add`
 
 Add a star to an issue, comment, wiki page, pull request, or pull request comment.
@@ -1943,8 +1985,8 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 
 | Command | API endpoint | Status |
 | --- | --- | --- |
-| `bl shared-file list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/files/metadata/{path}` | Planned |
-| `bl shared-file get <id-or-key> <id>` | `GET /api/v2/projects/{projectIdOrKey}/files/{sharedFileId}` | Planned |
+| `bl shared-file list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/files/metadata/{path}` | ✅ Implemented |
+| `bl shared-file get <id-or-key> <id>` | `GET /api/v2/projects/{projectIdOrKey}/files/{sharedFileId}` | ✅ Implemented |
 
 ### Stars
 
