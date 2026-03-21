@@ -1499,6 +1499,39 @@ Example output:
 [2] API Reference (project: 2)
 ```
 
+## `bl star add`
+
+Add a star to an issue, comment, wiki page, pull request, or pull request comment.
+Exactly one target must be specified.
+
+```bash
+bl star add --issue-id <id>
+bl star add --comment-id <id>
+bl star add --wiki-id <id>
+bl star add --pull-request-id <id>
+bl star add --pull-request-comment-id <id>
+```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `--issue-id` | — | ID of the issue to star |
+| `--comment-id` | — | ID of the issue comment to star |
+| `--wiki-id` | — | ID of the wiki page to star |
+| `--pull-request-id` | — | ID of the pull request to star |
+| `--pull-request-comment-id` | — | ID of the pull request comment to star |
+
+On success, this command prints no output (HTTP 204 No Content).
+
+## `bl star delete`
+
+Remove a star.
+
+```bash
+bl star delete <id>
+```
+
+On success, this command prints no output (HTTP 204 No Content).
+
 ## `bl user star list`
 
 List stars given by a user.
@@ -1917,8 +1950,8 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 
 | Command | API endpoint | Status |
 | --- | --- | --- |
-| `bl star add` | `POST /api/v2/stars` | Planned |
-| `bl star delete <id>` | `DELETE /api/v2/stars/{starId}` | Planned |
+| `bl star add` | `POST /api/v2/stars` | ✅ Implemented |
+| `bl star delete <id>` | `DELETE /api/v2/stars/{starId}` | ✅ Implemented |
 | `bl user star list <id>` | `GET /api/v2/users/{userId}/stars` | ✅ Implemented |
 | `bl user star count <id>` | `GET /api/v2/users/{userId}/stars/count` | ✅ Implemented |
 

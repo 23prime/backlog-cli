@@ -153,6 +153,16 @@ impl BacklogClient {
         let value = self.get_with_query(&format!("/users/{user_id}/stars/count"), params)?;
         deserialize(value, "star count response")
     }
+
+    pub fn add_star(&self, params: &[(String, String)]) -> Result<()> {
+        self.post_form("/stars", params)?;
+        Ok(())
+    }
+
+    pub fn delete_star(&self, star_id: u64) -> Result<()> {
+        self.delete_req(&format!("/stars/{star_id}"))?;
+        Ok(())
+    }
 }
 
 #[cfg(test)]

@@ -497,6 +497,12 @@ pub trait BacklogApi {
     fn count_user_stars(&self, _user_id: u64, _params: &[(String, String)]) -> Result<StarCount> {
         unimplemented!()
     }
+    fn add_star(&self, _params: &[(String, String)]) -> Result<()> {
+        unimplemented!()
+    }
+    fn delete_star(&self, _star_id: u64) -> Result<()> {
+        unimplemented!()
+    }
     fn get_notifications(&self, _params: &[(String, String)]) -> Result<Vec<Notification>> {
         unimplemented!()
     }
@@ -1082,6 +1088,14 @@ impl BacklogApi for BacklogClient {
 
     fn count_user_stars(&self, user_id: u64, params: &[(String, String)]) -> Result<StarCount> {
         self.count_user_stars(user_id, params)
+    }
+
+    fn add_star(&self, params: &[(String, String)]) -> Result<()> {
+        self.add_star(params)
+    }
+
+    fn delete_star(&self, star_id: u64) -> Result<()> {
+        self.delete_star(star_id)
     }
 
     fn get_notifications(&self, params: &[(String, String)]) -> Result<Vec<Notification>> {
