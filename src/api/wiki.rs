@@ -4,7 +4,6 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 use super::BacklogClient;
-use crate::api::shared_file::SharedFile;
 use crate::api::user::Star;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -190,7 +189,7 @@ impl BacklogClient {
         &self,
         wiki_id: u64,
         shared_file_ids: &[u64],
-    ) -> Result<Vec<SharedFile>> {
+    ) -> Result<Vec<WikiSharedFile>> {
         let params: Vec<(String, String)> = shared_file_ids
             .iter()
             .map(|id| ("fileId[]".to_string(), id.to_string()))
@@ -379,5 +378,164 @@ mod tests {
         });
         let wiki: Wiki = serde_json::from_value(v).unwrap();
         assert!(wiki.created_user.user_id.is_none());
+    }
+
+    fn shared_file_json() -> serde_json::Value {
+        json!({
+            "id": 1,
+            "dir": "/docs",
+            "name": "spec.pdf",
+            "size": 2048_u64
+        })
+    }
+
+    fn star_json() -> serde_json::Value {
+        json!({
+            "id": 1,
+            "comment": null,
+            "url": "https://example.backlog.com/wiki/TEST/Home",
+            "title": "Home",
+            "presenter": {
+                "id": 1, "userId": "john", "name": "John Doe",
+                "roleType": 1, "mailAddress": "john@example.com"
+            },
+            "created": "2024-01-01T00:00:00Z"
+        })
+    }
+
+    #[test]
+    fn get_wiki_count_returns_count() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET)
+                .path("/wikis/count")
+                .query_param("apiKey", TEST_KEY)
+                .query_param("projectIdOrKey", "TEST");
+            then.status(200).json_body(json!({"count": 42}));
+        });
+        let client = super::super::BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let result = client
+            .get_wiki_count(&[("projectIdOrKey".to_string(), "TEST".to_string())])
+            .unwrap();
+        assert_eq!(result.count, 42);
+    }
+
+    #[test]
+    fn get_wiki_tags_returns_list() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET)
+                .path("/wikis/tags")
+                .query_param("apiKey", TEST_KEY);
+            then.status(200)
+                .json_body(json!([{"id": 1, "name": "guide"}]));
+        });
+        let client = super::super::BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let tags = client.get_wiki_tags(&[]).unwrap();
+        assert_eq!(tags.len(), 1);
+        assert_eq!(tags[0].name, "guide");
+    }
+
+    #[test]
+    fn get_wiki_stars_returns_list() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET)
+                .path("/wikis/1/stars")
+                .query_param("apiKey", TEST_KEY);
+            then.status(200).json_body(json!([star_json()]));
+        });
+        let client = super::super::BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let stars = client.get_wiki_stars(1).unwrap();
+        assert_eq!(stars.len(), 1);
+        assert_eq!(stars[0].title, "Home");
+    }
+
+    #[test]
+    fn add_wiki_attachments_returns_list() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST)
+                .path("/wikis/1/attachments")
+                .query_param("apiKey", TEST_KEY);
+            then.status(200).json_body(json!([attachment_json()]));
+        });
+        let client = super::super::BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let attachments = client.add_wiki_attachments(1, &[1]).unwrap();
+        assert_eq!(attachments.len(), 1);
+        assert_eq!(attachments[0].name, "image.png");
+    }
+
+    #[test]
+    fn download_wiki_attachment_returns_bytes() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/wikis/1/attachments/1");
+            then.status(200)
+                .header("Content-Disposition", "attachment; filename=\"image.png\"")
+                .body(b"binarydata");
+        });
+        let client = super::super::BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let (bytes, filename) = client.download_wiki_attachment(1, 1).unwrap();
+        assert_eq!(bytes, b"binarydata");
+        assert_eq!(filename, "image.png");
+    }
+
+    #[test]
+    fn delete_wiki_attachment_returns_attachment() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(DELETE)
+                .path("/wikis/1/attachments/1")
+                .query_param("apiKey", TEST_KEY);
+            then.status(200).json_body(attachment_json());
+        });
+        let client = super::super::BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let attachment = client.delete_wiki_attachment(1, 1).unwrap();
+        assert_eq!(attachment.name, "image.png");
+    }
+
+    #[test]
+    fn get_wiki_shared_files_returns_list() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET)
+                .path("/wikis/1/sharedFiles")
+                .query_param("apiKey", TEST_KEY);
+            then.status(200).json_body(json!([shared_file_json()]));
+        });
+        let client = super::super::BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let files = client.get_wiki_shared_files(1).unwrap();
+        assert_eq!(files.len(), 1);
+        assert_eq!(files[0].name, "spec.pdf");
+    }
+
+    #[test]
+    fn link_wiki_shared_files_returns_list() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST)
+                .path("/wikis/1/sharedFiles")
+                .query_param("apiKey", TEST_KEY);
+            then.status(200).json_body(json!([shared_file_json()]));
+        });
+        let client = super::super::BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let files = client.link_wiki_shared_files(1, &[1]).unwrap();
+        assert_eq!(files.len(), 1);
+        assert_eq!(files[0].name, "spec.pdf");
+    }
+
+    #[test]
+    fn unlink_wiki_shared_file_returns_file() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(DELETE)
+                .path("/wikis/1/sharedFiles/1")
+                .query_param("apiKey", TEST_KEY);
+            then.status(200).json_body(shared_file_json());
+        });
+        let client = super::super::BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
+        let file = client.unlink_wiki_shared_file(1, 1).unwrap();
+        assert_eq!(file.name, "spec.pdf");
     }
 }

@@ -492,7 +492,7 @@ pub trait BacklogApi {
         &self,
         _wiki_id: u64,
         _shared_file_ids: &[u64],
-    ) -> Result<Vec<SharedFile>> {
+    ) -> Result<Vec<WikiSharedFile>> {
         unimplemented!()
     }
     fn unlink_wiki_shared_file(
@@ -1138,7 +1138,7 @@ impl BacklogApi for BacklogClient {
         &self,
         wiki_id: u64,
         shared_file_ids: &[u64],
-    ) -> Result<Vec<SharedFile>> {
+    ) -> Result<Vec<WikiSharedFile>> {
         self.link_wiki_shared_files(wiki_id, shared_file_ids)
     }
 

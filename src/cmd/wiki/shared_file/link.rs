@@ -44,12 +44,12 @@ pub fn link_with(args: &WikiSharedFileLinkArgs, api: &dyn BacklogApi) -> Result<
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::shared_file::SharedFile;
+    use crate::api::wiki::WikiSharedFile;
+    use crate::cmd::wiki::shared_file::list::sample_wiki_shared_file;
     use anyhow::anyhow;
-    use std::collections::BTreeMap;
 
     struct MockApi {
-        files: Option<Vec<SharedFile>>,
+        files: Option<Vec<WikiSharedFile>>,
     }
 
     impl crate::api::BacklogApi for MockApi {
@@ -57,34 +57,8 @@ mod tests {
             &self,
             _wiki_id: u64,
             _shared_file_ids: &[u64],
-        ) -> anyhow::Result<Vec<SharedFile>> {
+        ) -> anyhow::Result<Vec<WikiSharedFile>> {
             self.files.clone().ok_or_else(|| anyhow!("no files"))
-        }
-    }
-
-    fn sample_shared_file() -> SharedFile {
-        use crate::api::user::User;
-        SharedFile {
-            id: 1,
-            project_id: 10,
-            file_type: "file".to_string(),
-            dir: "/docs".to_string(),
-            name: "spec.pdf".to_string(),
-            size: Some(2048),
-            created_user: User {
-                id: 1,
-                user_id: Some("john".to_string()),
-                name: "John Doe".to_string(),
-                mail_address: None,
-                role_type: 1,
-                lang: None,
-                last_login_time: None,
-                extra: BTreeMap::new(),
-            },
-            created: "2024-01-01T00:00:00Z".to_string(),
-            updated_user: None,
-            updated: "2024-01-01T00:00:00Z".to_string(),
-            extra: BTreeMap::new(),
         }
     }
 
@@ -95,7 +69,7 @@ mod tests {
     #[test]
     fn link_with_text_output_succeeds() {
         let api = MockApi {
-            files: Some(vec![sample_shared_file()]),
+            files: Some(vec![sample_wiki_shared_file()]),
         };
         assert!(link_with(&args(false), &api).is_ok());
     }
@@ -103,7 +77,7 @@ mod tests {
     #[test]
     fn link_with_json_output_succeeds() {
         let api = MockApi {
-            files: Some(vec![sample_shared_file()]),
+            files: Some(vec![sample_wiki_shared_file()]),
         };
         assert!(link_with(&args(true), &api).is_ok());
     }
