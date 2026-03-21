@@ -473,11 +473,11 @@ mod tests {
             when.method(GET).path("/wikis/1/attachments/1");
             then.status(200)
                 .header("Content-Disposition", "attachment; filename=\"image.png\"")
-                .body(b"binarydata");
+                .body(b"hello");
         });
         let client = super::super::BacklogClient::new_with(&server.base_url(), TEST_KEY).unwrap();
         let (bytes, filename) = client.download_wiki_attachment(1, 1).unwrap();
-        assert_eq!(bytes, b"binarydata");
+        assert_eq!(bytes, b"hello");
         assert_eq!(filename, "image.png");
     }
 
