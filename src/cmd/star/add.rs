@@ -73,13 +73,25 @@ pub fn add_with(args: &StarAddArgs, api: &dyn BacklogApi) -> Result<()> {
 mod tests {
     use super::*;
     use anyhow::anyhow;
+    use std::cell::RefCell;
 
     struct MockApi {
         ok: bool,
+        captured_params: RefCell<Vec<(String, String)>>,
+    }
+
+    impl MockApi {
+        fn new(ok: bool) -> Self {
+            Self {
+                ok,
+                captured_params: RefCell::new(Vec::new()),
+            }
+        }
     }
 
     impl crate::api::BacklogApi for MockApi {
-        fn add_star(&self, _params: &[(String, String)]) -> anyhow::Result<()> {
+        fn add_star(&self, params: &[(String, String)]) -> anyhow::Result<()> {
+            *self.captured_params.borrow_mut() = params.to_vec();
             if self.ok {
                 Ok(())
             } else {
@@ -94,13 +106,13 @@ mod tests {
 
     #[test]
     fn add_with_succeeds() {
-        let api = MockApi { ok: true };
+        let api = MockApi::new(true);
         assert!(add_with(&args_with_issue(), &api).is_ok());
     }
 
     #[test]
     fn add_with_propagates_api_error() {
-        let api = MockApi { ok: false };
+        let api = MockApi::new(false);
         let err = add_with(&args_with_issue(), &api).unwrap_err();
         assert!(err.to_string().contains("api error"));
     }
@@ -122,5 +134,62 @@ mod tests {
         assert!(StarAddArgs::try_new(None, None, Some(1), None, None).is_ok());
         assert!(StarAddArgs::try_new(None, None, None, Some(1), None).is_ok());
         assert!(StarAddArgs::try_new(None, None, None, None, Some(1)).is_ok());
+    }
+
+    #[test]
+    fn add_with_sends_issue_id_param() {
+        let api = MockApi::new(true);
+        let args = StarAddArgs::try_new(Some(42), None, None, None, None).unwrap();
+        add_with(&args, &api).unwrap();
+        let params = api.captured_params.borrow();
+        assert_eq!(
+            params.as_slice(),
+            [("issueId".to_string(), "42".to_string())]
+        );
+    }
+
+    #[test]
+    fn add_with_sends_comment_id_param() {
+        let api = MockApi::new(true);
+        let args = StarAddArgs::try_new(None, Some(10), None, None, None).unwrap();
+        add_with(&args, &api).unwrap();
+        let params = api.captured_params.borrow();
+        assert_eq!(
+            params.as_slice(),
+            [("commentId".to_string(), "10".to_string())]
+        );
+    }
+
+    #[test]
+    fn add_with_sends_wiki_id_param() {
+        let api = MockApi::new(true);
+        let args = StarAddArgs::try_new(None, None, Some(5), None, None).unwrap();
+        add_with(&args, &api).unwrap();
+        let params = api.captured_params.borrow();
+        assert_eq!(params.as_slice(), [("wikiId".to_string(), "5".to_string())]);
+    }
+
+    #[test]
+    fn add_with_sends_pull_request_id_param() {
+        let api = MockApi::new(true);
+        let args = StarAddArgs::try_new(None, None, None, Some(7), None).unwrap();
+        add_with(&args, &api).unwrap();
+        let params = api.captured_params.borrow();
+        assert_eq!(
+            params.as_slice(),
+            [("pullRequestId".to_string(), "7".to_string())]
+        );
+    }
+
+    #[test]
+    fn add_with_sends_pull_request_comment_id_param() {
+        let api = MockApi::new(true);
+        let args = StarAddArgs::try_new(None, None, None, None, Some(3)).unwrap();
+        add_with(&args, &api).unwrap();
+        let params = api.captured_params.borrow();
+        assert_eq!(
+            params.as_slice(),
+            [("pullRequestCommentId".to_string(), "3".to_string())]
+        );
     }
 }
