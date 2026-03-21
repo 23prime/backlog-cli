@@ -265,6 +265,44 @@ and positional arguments:
 - **POST / PATCH / DELETE commands**: always confirm with the user before executing — these create,
   modify, or delete real data
 
+## Shared file / directory entries
+
+The `/api/v2/projects/{key}/files/metadata/{path}` endpoint returns both files and
+directories in the same array. Directory entries have `"size": null`, so model
+`size` as `Option<u64>` — not `u64`. Rendering: omit the byte count for `None`.
+
+When embedding a user-supplied path in a URL, percent-encode each segment while
+preserving `/` separators, and strip any leading `/` so that `--path /docs` and
+`--path docs` behave identically. Implement inline without an external crate:
+
+```rust
+fn encode_path(path: &str) -> String {
+    let path = path.trim_start_matches('/');
+    path.split('/')
+        .map(|seg| {
+            seg.bytes()
+                .flat_map(|b| {
+                    if b.is_ascii_alphanumeric() || matches!(b, b'-' | b'_' | b'.' | b'~') {
+                        vec![b as char]
+                    } else {
+                        format!("%{b:02X}").chars().collect()
+                    }
+                })
+                .collect::<String>()
+        })
+        .collect::<Vec<_>>()
+        .join("/")
+}
+```
+
+When printing `dir + name`, always normalize the separator — `dir` may or may not
+end with `/`:
+
+```rust
+let sep = if f.dir.ends_with('/') { "" } else { "/" };
+println!("[{}] {}{}{}", f.id, f.dir, sep, f.name);
+```
+
 ## Document API specifics
 
 - Document IDs are `String` (UUID-like), not `u64` like most other resources.
