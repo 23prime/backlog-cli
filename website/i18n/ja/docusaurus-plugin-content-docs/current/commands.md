@@ -1502,6 +1502,39 @@ bl user recently-viewed-wikis --json
 [2] API Reference (project: 2)
 ```
 
+## `bl star add`
+
+課題・コメント・Wiki・プルリクエスト・プルリクエストコメントにスターを追加します。
+対象は1つだけ指定してください。
+
+```bash
+bl star add --issue-id <id>
+bl star add --comment-id <id>
+bl star add --wiki-id <id>
+bl star add --pull-request-id <id>
+bl star add --pull-request-comment-id <id>
+```
+
+| オプション | デフォルト | 説明 |
+| --- | --- | --- |
+| `--issue-id` | — | スターをつける課題の ID |
+| `--comment-id` | — | スターをつける課題コメントの ID |
+| `--wiki-id` | — | スターをつける Wiki ページの ID |
+| `--pull-request-id` | — | スターをつけるプルリクエストの ID |
+| `--pull-request-comment-id` | — | スターをつけるプルリクエストコメントの ID |
+
+成功時は出力なし（HTTP 204 No Content）。
+
+## `bl star delete`
+
+スターを削除します。
+
+```bash
+bl star delete <id>
+```
+
+成功時は出力なし（HTTP 204 No Content）。
+
 ## `bl user star list`
 
 ユーザーがスターをつけた一覧を表示します。
@@ -1921,8 +1954,8 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 
 | コマンド | API エンドポイント | 状態 |
 | --- | --- | --- |
-| `bl star add` | `POST /api/v2/stars` | 計画中 |
-| `bl star delete <id>` | `DELETE /api/v2/stars/{starId}` | 計画中 |
+| `bl star add` | `POST /api/v2/stars` | ✅ 実装済み |
+| `bl star delete <id>` | `DELETE /api/v2/stars/{starId}` | ✅ 実装済み |
 | `bl user star list <id>` | `GET /api/v2/users/{userId}/stars` | ✅ 実装済み |
 | `bl user star count <id>` | `GET /api/v2/users/{userId}/stars/count` | ✅ 実装済み |
 

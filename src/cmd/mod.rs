@@ -8,6 +8,7 @@ pub mod project;
 pub mod rate_limit;
 pub mod resolution;
 pub mod space;
+pub mod star;
 pub mod team;
 pub mod user;
 pub mod watch;

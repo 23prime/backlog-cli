@@ -71,6 +71,7 @@ use cmd::space::{
     SpaceActivitiesArgs, SpaceDiskUsageArgs, SpaceLicenceArgs, SpaceNotificationArgs,
     SpaceShowArgs, SpaceUpdateNotificationArgs,
 };
+use cmd::star::{StarAddArgs, StarDeleteArgs};
 use cmd::team::{TeamListArgs, TeamShowArgs};
 use cmd::user::star::{UserStarCountArgs, UserStarListArgs};
 use cmd::user::{
@@ -175,6 +176,11 @@ enum Commands {
         /// Output as JSON
         #[arg(long)]
         json: bool,
+    },
+    /// Manage stars
+    Star {
+        #[command(subcommand)]
+        action: StarCommands,
     },
 }
 
@@ -1869,6 +1875,33 @@ enum ResolutionCommands {
 }
 
 #[derive(Subcommand)]
+enum StarCommands {
+    /// Add a star to an issue, comment, wiki page, pull request, or pull request comment
+    Add {
+        /// ID of the issue to star
+        #[arg(long)]
+        issue_id: Option<u64>,
+        /// ID of the issue comment to star
+        #[arg(long)]
+        comment_id: Option<u64>,
+        /// ID of the wiki page to star
+        #[arg(long)]
+        wiki_id: Option<u64>,
+        /// ID of the pull request to star
+        #[arg(long)]
+        pull_request_id: Option<u64>,
+        /// ID of the pull request comment to star
+        #[arg(long)]
+        pull_request_comment_id: Option<u64>,
+    },
+    /// Remove a star
+    Delete {
+        /// Star ID
+        id: u64,
+    },
+}
+
+#[derive(Subcommand)]
 enum AuthCommands {
     /// Login with your API key
     Login {
@@ -2873,6 +2906,22 @@ fn run() -> Result<()> {
             }
         },
         Commands::RateLimit { json } => cmd::rate_limit::show(&RateLimitArgs::new(json)),
+        Commands::Star { action } => match action {
+            StarCommands::Add {
+                issue_id,
+                comment_id,
+                wiki_id,
+                pull_request_id,
+                pull_request_comment_id,
+            } => cmd::star::add(&StarAddArgs::try_new(
+                issue_id,
+                comment_id,
+                wiki_id,
+                pull_request_id,
+                pull_request_comment_id,
+            )?),
+            StarCommands::Delete { id } => cmd::star::delete(&StarDeleteArgs::new(id)),
+        },
         Commands::Space { action, json } => match action {
             None => cmd::space::show(&SpaceShowArgs::new(json)),
             Some(SpaceCommands::Activities {
