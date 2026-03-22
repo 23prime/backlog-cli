@@ -149,6 +149,38 @@ fn add_with_text_output_succeeds() { /* json: false */ }
 fn add_with_json_output_succeeds() { /* json: true */ }
 ```
 
+## ANSI color codes in format row tests
+
+`owo_colors` wraps values in ANSI escape sequences. Asserting on bracket-wrapped strings like
+`"[1]"` fails because the brackets are not adjacent to the digits in the raw string:
+
+```rust
+// ❌ fails — ANSI codes are inserted between "[" and "1" and "]"
+assert!(row.contains("[1]"));
+
+// ✅ check the text content only
+assert!(row.contains("1"));
+assert!(row.contains("Fix bug"));
+```
+
+This applies to any `format_*_row` function that uses `.cyan()`, `.bold()`, or similar.
+
+## `#[cfg_attr(test, derive(Debug))]` for `try_new` Args structs
+
+When an Args struct uses `try_new` and tests call `.unwrap_err()`, Rust requires `Debug` to format
+the error. Add the conditional derive to avoid a compile error without bloating release builds:
+
+```rust
+#[cfg_attr(test, derive(Debug))]
+pub struct MyUpdateArgs { ... }
+
+#[test]
+fn try_new_fails_when_no_fields_provided() {
+    let err = MyUpdateArgs::try_new(...).unwrap_err();  // needs Debug
+    assert!(err.to_string().contains("at least one"));
+}
+```
+
 ## Rules
 
 - **Never** call `BacklogClient::from_config()` in tests — it requires real credentials on disk.
