@@ -1,7 +1,8 @@
 use anstream::println;
 use anyhow::{Context, Result};
 
-use crate::api::{BacklogApi, BacklogClient, team::Team};
+use super::format_team_row;
+use crate::api::{BacklogApi, BacklogClient};
 
 pub struct TeamListArgs {
     json: bool,
@@ -54,10 +55,6 @@ pub fn list_with(args: &TeamListArgs, api: &dyn BacklogApi) -> Result<()> {
         }
     }
     Ok(())
-}
-
-fn format_team_row(t: &Team) -> String {
-    format!("[{}] {} ({} members)", t.id, t.name, t.members.len())
 }
 
 #[cfg(test)]

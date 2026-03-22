@@ -167,8 +167,10 @@ This applies to any `format_*_row` function that uses `.cyan()`, `.bold()`, or s
 
 ## `#[cfg_attr(test, derive(Debug))]` for `try_new` Args structs
 
-When an Args struct uses `try_new` and tests call `.unwrap_err()`, Rust requires `Debug` to format
-the error. Add the conditional derive to avoid a compile error without bloating release builds:
+`Result::unwrap_err()` requires `T: Debug` so it can format the *Ok value* when the result is
+unexpectedly `Ok`. When an Args struct using `try_new` is the `T` in `Result<T, _>`, tests that
+call `.unwrap_err()` will fail to compile without `Debug`. Add the conditional derive to avoid
+a compile error without bloating release builds:
 
 ```rust
 #[cfg_attr(test, derive(Debug))]
@@ -176,7 +178,7 @@ pub struct MyUpdateArgs { ... }
 
 #[test]
 fn try_new_fails_when_no_fields_provided() {
-    let err = MyUpdateArgs::try_new(...).unwrap_err();  // needs Debug
+    let err = MyUpdateArgs::try_new(...).unwrap_err();  // T=MyUpdateArgs needs Debug
     assert!(err.to_string().contains("at least one"));
 }
 ```

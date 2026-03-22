@@ -1,6 +1,7 @@
 use anstream::println;
 use anyhow::{Context, Result};
 
+use super::format_team_row;
 use crate::api::{BacklogApi, BacklogClient};
 
 #[cfg_attr(test, derive(Debug))]
@@ -52,7 +53,7 @@ pub fn update_with(args: &TeamUpdateArgs, api: &dyn BacklogApi) -> Result<()> {
             serde_json::to_string_pretty(&team).context("Failed to serialize JSON")?
         );
     } else {
-        println!("Updated: [{}] {}", team.id, team.name);
+        println!("Updated: {}", format_team_row(&team));
     }
     Ok(())
 }
