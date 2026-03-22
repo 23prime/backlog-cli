@@ -135,14 +135,14 @@ mod tests {
     }
 
     #[test]
-    fn format_user_row_with_user_id() {
+    fn format_project_user_row_with_user_id() {
         let text = format_project_user_row(&sample_user());
         assert!(text.contains("[john]"));
         assert!(text.contains("John Doe"));
     }
 
     #[test]
-    fn format_user_row_without_user_id() {
+    fn format_project_user_row_without_user_id() {
         let mut u = sample_user();
         u.user_id = None;
         let text = format_project_user_row(&u);
