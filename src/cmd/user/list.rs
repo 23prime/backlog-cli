@@ -44,7 +44,8 @@ fn format_user_row(u: &User) -> String {
 mod tests {
     use super::*;
     use anyhow::anyhow;
-    use std::collections::BTreeMap;
+
+    use crate::cmd::user::sample_user;
 
     struct MockApi {
         users: Option<Vec<User>>,
@@ -53,19 +54,6 @@ mod tests {
     impl crate::api::BacklogApi for MockApi {
         fn get_users(&self) -> anyhow::Result<Vec<User>> {
             self.users.clone().ok_or_else(|| anyhow!("no users"))
-        }
-    }
-
-    fn sample_user() -> User {
-        User {
-            id: 1,
-            user_id: Some("john".to_string()),
-            name: "John Doe".to_string(),
-            mail_address: Some("john@example.com".to_string()),
-            role_type: 1,
-            lang: None,
-            last_login_time: None,
-            extra: BTreeMap::new(),
         }
     }
 

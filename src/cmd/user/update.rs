@@ -77,8 +77,8 @@ pub fn update_with(args: &UserUpdateArgs, api: &dyn BacklogApi) -> Result<()> {
 mod tests {
     use super::*;
     use crate::api::user::User;
+    use crate::cmd::user::sample_user;
     use anyhow::anyhow;
-    use std::collections::BTreeMap;
 
     struct MockApi {
         user: Option<User>,
@@ -87,19 +87,6 @@ mod tests {
     impl crate::api::BacklogApi for MockApi {
         fn update_user(&self, _user_id: u64, _params: &[(String, String)]) -> anyhow::Result<User> {
             self.user.clone().ok_or_else(|| anyhow!("update failed"))
-        }
-    }
-
-    fn sample_user() -> User {
-        User {
-            id: 1,
-            user_id: Some("john".to_string()),
-            name: "John Doe".to_string(),
-            mail_address: Some("john@example.com".to_string()),
-            role_type: 2,
-            lang: None,
-            last_login_time: None,
-            extra: BTreeMap::new(),
         }
     }
 

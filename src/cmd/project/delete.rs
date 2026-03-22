@@ -36,8 +36,8 @@ pub fn delete_with(args: &ProjectDeleteArgs, api: &dyn BacklogApi) -> Result<()>
 mod tests {
     use super::*;
     use crate::api::project::Project;
+    use crate::cmd::project::sample_project;
     use anyhow::anyhow;
-    use std::collections::BTreeMap;
 
     struct MockApi {
         project: Option<Project>,
@@ -46,20 +46,6 @@ mod tests {
     impl crate::api::BacklogApi for MockApi {
         fn delete_project(&self, _key: &str) -> anyhow::Result<Project> {
             self.project.clone().ok_or_else(|| anyhow!("delete failed"))
-        }
-    }
-
-    fn sample_project() -> Project {
-        Project {
-            id: 1,
-            project_key: "TEST".to_string(),
-            name: "Test Project".to_string(),
-            chart_enabled: false,
-            subtasking_enabled: false,
-            project_leader_can_edit_project_leader: false,
-            text_formatting_rule: "markdown".to_string(),
-            archived: false,
-            extra: BTreeMap::new(),
         }
     }
 

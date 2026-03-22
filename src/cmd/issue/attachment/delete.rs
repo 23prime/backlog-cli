@@ -40,27 +40,9 @@ pub fn delete_with(args: &IssueAttachmentDeleteArgs, api: &dyn BacklogApi) -> Re
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::issue::{IssueAttachment, IssueUser};
+    use crate::api::issue::IssueAttachment;
+    use crate::cmd::issue::attachment::sample_attachment;
     use anyhow::anyhow;
-    use std::collections::BTreeMap;
-
-    fn sample_attachment() -> IssueAttachment {
-        IssueAttachment {
-            id: 1,
-            name: "file.txt".to_string(),
-            size: 1024,
-            created_user: IssueUser {
-                id: 1,
-                user_id: Some("john".to_string()),
-                name: "John Doe".to_string(),
-                role_type: 1,
-                lang: None,
-                mail_address: None,
-                extra: BTreeMap::new(),
-            },
-            created: "2024-01-01T00:00:00Z".to_string(),
-        }
-    }
 
     struct MockApi {
         attachment: Option<IssueAttachment>,

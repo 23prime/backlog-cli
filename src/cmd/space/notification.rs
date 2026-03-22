@@ -44,6 +44,7 @@ fn format_notification_text(n: &SpaceNotification) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::cmd::space::sample_notification;
     use anyhow::anyhow;
 
     struct MockApi {
@@ -55,13 +56,6 @@ mod tests {
             self.notification
                 .clone()
                 .ok_or_else(|| anyhow!("no notification"))
-        }
-    }
-
-    fn sample_notification() -> SpaceNotification {
-        SpaceNotification {
-            content: "Scheduled maintenance on 2024-07-01.".to_string(),
-            updated: Some("2024-06-18T07:55:37Z".to_string()),
         }
     }
 

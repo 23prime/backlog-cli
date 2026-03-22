@@ -49,10 +49,9 @@ pub fn print_wiki(wiki: &Wiki) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::wiki::{Wiki, WikiTag};
-    use crate::cmd::wiki::list::tests_helper::sample_wiki_user;
+    use crate::api::wiki::Wiki;
+    use crate::cmd::wiki::sample_wiki;
     use anyhow::anyhow;
-    use std::collections::BTreeMap;
 
     struct MockApi {
         wiki: Option<Wiki>,
@@ -61,24 +60,6 @@ mod tests {
     impl crate::api::BacklogApi for MockApi {
         fn get_wiki(&self, _wiki_id: u64) -> anyhow::Result<Wiki> {
             self.wiki.clone().ok_or_else(|| anyhow!("no wiki"))
-        }
-    }
-
-    fn sample_wiki() -> Wiki {
-        Wiki {
-            id: 1,
-            project_id: 1,
-            name: "Home".to_string(),
-            content: "# Home\nWelcome!".to_string(),
-            tags: vec![WikiTag {
-                id: 1,
-                name: "guide".to_string(),
-            }],
-            created_user: sample_wiki_user(),
-            created: "2024-01-01T00:00:00Z".to_string(),
-            updated_user: sample_wiki_user(),
-            updated: "2024-01-02T00:00:00Z".to_string(),
-            extra: BTreeMap::new(),
         }
     }
 

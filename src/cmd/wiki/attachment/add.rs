@@ -48,7 +48,8 @@ pub fn add_with(args: &WikiAttachmentAddArgs, api: &dyn BacklogApi) -> Result<()
 mod tests {
     use super::*;
     use crate::api::wiki::WikiAttachment;
-    use crate::cmd::wiki::list::tests_helper::sample_wiki_user;
+    use crate::cmd::wiki::attachment::sample_attachment;
+
     use anyhow::anyhow;
 
     struct MockApi {
@@ -64,16 +65,6 @@ mod tests {
             self.attachments
                 .clone()
                 .ok_or_else(|| anyhow!("no attachments"))
-        }
-    }
-
-    fn sample_attachment() -> WikiAttachment {
-        WikiAttachment {
-            id: 1,
-            name: "image.png".to_string(),
-            size: 2048,
-            created_user: sample_wiki_user(),
-            created: "2024-01-01T00:00:00Z".to_string(),
         }
     }
 

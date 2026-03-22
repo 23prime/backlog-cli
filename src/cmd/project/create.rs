@@ -74,8 +74,8 @@ fn format_project(p: &Project) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::cmd::project::sample_project;
     use anyhow::anyhow;
-    use std::collections::BTreeMap;
 
     struct MockApi {
         project: Option<Project>,
@@ -84,20 +84,6 @@ mod tests {
     impl crate::api::BacklogApi for MockApi {
         fn create_project(&self, _params: &[(String, String)]) -> anyhow::Result<Project> {
             self.project.clone().ok_or_else(|| anyhow!("create failed"))
-        }
-    }
-
-    fn sample_project() -> Project {
-        Project {
-            id: 1,
-            project_key: "TEST".to_string(),
-            name: "Test Project".to_string(),
-            chart_enabled: false,
-            subtasking_enabled: false,
-            project_leader_can_edit_project_leader: false,
-            text_formatting_rule: "markdown".to_string(),
-            archived: false,
-            extra: BTreeMap::new(),
         }
     }
 

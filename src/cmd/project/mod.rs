@@ -29,3 +29,34 @@ pub(crate) fn format_project_user_row(u: &crate::api::project::ProjectUser) -> S
         _ => format!("[{}] {}", u.id, u.name),
     }
 }
+
+#[cfg(test)]
+pub(crate) fn sample_project() -> crate::api::project::Project {
+    use std::collections::BTreeMap;
+    crate::api::project::Project {
+        id: 1,
+        project_key: "TEST".to_string(),
+        name: "Test Project".to_string(),
+        chart_enabled: false,
+        subtasking_enabled: false,
+        project_leader_can_edit_project_leader: false,
+        text_formatting_rule: "markdown".to_string(),
+        archived: false,
+        extra: BTreeMap::new(),
+    }
+}
+
+#[cfg(test)]
+pub(crate) fn sample_project_user() -> crate::api::project::ProjectUser {
+    use std::collections::BTreeMap;
+    crate::api::project::ProjectUser {
+        id: 1,
+        user_id: Some("john".to_string()),
+        name: "John Doe".to_string(),
+        role_type: 1,
+        lang: Some("ja".to_string()),
+        mail_address: Some("john@example.com".to_string()),
+        last_login_time: None,
+        extra: BTreeMap::new(),
+    }
+}
