@@ -1,7 +1,7 @@
 use anstream::println;
 use anyhow::{Context, Result};
 
-use crate::api::{BacklogApi, BacklogClient, activity::Activity};
+use crate::api::{BacklogApi, BacklogClient, activity::format_activity_row};
 
 pub struct SpaceActivitiesArgs {
     json: bool,
@@ -68,28 +68,16 @@ pub fn activities_with(args: &SpaceActivitiesArgs, api: &dyn BacklogApi) -> Resu
         );
     } else {
         for a in &activities {
-            println!("{}", format_activity_text(a));
+            println!("{}", format_activity_row(a));
         }
     }
     Ok(())
 }
 
-fn format_activity_text(a: &Activity) -> String {
-    let project = a
-        .project
-        .as_ref()
-        .map(|p| p.project_key.as_str())
-        .unwrap_or("-");
-    format!(
-        "[{}] type={} project={} user={} created={}",
-        a.id, a.activity_type, project, a.created_user.name, a.created,
-    )
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::activity::ActivityUser;
+    use crate::api::activity::{Activity, ActivityUser};
     use anyhow::anyhow;
 
     struct MockApi {
@@ -123,7 +111,7 @@ mod tests {
 
     #[test]
     fn format_activity_text_contains_fields() {
-        let text = format_activity_text(&sample_activity());
+        let text = format_activity_row(&sample_activity());
         assert!(text.contains("[1]"));
         assert!(text.contains("type=1"));
         assert!(text.contains("project=-"));

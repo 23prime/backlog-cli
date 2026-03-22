@@ -40,6 +40,18 @@ pub struct ActivityUser {
     pub extra: BTreeMap<String, serde_json::Value>,
 }
 
+pub(crate) fn format_activity_row(a: &Activity) -> String {
+    let project = a
+        .project
+        .as_ref()
+        .map(|p| p.project_key.as_str())
+        .unwrap_or("-");
+    format!(
+        "[{}] type={} project={} user={} created={}",
+        a.id, a.activity_type, project, a.created_user.name, a.created,
+    )
+}
+
 impl BacklogClient {
     pub fn get_space_activities(&self, params: &[(String, String)]) -> Result<Vec<Activity>> {
         let value = self.get_with_query("/space/activities", params)?;

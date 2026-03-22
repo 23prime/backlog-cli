@@ -1,7 +1,7 @@
 use anstream::println;
 use anyhow::{Context, Result};
 
-use crate::api::{BacklogApi, BacklogClient, activity::Activity};
+use crate::api::{BacklogApi, BacklogClient, activity::format_activity_row};
 
 pub struct UserActivitiesArgs {
     user_id: u64,
@@ -77,22 +77,10 @@ pub fn activities_with(args: &UserActivitiesArgs, api: &dyn BacklogApi) -> Resul
     Ok(())
 }
 
-fn format_activity_row(a: &Activity) -> String {
-    let project = a
-        .project
-        .as_ref()
-        .map(|p| p.project_key.as_str())
-        .unwrap_or("-");
-    format!(
-        "[{}] type={} project={} user={} created={}",
-        a.id, a.activity_type, project, a.created_user.name, a.created,
-    )
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::activity::ActivityUser;
+    use crate::api::activity::{Activity, ActivityUser};
     use anyhow::anyhow;
 
     struct MockApi {
