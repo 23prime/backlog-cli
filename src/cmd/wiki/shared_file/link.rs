@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result, bail};
+use anyhow::{Result, bail};
 
 use crate::api::{BacklogApi, BacklogClient};
 
@@ -31,10 +31,7 @@ pub fn link(args: &WikiSharedFileLinkArgs) -> Result<()> {
 pub fn link_with(args: &WikiSharedFileLinkArgs, api: &dyn BacklogApi) -> Result<()> {
     let files = api.link_wiki_shared_files(args.wiki_id, &args.shared_file_ids)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&files).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&files)?;
     } else {
         println!("Linked {} file(s).", files.len());
     }

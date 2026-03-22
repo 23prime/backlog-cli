@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 use owo_colors::OwoColorize;
 
 use crate::api::{BacklogApi, BacklogClient};
@@ -23,10 +23,7 @@ pub fn list(args: &IssueSharedFileListArgs) -> Result<()> {
 pub fn list_with(args: &IssueSharedFileListArgs, api: &dyn BacklogApi) -> Result<()> {
     let files = api.get_issue_shared_files(&args.key)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&files).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&files)?;
     } else {
         for f in &files {
             println!(

@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient};
 
@@ -46,10 +46,7 @@ pub fn recently_viewed_projects_with(
     }
     let items = api.get_recently_viewed_projects(&params)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&items).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&items)?;
     } else {
         for item in &items {
             println!("[{}] {}", item.project.project_key, item.project.name);

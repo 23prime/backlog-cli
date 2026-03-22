@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient};
 use crate::cmd::document::list::format_document_row;
@@ -23,10 +23,7 @@ pub fn delete(args: &DocumentDeleteArgs) -> Result<()> {
 pub fn delete_with(args: &DocumentDeleteArgs, api: &dyn BacklogApi) -> Result<()> {
     let doc = api.delete_document(&args.document_id)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&doc).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&doc)?;
     } else {
         println!("Deleted: {}", format_document_row(&doc));
     }

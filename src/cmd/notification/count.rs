@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient};
 
@@ -20,10 +20,7 @@ pub fn count(args: &NotificationCountArgs) -> Result<()> {
 pub fn count_with(args: &NotificationCountArgs, api: &dyn BacklogApi) -> Result<()> {
     let result = api.count_notifications()?;
     if args.json {
-        anstream::println!(
-            "{}",
-            serde_json::to_string_pretty(&result).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&result)?;
     } else {
         anstream::println!("{}", result.count);
     }

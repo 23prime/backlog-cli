@@ -1,5 +1,4 @@
-use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient};
 use crate::cmd::wiki::show::print_wiki;
@@ -46,10 +45,7 @@ pub fn create_with(args: &WikiCreateArgs, api: &dyn BacklogApi) -> Result<()> {
     }
     let wiki = api.create_wiki(&params)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&wiki).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&wiki)?;
     } else {
         print_wiki(&wiki);
     }

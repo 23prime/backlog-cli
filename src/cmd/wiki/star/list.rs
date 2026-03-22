@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient};
 
@@ -22,10 +22,7 @@ pub fn list(args: &WikiStarListArgs) -> Result<()> {
 pub fn list_with(args: &WikiStarListArgs, api: &dyn BacklogApi) -> Result<()> {
     let stars = api.get_wiki_stars(args.wiki_id)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&stars).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&stars)?;
     } else {
         for star in &stars {
             println!("[{}] {} ({})", star.id, star.title, star.presenter.name);

@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient, project::ProjectCategory};
 
@@ -68,10 +68,7 @@ pub fn list(args: &ProjectCategoryListArgs) -> Result<()> {
 pub fn list_with(args: &ProjectCategoryListArgs, api: &dyn BacklogApi) -> Result<()> {
     let categories = api.get_project_categories(&args.key)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&categories).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&categories)?;
     } else {
         for c in &categories {
             println!("{}", format_category_row(c));
@@ -88,10 +85,7 @@ pub fn add(args: &ProjectCategoryAddArgs) -> Result<()> {
 pub fn add_with(args: &ProjectCategoryAddArgs, api: &dyn BacklogApi) -> Result<()> {
     let category = api.add_project_category(&args.key, &args.name)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&category).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&category)?;
     } else {
         println!("Added: {}", format_category_row(&category));
     }
@@ -106,10 +100,7 @@ pub fn update(args: &ProjectCategoryUpdateArgs) -> Result<()> {
 pub fn update_with(args: &ProjectCategoryUpdateArgs, api: &dyn BacklogApi) -> Result<()> {
     let category = api.update_project_category(&args.key, args.category_id, &args.name)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&category).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&category)?;
     } else {
         println!("Updated: {}", format_category_row(&category));
     }
@@ -124,10 +115,7 @@ pub fn delete(args: &ProjectCategoryDeleteArgs) -> Result<()> {
 pub fn delete_with(args: &ProjectCategoryDeleteArgs, api: &dyn BacklogApi) -> Result<()> {
     let category = api.delete_project_category(&args.key, args.category_id)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&category).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&category)?;
     } else {
         println!("Deleted: {}", format_category_row(&category));
     }

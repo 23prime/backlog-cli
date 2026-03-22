@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient, team::Team};
 
@@ -22,10 +22,7 @@ pub fn list(args: &ProjectTeamListArgs) -> Result<()> {
 pub fn list_with(args: &ProjectTeamListArgs, api: &dyn BacklogApi) -> Result<()> {
     let teams = api.get_project_teams(&args.key)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&teams).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&teams)?;
     } else {
         for t in &teams {
             println!("{}", format_team_row(t));
@@ -54,10 +51,7 @@ pub fn add(args: &ProjectTeamAddArgs) -> Result<()> {
 pub fn add_with(args: &ProjectTeamAddArgs, api: &dyn BacklogApi) -> Result<()> {
     let team = api.add_project_team(&args.key, args.team_id)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&team).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&team)?;
     } else {
         println!("Added: {}", format_team_row(&team));
     }
@@ -84,10 +78,7 @@ pub fn delete(args: &ProjectTeamDeleteArgs) -> Result<()> {
 pub fn delete_with(args: &ProjectTeamDeleteArgs, api: &dyn BacklogApi) -> Result<()> {
     let team = api.delete_project_team(&args.key, args.team_id)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&team).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&team)?;
     } else {
         println!("Deleted: {}", format_team_row(&team));
     }

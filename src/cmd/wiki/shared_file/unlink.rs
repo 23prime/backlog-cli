@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient};
 
@@ -27,10 +27,7 @@ pub fn unlink(args: &WikiSharedFileUnlinkArgs) -> Result<()> {
 pub fn unlink_with(args: &WikiSharedFileUnlinkArgs, api: &dyn BacklogApi) -> Result<()> {
     let file = api.unlink_wiki_shared_file(args.wiki_id, args.shared_file_id)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&file).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&file)?;
     } else {
         println!("Unlinked: {}", file.name);
     }

@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient};
 use crate::cmd::issue::comment::list::format_comment_row;
@@ -28,10 +28,7 @@ pub fn show(args: &IssueCommentShowArgs) -> Result<()> {
 pub fn show_with(args: &IssueCommentShowArgs, api: &dyn BacklogApi) -> Result<()> {
     let comment = api.get_issue_comment(&args.key, args.comment_id)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&comment).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&comment)?;
     } else {
         println!("{}", format_comment_row(&comment));
     }

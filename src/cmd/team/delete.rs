@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use super::format_team_row;
 use crate::api::{BacklogApi, BacklogClient};
@@ -23,10 +23,7 @@ pub fn delete(args: &TeamDeleteArgs) -> Result<()> {
 pub fn delete_with(args: &TeamDeleteArgs, api: &dyn BacklogApi) -> Result<()> {
     let team = api.delete_team(args.id)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&team).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&team)?;
     } else {
         println!("Deleted: {}", format_team_row(&team));
     }

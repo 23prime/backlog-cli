@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 use owo_colors::OwoColorize;
 
 use crate::api::{BacklogApi, BacklogClient, wiki::Wiki};
@@ -23,10 +23,7 @@ pub fn show(args: &WikiShowArgs) -> Result<()> {
 pub fn show_with(args: &WikiShowArgs, api: &dyn BacklogApi) -> Result<()> {
     let wiki = api.get_wiki(args.wiki_id)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&wiki).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&wiki)?;
     } else {
         print_wiki(&wiki);
     }

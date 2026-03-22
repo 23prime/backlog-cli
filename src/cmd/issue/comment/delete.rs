@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient};
 
@@ -27,10 +27,7 @@ pub fn delete(args: &IssueCommentDeleteArgs) -> Result<()> {
 pub fn delete_with(args: &IssueCommentDeleteArgs, api: &dyn BacklogApi) -> Result<()> {
     let comment = api.delete_issue_comment(&args.key, args.comment_id)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&comment).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&comment)?;
     } else {
         println!("Deleted comment {} from {}", comment.id, args.key);
     }

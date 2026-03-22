@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 use owo_colors::OwoColorize;
 
 use crate::api::{BacklogApi, BacklogClient};
@@ -23,10 +23,7 @@ pub fn list(args: &IssueParticipantListArgs) -> Result<()> {
 pub fn list_with(args: &IssueParticipantListArgs, api: &dyn BacklogApi) -> Result<()> {
     let participants = api.get_issue_participants(&args.key)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&participants).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&participants)?;
     } else {
         for p in &participants {
             let uid = p

@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient, project::ProjectCustomField};
 
@@ -158,10 +158,7 @@ pub fn list(args: &ProjectCustomFieldListArgs) -> Result<()> {
 pub fn list_with(args: &ProjectCustomFieldListArgs, api: &dyn BacklogApi) -> Result<()> {
     let fields = api.get_project_custom_fields(&args.key)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&fields).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&fields)?;
     } else {
         for f in &fields {
             println!("{}", format_custom_field_row(f));
@@ -184,10 +181,7 @@ pub fn add_with(args: &ProjectCustomFieldAddArgs, api: &dyn BacklogApi) -> Resul
         args.required,
     )?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&field).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&field)?;
     } else {
         println!("Added: {}", format_custom_field_row(&field));
     }
@@ -208,10 +202,7 @@ pub fn update_with(args: &ProjectCustomFieldUpdateArgs, api: &dyn BacklogApi) ->
         args.required,
     )?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&field).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&field)?;
     } else {
         println!("Updated: {}", format_custom_field_row(&field));
     }
@@ -226,10 +217,7 @@ pub fn delete(args: &ProjectCustomFieldDeleteArgs) -> Result<()> {
 pub fn delete_with(args: &ProjectCustomFieldDeleteArgs, api: &dyn BacklogApi) -> Result<()> {
     let field = api.delete_project_custom_field(&args.key, args.custom_field_id)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&field).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&field)?;
     } else {
         println!("Deleted: {}", format_custom_field_row(&field));
     }
@@ -244,10 +232,7 @@ pub fn item_add(args: &ProjectCustomFieldItemAddArgs) -> Result<()> {
 pub fn item_add_with(args: &ProjectCustomFieldItemAddArgs, api: &dyn BacklogApi) -> Result<()> {
     let field = api.add_project_custom_field_item(&args.key, args.custom_field_id, &args.name)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&field).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&field)?;
     } else {
         println!("Added item to: {}", format_custom_field_row(&field));
     }
@@ -270,10 +255,7 @@ pub fn item_update_with(
         &args.name,
     )?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&field).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&field)?;
     } else {
         println!("Updated item in: {}", format_custom_field_row(&field));
     }
@@ -292,10 +274,7 @@ pub fn item_delete_with(
     let field =
         api.delete_project_custom_field_item(&args.key, args.custom_field_id, args.item_id)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&field).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&field)?;
     } else {
         println!("Deleted item from: {}", format_custom_field_row(&field));
     }

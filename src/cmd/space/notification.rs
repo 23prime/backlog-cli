@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient, space_notification::SpaceNotification};
 
@@ -21,10 +21,7 @@ pub fn notification(args: &SpaceNotificationArgs) -> Result<()> {
 pub fn notification_with(args: &SpaceNotificationArgs, api: &dyn BacklogApi) -> Result<()> {
     let n = api.get_space_notification()?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&n).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&n)?;
     } else {
         println!("{}", format_notification_text(&n));
     }

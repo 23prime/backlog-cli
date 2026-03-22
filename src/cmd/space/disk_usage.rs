@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient, disk_usage::DiskUsage};
 
@@ -21,10 +21,7 @@ pub fn disk_usage(args: &SpaceDiskUsageArgs) -> Result<()> {
 pub fn disk_usage_with(args: &SpaceDiskUsageArgs, api: &dyn BacklogApi) -> Result<()> {
     let usage = api.get_space_disk_usage()?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&usage).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&usage)?;
     } else {
         println!("{}", format_disk_usage_text(&usage));
     }

@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient};
 
@@ -26,10 +26,7 @@ pub fn tree_with(args: &DocumentTreeArgs, api: &dyn BacklogApi) -> Result<()> {
     let params = vec![("projectIdOrKey".to_string(), args.project_id_or_key.clone())];
     let t = api.get_document_tree(&params)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&t).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&t)?;
     } else {
         println!("Project: {}", t.project_id);
         println!("Active:");

@@ -1,5 +1,4 @@
-use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient};
 use crate::cmd::wiki::show::print_wiki;
@@ -32,10 +31,7 @@ pub fn delete_with(args: &WikiDeleteArgs, api: &dyn BacklogApi) -> Result<()> {
     }
     let wiki = api.delete_wiki(args.wiki_id, &params)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&wiki).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&wiki)?;
     } else {
         print_wiki(&wiki);
     }

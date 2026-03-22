@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient};
 
@@ -38,10 +38,7 @@ pub fn list_with(args: &PrAttachmentListArgs, api: &dyn BacklogApi) -> Result<()
         args.number,
     )?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&attachments).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&attachments)?;
     } else {
         for a in &attachments {
             println!("[{}] {} ({} bytes)", a.id, a.name, a.size);

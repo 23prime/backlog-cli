@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 use owo_colors::OwoColorize;
 
 use crate::api::{BacklogApi, BacklogClient, wiki::WikiHistory};
@@ -23,10 +23,7 @@ pub fn history(args: &WikiHistoryArgs) -> Result<()> {
 pub fn history_with(args: &WikiHistoryArgs, api: &dyn BacklogApi) -> Result<()> {
     let entries = api.get_wiki_history(args.wiki_id)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&entries).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&entries)?;
     } else {
         for entry in &entries {
             println!("{}", format_history_row(entry));

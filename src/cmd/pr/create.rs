@@ -1,5 +1,4 @@
-use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient};
 use crate::cmd::pr::show::print_pr;
@@ -65,10 +64,7 @@ pub fn create_with(args: &PrCreateArgs, api: &dyn BacklogApi) -> Result<()> {
     }
     let pr = api.create_pull_request(&args.project_id_or_key, &args.repo_id_or_name, &params)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&pr).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&pr)?;
     } else {
         print_pr(&pr);
     }

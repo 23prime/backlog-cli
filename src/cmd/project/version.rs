@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{
     BacklogApi, BacklogClient,
@@ -106,10 +106,7 @@ pub fn list(args: &ProjectVersionListArgs) -> Result<()> {
 pub fn list_with(args: &ProjectVersionListArgs, api: &dyn BacklogApi) -> Result<()> {
     let versions = api.get_project_versions(&args.key)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&versions).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&versions)?;
     } else {
         for v in &versions {
             println!("{}", format_version_row(v));
@@ -132,10 +129,7 @@ pub fn add_with(args: &ProjectVersionAddArgs, api: &dyn BacklogApi) -> Result<()
         args.release_due_date.as_deref(),
     )?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&version).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&version)?;
     } else {
         println!("Added: {}", format_version_row(&version));
     }
@@ -157,10 +151,7 @@ pub fn update_with(args: &ProjectVersionUpdateArgs, api: &dyn BacklogApi) -> Res
     };
     let version = api.update_project_version(&args.key, args.version_id, &params)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&version).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&version)?;
     } else {
         println!("Updated: {}", format_version_row(&version));
     }
@@ -175,10 +166,7 @@ pub fn delete(args: &ProjectVersionDeleteArgs) -> Result<()> {
 pub fn delete_with(args: &ProjectVersionDeleteArgs, api: &dyn BacklogApi) -> Result<()> {
     let version = api.delete_project_version(&args.key, args.version_id)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&version).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&version)?;
     } else {
         println!("Deleted: {}", format_version_row(&version));
     }

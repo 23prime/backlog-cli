@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient};
 
@@ -29,10 +29,7 @@ pub fn list_with(args: &WikiTagListArgs, api: &dyn BacklogApi) -> Result<()> {
     }
     let tags = api.get_wiki_tags(&params)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&tags).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&tags)?;
     } else {
         for tag in &tags {
             println!("[{}] {}", tag.id, tag.name);

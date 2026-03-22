@@ -23,10 +23,7 @@ pub fn licence_with(args: &SpaceLicenceArgs, api: &dyn BacklogApi) -> Result<()>
         .get_space_licence()
         .context("Failed to fetch space licence")?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&l).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&l)?;
     } else {
         println!("{}", format_licence_text(&l));
     }

@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient};
 use crate::cmd::issue::comment::notification::list::format_notification_row;
@@ -44,10 +44,7 @@ pub fn add_with(args: &IssueCommentNotificationAddArgs, api: &dyn BacklogApi) ->
         .collect();
     let notifications = api.add_issue_comment_notifications(&args.key, args.comment_id, &params)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&notifications).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&notifications)?;
     } else {
         for n in &notifications {
             println!("{}", format_notification_row(n));

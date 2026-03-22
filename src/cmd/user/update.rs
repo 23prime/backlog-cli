@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient};
 
@@ -58,10 +58,7 @@ pub fn update_with(args: &UserUpdateArgs, api: &dyn BacklogApi) -> Result<()> {
     }
     let user = api.update_user(args.user_id, &params)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&user).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&user)?;
     } else {
         println!(
             "Updated: {} ({}) [roleType: {}]",

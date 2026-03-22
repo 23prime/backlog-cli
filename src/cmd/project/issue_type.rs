@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient, project::ProjectIssueType};
 
@@ -106,10 +106,7 @@ pub fn list(args: &ProjectIssueTypeListArgs) -> Result<()> {
 pub fn list_with(args: &ProjectIssueTypeListArgs, api: &dyn BacklogApi) -> Result<()> {
     let issue_types = api.get_project_issue_types(&args.key)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&issue_types).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&issue_types)?;
     } else {
         for t in &issue_types {
             println!("{}", format_issue_type_row(t));
@@ -126,10 +123,7 @@ pub fn add(args: &ProjectIssueTypeAddArgs) -> Result<()> {
 pub fn add_with(args: &ProjectIssueTypeAddArgs, api: &dyn BacklogApi) -> Result<()> {
     let issue_type = api.add_project_issue_type(&args.key, &args.name, &args.color)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&issue_type).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&issue_type)?;
     } else {
         println!("Added: {}", format_issue_type_row(&issue_type));
     }
@@ -151,10 +145,7 @@ pub fn update_with(args: &ProjectIssueTypeUpdateArgs, api: &dyn BacklogApi) -> R
     }
     let issue_type = api.update_project_issue_type(&args.key, args.issue_type_id, &params)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&issue_type).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&issue_type)?;
     } else {
         println!("Updated: {}", format_issue_type_row(&issue_type));
     }
@@ -173,10 +164,7 @@ pub fn delete_with(args: &ProjectIssueTypeDeleteArgs, api: &dyn BacklogApi) -> R
         args.substitute_issue_type_id,
     )?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&issue_type).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&issue_type)?;
     } else {
         println!("Deleted: {}", format_issue_type_row(&issue_type));
     }

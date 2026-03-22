@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient, document::Document};
 
@@ -58,10 +58,7 @@ pub fn list_with(args: &DocumentListArgs, api: &dyn BacklogApi) -> Result<()> {
     params.push(("offset".to_string(), args.offset.unwrap_or(0).to_string()));
     let docs = api.get_documents(&params)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&docs).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&docs)?;
     } else {
         for doc in &docs {
             println!("{}", format_document_row(doc));

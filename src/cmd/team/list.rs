@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use super::format_team_row;
 use crate::api::{BacklogApi, BacklogClient};
@@ -45,10 +45,7 @@ pub fn list_with(args: &TeamListArgs, api: &dyn BacklogApi) -> Result<()> {
     }
     let teams = api.get_teams(&params)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&teams).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&teams)?;
     } else {
         for t in &teams {
             println!("{}", format_team_row(t));
