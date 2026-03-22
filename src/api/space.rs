@@ -22,6 +22,10 @@ impl BacklogClient {
         let value = self.get("/space")?;
         deserialize(value)
     }
+
+    pub fn download_space_image(&self) -> Result<(Vec<u8>, String)> {
+        self.download("/space/image")
+    }
 }
 
 #[cfg(test)]

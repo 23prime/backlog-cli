@@ -75,8 +75,8 @@ use cmd::rate_limit::RateLimitArgs;
 use cmd::resolution::ResolutionListArgs;
 use cmd::shared_file::{SharedFileGetArgs, SharedFileListArgs};
 use cmd::space::{
-    SpaceActivitiesArgs, SpaceDiskUsageArgs, SpaceLicenceArgs, SpaceNotificationArgs,
-    SpaceShowArgs, SpaceUpdateNotificationArgs,
+    SpaceActivitiesArgs, SpaceDiskUsageArgs, SpaceImageArgs, SpaceLicenceArgs,
+    SpaceNotificationArgs, SpaceShowArgs, SpaceUpdateNotificationArgs,
 };
 use cmd::star::{StarAddArgs, StarDeleteArgs};
 use cmd::team::{
@@ -335,6 +335,12 @@ enum SpaceCommands {
         /// Output as JSON
         #[arg(long)]
         json: bool,
+    },
+    /// Download the space icon image
+    Image {
+        /// Output file path (default: server-provided filename)
+        #[arg(long, short = 'o')]
+        output: Option<std::path::PathBuf>,
     },
 }
 
@@ -3695,6 +3701,9 @@ fn run() -> Result<()> {
                 content,
                 json || sub_json,
             )),
+            Some(SpaceCommands::Image { output }) => {
+                cmd::space::image(&SpaceImageArgs::new(output))
+            }
         },
     }
 }

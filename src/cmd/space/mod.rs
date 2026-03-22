@@ -1,11 +1,13 @@
 mod activities;
 mod disk_usage;
+mod image;
 mod licence;
 mod notification;
 mod show;
 mod update_notification;
 
 pub use activities::{SpaceActivitiesArgs, activities};
+pub use image::{SpaceImageArgs, image};
 
 #[cfg(test)]
 pub(crate) fn sample_notification() -> crate::api::space_notification::SpaceNotification {

@@ -88,6 +88,9 @@ pub trait BacklogApi {
     fn get_space(&self) -> Result<Space> {
         unimplemented!()
     }
+    fn download_space_image(&self) -> Result<(Vec<u8>, String)> {
+        unimplemented!()
+    }
     fn get_rate_limit(&self) -> Result<RateLimit> {
         unimplemented!()
     }
@@ -762,6 +765,10 @@ pub trait BacklogApi {
 impl BacklogApi for BacklogClient {
     fn get_space(&self) -> Result<Space> {
         self.get_space()
+    }
+
+    fn download_space_image(&self) -> Result<(Vec<u8>, String)> {
+        self.download_space_image()
     }
 
     fn get_rate_limit(&self) -> Result<RateLimit> {
