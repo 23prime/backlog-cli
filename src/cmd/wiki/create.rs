@@ -60,7 +60,7 @@ pub fn create_with(args: &WikiCreateArgs, api: &dyn BacklogApi) -> Result<()> {
 mod tests {
     use super::*;
     use crate::api::wiki::Wiki;
-    use crate::cmd::wiki::list::tests_helper::sample_wiki;
+    use crate::cmd::wiki::sample_wiki;
     use anyhow::anyhow;
 
     struct MockApi {

@@ -65,7 +65,7 @@ pub fn format_wiki_row(wiki: &WikiListItem) -> String {
 pub(crate) mod tests_helper {
     use std::collections::BTreeMap;
 
-    use crate::api::wiki::{Wiki, WikiListItem, WikiTag, WikiUser};
+    use crate::api::wiki::{WikiListItem, WikiTag, WikiUser};
 
     pub fn sample_wiki_user() -> WikiUser {
         WikiUser {
@@ -75,25 +75,6 @@ pub(crate) mod tests_helper {
             role_type: 1,
             lang: None,
             mail_address: None,
-            extra: BTreeMap::new(),
-        }
-    }
-
-    pub fn sample_wiki() -> Wiki {
-        use std::collections::BTreeMap;
-        Wiki {
-            id: 1,
-            project_id: 1,
-            name: "Home".to_string(),
-            content: "# Home\nWelcome!".to_string(),
-            tags: vec![WikiTag {
-                id: 1,
-                name: "guide".to_string(),
-            }],
-            created_user: sample_wiki_user(),
-            created: "2024-01-01T00:00:00Z".to_string(),
-            updated_user: sample_wiki_user(),
-            updated: "2024-01-02T00:00:00Z".to_string(),
             extra: BTreeMap::new(),
         }
     }
