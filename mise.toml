@@ -87,24 +87,28 @@ run = "cargo fetch"
 [tasks.rs-fix]
 description = "Fix Rust code"
 run = [
-  "cargo clippy --all-targets --all-features --no-deps --fix --allow-dirty",
+  "cargo clippy --all-targets --all-features --no-deps --fix --allow-dirty -- -D warnings",
   "cargo fmt",
 ]
 alias = "rf"
 
 [tasks.rs-check]
 description = "Check Rust code"
+run = [{ task = "rs-lint" }, { task = "rs-test" }]
+alias = "rc"
+
+[tasks.rs-lint]
+description = "Lint Rust code"
 run = [
   "cargo clippy --all-targets --all-features --no-deps -- -D warnings",
   "cargo fmt -- --check",
-  "cargo test -- --nocapture",
 ]
-alias = "rc"
+alias = "rl"
 
-[tasks.rs-run]
-description = "Run Rust application"
-run = "cargo run"
-alias = "rr"
+[tasks.rs-test]
+description = "Run Rust tests"
+run = ["cargo test -- --nocapture"]
+alias = "rt"
 
 [tasks.rs-build]
 description = "Build Rust application"
