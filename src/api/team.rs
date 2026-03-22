@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 use super::BacklogClient;
+use super::deserialize;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -38,91 +39,43 @@ pub struct Team {
 impl BacklogClient {
     pub fn get_teams(&self, params: &[(String, String)]) -> Result<Vec<Team>> {
         let value = self.get_with_query("/teams", params)?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize teams response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn get_team(&self, team_id: u64) -> Result<Team> {
         let value = self.get(&format!("/teams/{team_id}"))?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize team response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn get_project_teams(&self, key: &str) -> Result<Vec<Team>> {
         let value = self.get(&format!("/projects/{key}/teams"))?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize project teams response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn add_project_team(&self, key: &str, team_id: u64) -> Result<Team> {
         let params = vec![("teamId".to_string(), team_id.to_string())];
         let value = self.post_form(&format!("/projects/{key}/teams"), &params)?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize add project team response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn delete_project_team(&self, key: &str, team_id: u64) -> Result<Team> {
         let value = self.delete_req(&format!("/projects/{key}/teams/{team_id}"))?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize delete project team response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn create_team(&self, params: &[(String, String)]) -> Result<Team> {
         let value = self.post_form("/teams", params)?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize create team response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn update_team(&self, team_id: u64, params: &[(String, String)]) -> Result<Team> {
         let value = self.patch_form(&format!("/teams/{team_id}"), params)?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize update team response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn delete_team(&self, team_id: u64) -> Result<Team> {
         let value = self.delete_req(&format!("/teams/{team_id}"))?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize delete team response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn download_team_icon(&self, team_id: u64) -> Result<(Vec<u8>, String)> {

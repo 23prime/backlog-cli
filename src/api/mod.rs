@@ -1,7 +1,20 @@
 use anyhow::{Context, Result};
 use reqwest::blocking::Client;
+use serde::de::DeserializeOwned;
 use std::cell::RefCell;
 use std::time::Duration;
+
+pub(crate) fn deserialize<T: DeserializeOwned>(value: serde_json::Value) -> Result<T> {
+    match serde_json::from_value(value.clone()) {
+        Ok(v) => Ok(v),
+        Err(e) => {
+            let pretty = serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string());
+            Err(anyhow::anyhow!(
+                "Failed to deserialize response: {e}\nRaw JSON:\n{pretty}"
+            ))
+        }
+    }
+}
 
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
@@ -1974,5 +1987,20 @@ mod tests {
             .post_form("/notifications/123/markAsRead", &[])
             .unwrap();
         assert_eq!(body, serde_json::Value::Null);
+    }
+
+    #[test]
+    fn deserialize_error_includes_raw_json() {
+        #[derive(Debug, serde::Deserialize)]
+        struct Foo {
+            #[allow(dead_code)]
+            x: u64,
+        }
+        let value = serde_json::json!({"x": "not-a-number"});
+        let err = deserialize::<Foo>(value).unwrap_err();
+        let msg = err.to_string();
+        assert!(msg.contains("Failed to deserialize response"));
+        assert!(msg.contains("Raw JSON"));
+        assert!(msg.contains("not-a-number"));
     }
 }

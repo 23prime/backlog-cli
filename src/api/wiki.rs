@@ -4,6 +4,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 use super::BacklogClient;
+use super::deserialize;
 use crate::api::user::Star;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -91,11 +92,6 @@ pub struct WikiAttachment {
     pub size: u64,
     pub created_user: WikiUser,
     pub created: String,
-}
-
-fn deserialize<T: serde::de::DeserializeOwned>(value: serde_json::Value) -> Result<T> {
-    serde_json::from_value(value)
-        .map_err(|e| anyhow::anyhow!("Failed to deserialize response: {}", e))
 }
 
 impl BacklogClient {

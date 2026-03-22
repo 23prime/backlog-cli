@@ -2,6 +2,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 use super::BacklogClient;
+use super::deserialize;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Resolution {
@@ -12,13 +13,7 @@ pub struct Resolution {
 impl BacklogClient {
     pub fn get_resolutions(&self) -> Result<Vec<Resolution>> {
         let value = self.get_with_query("/resolutions", &[])?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 }
 

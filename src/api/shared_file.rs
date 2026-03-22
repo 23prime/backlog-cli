@@ -4,6 +4,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 use super::BacklogClient;
+use super::deserialize;
 use crate::api::user::User;
 
 /// Percent-encode a path for use in a URL, preserving `/` separators.
@@ -26,15 +27,6 @@ fn encode_path(path: &str) -> String {
         })
         .collect::<Vec<_>>()
         .join("/")
-}
-
-fn deserialize<T: serde::de::DeserializeOwned>(value: serde_json::Value, ctx: &str) -> Result<T> {
-    serde_json::from_value(value.clone()).map_err(|e| {
-        anyhow::anyhow!(
-            "Failed to deserialize {ctx}: {e}\nRaw JSON:\n{}",
-            serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-        )
-    })
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -68,7 +60,7 @@ impl BacklogClient {
             &format!("/projects/{project_id_or_key}/files/metadata/{encoded}"),
             params,
         )?;
-        deserialize(value, "shared files response")
+        deserialize(value)
     }
 
     pub fn download_shared_file(

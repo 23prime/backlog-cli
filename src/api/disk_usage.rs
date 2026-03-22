@@ -2,6 +2,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 use super::BacklogClient;
+use super::deserialize;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DiskUsage {
@@ -33,13 +34,7 @@ pub struct DiskUsageDetail {
 impl BacklogClient {
     pub fn get_space_disk_usage(&self) -> Result<DiskUsage> {
         let value = self.get("/space/diskUsage")?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize disk usage response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 }
 
