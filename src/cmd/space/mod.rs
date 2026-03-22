@@ -5,6 +5,7 @@ mod licence;
 mod notification;
 mod show;
 mod update_notification;
+mod upload_attachment;
 
 pub use activities::{SpaceActivitiesArgs, activities};
 pub use image::{SpaceImageArgs, image};
@@ -21,3 +22,4 @@ pub use licence::{SpaceLicenceArgs, licence};
 pub use notification::{SpaceNotificationArgs, notification};
 pub use show::{SpaceShowArgs, show};
 pub use update_notification::{SpaceUpdateNotificationArgs, update_notification};
+pub use upload_attachment::{SpaceUploadAttachmentArgs, upload_attachment};

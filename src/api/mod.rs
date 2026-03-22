@@ -62,7 +62,7 @@ use pull_request::{
 use rate_limit::RateLimit;
 use resolution::Resolution;
 use shared_file::SharedFile;
-use space::Space;
+use space::{Space, SpaceAttachment};
 use space_notification::SpaceNotification;
 use team::Team;
 use user::{RecentlyViewedIssue, RecentlyViewedProject, RecentlyViewedWiki, Star, StarCount, User};
@@ -89,6 +89,9 @@ pub trait BacklogApi {
         unimplemented!()
     }
     fn download_space_image(&self) -> Result<(Vec<u8>, String)> {
+        unimplemented!()
+    }
+    fn upload_space_attachment(&self, _file_path: &std::path::Path) -> Result<SpaceAttachment> {
         unimplemented!()
     }
     fn get_rate_limit(&self) -> Result<RateLimit> {
@@ -595,6 +598,9 @@ pub trait BacklogApi {
     fn count_user_stars(&self, _user_id: u64, _params: &[(String, String)]) -> Result<StarCount> {
         unimplemented!()
     }
+    fn download_user_icon(&self, _user_id: u64) -> Result<(Vec<u8>, String)> {
+        unimplemented!()
+    }
     fn add_star(&self, _params: &[(String, String)]) -> Result<()> {
         unimplemented!()
     }
@@ -772,6 +778,10 @@ impl BacklogApi for BacklogClient {
 
     fn download_space_image(&self) -> Result<(Vec<u8>, String)> {
         self.download_space_image()
+    }
+
+    fn upload_space_attachment(&self, file_path: &std::path::Path) -> Result<SpaceAttachment> {
+        self.upload_space_attachment(file_path)
     }
 
     fn get_rate_limit(&self) -> Result<RateLimit> {
@@ -1390,6 +1400,10 @@ impl BacklogApi for BacklogClient {
         self.count_user_stars(user_id, params)
     }
 
+    fn download_user_icon(&self, user_id: u64) -> Result<(Vec<u8>, String)> {
+        self.download_user_icon(user_id)
+    }
+
     fn add_star(&self, params: &[(String, String)]) -> Result<()> {
         self.add_star(params)
     }
@@ -1740,6 +1754,26 @@ impl BacklogClient {
             crate::logger::verbose(&format!("→ POST {url}"));
             self.apply_auth(self.client.post(&url))
                 .form(params)
+                .send()
+                .with_context(|| format!("Failed to POST {url}"))
+        })
+    }
+
+    /// Post a multipart/form-data request.
+    ///
+    /// The provided factory closure is called on each attempt to build a fresh
+    /// `reqwest::blocking::multipart::Form`, allowing this method to reuse the
+    /// standard [`Self::execute`] retry logic (including retry-on-401).
+    pub fn post_multipart<F>(&self, path: &str, form_factory: F) -> Result<serde_json::Value>
+    where
+        F: Fn() -> reqwest::blocking::multipart::Form,
+    {
+        let url = format!("{}{}", self.base_url, path);
+        self.execute(|| {
+            crate::logger::verbose(&format!("→ POST {url}"));
+            let form = form_factory();
+            self.apply_auth(self.client.post(&url))
+                .multipart(form)
                 .send()
                 .with_context(|| format!("Failed to POST {url}"))
         })

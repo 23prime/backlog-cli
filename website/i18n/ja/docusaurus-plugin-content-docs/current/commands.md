@@ -167,6 +167,24 @@ bl space image --output my_icon.png
 Saved: space_image.png (1234 bytes)
 ```
 
+## `bl space upload-attachment`
+
+ファイルをスペースの添付ファイルとしてアップロードします。アップロードされた添付ファイルのメタデータを返します。
+
+```bash
+bl space upload-attachment ./report.pdf
+bl space upload-attachment ./image.png --json
+```
+
+出力例:
+
+```text
+ID:      1
+Name:    report.pdf
+Size:    204800 bytes
+Created: 2024-01-01T00:00:00Z
+```
+
 ## `bl project list`
 
 アクセス可能なプロジェクトを一覧表示します。
@@ -1817,6 +1835,23 @@ bl user star count <id> --since 2024-01-01 --until 2024-12-31 --json
 42
 ```
 
+## `bl user icon`
+
+ユーザーのアイコン画像をダウンロードします。
+
+レスポンスはバイナリデータです。`--output` / `-o` で保存先を指定してください。省略した場合は、サーバーが返すファイル名（ファイル名がない場合や `attachment` などの汎用プレースホルダーの場合は `user_icon`）を使ってカレントディレクトリに保存します。
+
+```bash
+bl user icon <id>
+bl user icon <id> --output my_icon.png
+```
+
+出力例:
+
+```text
+Saved: user_icon (1234 bytes)
+```
+
 ## `bl user list`
 
 スペース内のユーザーを一覧表示します。
@@ -2219,7 +2254,7 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl space licence` | `GET /api/v2/space/licence` | ✅ 実装済み |
 | `bl space update-notification` | `PUT /api/v2/space/notification` | ✅ 実装済み |
 | `bl space image` | `GET /api/v2/space/image` | ✅ 実装済み |
-| — | `POST /api/v2/space/attachment` | 計画中 |
+| `bl space upload-attachment <file>` | `POST /api/v2/space/attachment` | ✅ 実装済み |
 
 ### Projects
 
@@ -2393,7 +2428,7 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl user recently-viewed-wikis` | `GET /api/v2/users/myself/recentlyViewedWikis` | ✅ 実装済み |
 | `bl user star list <id>` | `GET /api/v2/users/{userId}/stars` | ✅ 実装済み |
 | `bl user star count <id>` | `GET /api/v2/users/{userId}/stars/count` | ✅ 実装済み |
-| — | `GET /api/v2/users/{userId}/icon` | 計画中 |
+| `bl user icon <id>` | `GET /api/v2/users/{userId}/icon` | ✅ 実装済み |
 
 ### Notifications
 

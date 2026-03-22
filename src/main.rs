@@ -76,7 +76,7 @@ use cmd::resolution::ResolutionListArgs;
 use cmd::shared_file::{SharedFileGetArgs, SharedFileListArgs};
 use cmd::space::{
     SpaceActivitiesArgs, SpaceDiskUsageArgs, SpaceImageArgs, SpaceLicenceArgs,
-    SpaceNotificationArgs, SpaceShowArgs, SpaceUpdateNotificationArgs,
+    SpaceNotificationArgs, SpaceShowArgs, SpaceUpdateNotificationArgs, SpaceUploadAttachmentArgs,
 };
 use cmd::star::{StarAddArgs, StarDeleteArgs};
 use cmd::team::{
@@ -84,8 +84,9 @@ use cmd::team::{
 };
 use cmd::user::star::{UserStarCountArgs, UserStarListArgs};
 use cmd::user::{
-    UserActivitiesArgs, UserAddArgs, UserDeleteArgs, UserListArgs, UserRecentlyViewedArgs,
-    UserRecentlyViewedProjectsArgs, UserRecentlyViewedWikisArgs, UserShowArgs, UserUpdateArgs,
+    UserActivitiesArgs, UserAddArgs, UserDeleteArgs, UserIconArgs, UserListArgs,
+    UserRecentlyViewedArgs, UserRecentlyViewedProjectsArgs, UserRecentlyViewedWikisArgs,
+    UserShowArgs, UserUpdateArgs,
 };
 use cmd::watch::{
     WatchAddArgs, WatchCountArgs, WatchDeleteArgs, WatchListArgs, WatchReadArgs, WatchShowArgs,
@@ -341,6 +342,15 @@ enum SpaceCommands {
         /// Output file path (default: server-provided filename, or "space_image" if none)
         #[arg(long, short = 'o')]
         output: Option<std::path::PathBuf>,
+    },
+    /// Upload a file as a space attachment
+    UploadAttachment {
+        /// File to upload
+        #[arg(value_name = "FILE")]
+        file: std::path::PathBuf,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
     },
 }
 
@@ -1684,6 +1694,14 @@ enum UserCommands {
         /// Output as JSON
         #[arg(long)]
         json: bool,
+    },
+    /// Download a user icon image
+    Icon {
+        /// User numeric ID
+        id: u64,
+        /// Output file path (default: server-provided filename, or "user_icon" if none)
+        #[arg(long, short = 'o')]
+        output: Option<std::path::PathBuf>,
     },
     /// Show a user
     Show {
@@ -3248,6 +3266,7 @@ fn run() -> Result<()> {
         },
         Commands::User { action } => match action {
             UserCommands::List { json } => cmd::user::list(&UserListArgs::new(json)),
+            UserCommands::Icon { id, output } => cmd::user::icon(&UserIconArgs::new(id, output)),
             UserCommands::Show { id, json } => cmd::user::show(&UserShowArgs::new(id, json)),
             UserCommands::Activities {
                 id,
@@ -3715,6 +3734,13 @@ fn run() -> Result<()> {
             Some(SpaceCommands::Image { output }) => {
                 cmd::space::image(&SpaceImageArgs::new(output))
             }
+            Some(SpaceCommands::UploadAttachment {
+                file,
+                json: sub_json,
+            }) => cmd::space::upload_attachment(&SpaceUploadAttachmentArgs::new(
+                file,
+                json || sub_json,
+            )),
         },
     }
 }
