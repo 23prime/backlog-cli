@@ -1,7 +1,10 @@
 use anstream::println;
 use anyhow::{Context, Result};
 
-use crate::api::{BacklogApi, BacklogClient, activity::Activity};
+use crate::api::{BacklogApi, BacklogClient};
+use crate::cmd::activity_shared::{
+    build_activity_params, format_activity_row, validate_activity_query,
+};
 
 pub struct SpaceActivitiesArgs {
     json: bool,
@@ -21,14 +24,7 @@ impl SpaceActivitiesArgs {
         count: u32,
         order: Option<String>,
     ) -> anyhow::Result<Self> {
-        if !(1..=100).contains(&count) {
-            anyhow::bail!("count must be between 1 and 100");
-        }
-        if let (Some(min), Some(max)) = (min_id, max_id)
-            && min > max
-        {
-            anyhow::bail!("min-id must be less than or equal to max-id");
-        }
+        validate_activity_query(count, min_id, max_id)?;
         Ok(Self {
             json,
             activity_type_ids,
@@ -46,20 +42,13 @@ pub fn activities(args: &SpaceActivitiesArgs) -> Result<()> {
 }
 
 pub fn activities_with(args: &SpaceActivitiesArgs, api: &dyn BacklogApi) -> Result<()> {
-    let mut params: Vec<(String, String)> = Vec::new();
-    for id in &args.activity_type_ids {
-        params.push(("activityTypeId[]".to_string(), id.to_string()));
-    }
-    if let Some(min) = args.min_id {
-        params.push(("minId".to_string(), min.to_string()));
-    }
-    if let Some(max) = args.max_id {
-        params.push(("maxId".to_string(), max.to_string()));
-    }
-    params.push(("count".to_string(), args.count.to_string()));
-    if let Some(ref order) = args.order {
-        params.push(("order".to_string(), order.clone()));
-    }
+    let params = build_activity_params(
+        &args.activity_type_ids,
+        args.min_id,
+        args.max_id,
+        args.count,
+        args.order.as_deref(),
+    );
     let activities = api.get_space_activities(&params)?;
     if args.json {
         println!(
@@ -68,28 +57,16 @@ pub fn activities_with(args: &SpaceActivitiesArgs, api: &dyn BacklogApi) -> Resu
         );
     } else {
         for a in &activities {
-            println!("{}", format_activity_text(a));
+            println!("{}", format_activity_row(a));
         }
     }
     Ok(())
 }
 
-fn format_activity_text(a: &Activity) -> String {
-    let project = a
-        .project
-        .as_ref()
-        .map(|p| p.project_key.as_str())
-        .unwrap_or("-");
-    format!(
-        "[{}] type={} project={} user={} created={}",
-        a.id, a.activity_type, project, a.created_user.name, a.created,
-    )
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::activity::ActivityUser;
+    use crate::api::activity::{Activity, ActivityUser};
     use anyhow::anyhow;
 
     struct MockApi {
@@ -122,8 +99,8 @@ mod tests {
     }
 
     #[test]
-    fn format_activity_text_contains_fields() {
-        let text = format_activity_text(&sample_activity());
+    fn format_activity_row_contains_fields() {
+        let text = format_activity_row(&sample_activity());
         assert!(text.contains("[1]"));
         assert!(text.contains("type=1"));
         assert!(text.contains("project=-"));
