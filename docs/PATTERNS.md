@@ -381,6 +381,7 @@ let value = self.post_multipart("/resource/attachment", || {
 ```
 
 Key points:
+
 - Use `reader_with_length` (not `stream_with_length` — doesn't exist in reqwest 0.12; not `bytes` — avoids loading whole file).
 - Pre-validate with `std::fs::metadata` before the factory so early errors surface cleanly.
 - `expect` in the factory is safe because the file was just confirmed accessible.
