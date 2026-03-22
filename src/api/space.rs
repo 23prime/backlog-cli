@@ -55,11 +55,17 @@ impl BacklogClient {
             .and_then(|n| n.to_str())
             .unwrap_or("attachment")
             .to_string();
-        let bytes = std::fs::read(file_path)
-            .with_context(|| format!("Failed to read {}", file_path.display()))?;
-        let part = reqwest::blocking::multipart::Part::bytes(bytes).file_name(filename);
-        let form = reqwest::blocking::multipart::Form::new().part("file", part);
-        let value = self.post_multipart("/space/attachment", form)?;
+        let file_len = std::fs::metadata(file_path)
+            .with_context(|| format!("Failed to access {}", file_path.display()))?
+            .len();
+        let file_path = file_path.to_path_buf();
+        let value = self.post_multipart("/space/attachment", || {
+            let file =
+                std::fs::File::open(&file_path).expect("file open succeeded during pre-check");
+            let part = reqwest::blocking::multipart::Part::reader_with_length(file, file_len)
+                .file_name(filename.clone());
+            reqwest::blocking::multipart::Form::new().part("file", part)
+        })?;
         deserialize(value)
     }
 }

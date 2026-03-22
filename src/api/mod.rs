@@ -1761,22 +1761,22 @@ impl BacklogClient {
 
     /// Post a multipart/form-data request.
     ///
-    /// Note: unlike [`Self::execute`], this method does not retry on 401 because
-    /// `reqwest::blocking::multipart::Form` is consumed on the first send and cannot be
-    /// reconstructed for a retry.
-    pub fn post_multipart(
-        &self,
-        path: &str,
-        form: reqwest::blocking::multipart::Form,
-    ) -> Result<serde_json::Value> {
+    /// The provided factory closure is called on each attempt to build a fresh
+    /// `reqwest::blocking::multipart::Form`, allowing this method to reuse the
+    /// standard [`Self::execute`] retry logic (including retry-on-401).
+    pub fn post_multipart<F>(&self, path: &str, form_factory: F) -> Result<serde_json::Value>
+    where
+        F: Fn() -> reqwest::blocking::multipart::Form,
+    {
         let url = format!("{}{}", self.base_url, path);
-        crate::logger::verbose(&format!("→ POST {url}"));
-        let response = self
-            .apply_auth(self.client.post(&url))
-            .multipart(form)
-            .send()
-            .with_context(|| format!("Failed to POST {url}"))?;
-        self.finish_response(response)
+        self.execute(|| {
+            crate::logger::verbose(&format!("→ POST {url}"));
+            let form = form_factory();
+            self.apply_auth(self.client.post(&url))
+                .multipart(form)
+                .send()
+                .with_context(|| format!("Failed to POST {url}"))
+        })
     }
 
     pub fn patch_form(&self, path: &str, params: &[(String, String)]) -> Result<serde_json::Value> {
