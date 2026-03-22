@@ -6,8 +6,14 @@ use serde::{Deserialize, Serialize};
 use super::BacklogClient;
 
 fn deserialize<T: serde::de::DeserializeOwned>(value: serde_json::Value) -> Result<T> {
-    serde_json::from_value(value)
-        .map_err(|e| anyhow::anyhow!("Failed to deserialize response: {}", e))
+    let pretty = serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string());
+    serde_json::from_value(value).map_err(|e| {
+        anyhow::anyhow!(
+            "Failed to deserialize response: {}\nRaw JSON:\n{}",
+            e,
+            pretty
+        )
+    })
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
