@@ -99,7 +99,7 @@ mod tests {
     }
 
     #[test]
-    fn format_activity_text_contains_fields() {
+    fn format_activity_row_contains_fields() {
         let text = format_activity_row(&sample_activity());
         assert!(text.contains("[1]"));
         assert!(text.contains("type=1"));
