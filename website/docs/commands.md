@@ -155,6 +155,8 @@ Scheduled maintenance on 2024-07-01.
 
 Download the space icon image.
 
+The response is binary data. Use `--output` / `-o` to specify where the file is written. If omitted, the command saves the file in the current directory using the filename returned by the server (or `space_image` if none is provided).
+
 ```bash
 bl space image
 bl space image --output my_icon.png
