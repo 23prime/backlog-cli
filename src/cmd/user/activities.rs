@@ -1,9 +1,9 @@
 use anstream::println;
 use anyhow::{Context, Result};
 
-use crate::api::{
-    BacklogApi, BacklogClient,
-    activity::{build_activity_params, format_activity_row, validate_activity_query},
+use crate::api::{BacklogApi, BacklogClient};
+use crate::cmd::activity_shared::{
+    build_activity_params, format_activity_row, validate_activity_query,
 };
 
 pub struct UserActivitiesArgs {

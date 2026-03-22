@@ -1,3 +1,4 @@
+pub mod activity_shared;
 pub mod auth;
 pub mod banner;
 pub mod document;
