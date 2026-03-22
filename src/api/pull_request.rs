@@ -475,4 +475,100 @@ mod tests {
         assert_eq!(attachments.len(), 1);
         assert_eq!(attachments[0].name, "screenshot.png");
     }
+
+    #[test]
+    fn create_pull_request_returns_pr() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST)
+                .path("/projects/TEST/git/repositories/main/pullRequests")
+                .query_param("apiKey", TEST_KEY);
+            then.status(201).json_body(pr_json());
+        });
+        let pr = client(&server)
+            .create_pull_request("TEST", "main", &[])
+            .unwrap();
+        assert_eq!(pr.number, 1);
+        assert_eq!(pr.summary, "Fix bug");
+    }
+
+    #[test]
+    fn update_pull_request_returns_pr() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(PATCH)
+                .path("/projects/TEST/git/repositories/main/pullRequests/1")
+                .query_param("apiKey", TEST_KEY);
+            then.status(200).json_body(pr_json());
+        });
+        let pr = client(&server)
+            .update_pull_request("TEST", "main", 1, &[])
+            .unwrap();
+        assert_eq!(pr.number, 1);
+    }
+
+    #[test]
+    fn add_pull_request_comment_returns_comment() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST)
+                .path("/projects/TEST/git/repositories/main/pullRequests/1/comments")
+                .query_param("apiKey", TEST_KEY);
+            then.status(201).json_body(pr_comment_json());
+        });
+        let comment = client(&server)
+            .add_pull_request_comment("TEST", "main", 1, &[])
+            .unwrap();
+        assert_eq!(comment.content.as_deref(), Some("LGTM"));
+    }
+
+    #[test]
+    fn update_pull_request_comment_returns_comment() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(PATCH)
+                .path("/projects/TEST/git/repositories/main/pullRequests/1/comments/1")
+                .query_param("apiKey", TEST_KEY);
+            then.status(200).json_body(pr_comment_json());
+        });
+        let comment = client(&server)
+            .update_pull_request_comment("TEST", "main", 1, 1, &[])
+            .unwrap();
+        assert_eq!(comment.id, 1);
+    }
+
+    #[test]
+    fn download_pull_request_attachment_returns_bytes() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET)
+                .path("/projects/TEST/git/repositories/main/pullRequests/1/attachments/1");
+            then.status(200)
+                .header(
+                    "Content-Disposition",
+                    "attachment; filename=\"screenshot.png\"",
+                )
+                .body(b"hello");
+        });
+        let (bytes, filename) = client(&server)
+            .download_pull_request_attachment("TEST", "main", 1, 1)
+            .unwrap();
+        assert_eq!(bytes, b"hello");
+        assert_eq!(filename, "screenshot.png");
+    }
+
+    #[test]
+    fn delete_pull_request_attachment_returns_attachment() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(DELETE)
+                .path("/projects/TEST/git/repositories/main/pullRequests/1/attachments/1")
+                .query_param("apiKey", TEST_KEY);
+            then.status(200).json_body(pr_attachment_json());
+        });
+        let attachment = client(&server)
+            .delete_pull_request_attachment("TEST", "main", 1, 1)
+            .unwrap();
+        assert_eq!(attachment.name, "screenshot.png");
+    }
 }

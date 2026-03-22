@@ -1958,6 +1958,7 @@ bl pr list <project-id-or-key> <repo-id-or-name> --json
 
 ```bash
 bl pr count <project-id-or-key> <repo-id-or-name>
+bl pr count <project-id-or-key> <repo-id-or-name> --json
 ```
 
 ## `bl pr show`
@@ -1975,6 +1976,7 @@ bl pr show <project-id-or-key> <repo-id-or-name> <number> --json
 
 ```bash
 bl pr create <project-id-or-key> <repo-id-or-name> --summary <summary> --base <base> --branch <branch>
+bl pr create <project-id-or-key> <repo-id-or-name> --summary <summary> --base <base> --branch <branch> --json
 ```
 
 ## `bl pr update`
@@ -1983,6 +1985,7 @@ bl pr create <project-id-or-key> <repo-id-or-name> --summary <summary> --base <b
 
 ```bash
 bl pr update <project-id-or-key> <repo-id-or-name> <number> --summary <summary>
+bl pr update <project-id-or-key> <repo-id-or-name> <number> --summary <summary> --json
 ```
 
 ## `bl pr comment list`
@@ -1991,6 +1994,7 @@ bl pr update <project-id-or-key> <repo-id-or-name> <number> --summary <summary>
 
 ```bash
 bl pr comment list <project-id-or-key> <repo-id-or-name> <number>
+bl pr comment list <project-id-or-key> <repo-id-or-name> <number> --json
 ```
 
 ## `bl pr comment count`
@@ -1999,6 +2003,7 @@ bl pr comment list <project-id-or-key> <repo-id-or-name> <number>
 
 ```bash
 bl pr comment count <project-id-or-key> <repo-id-or-name> <number>
+bl pr comment count <project-id-or-key> <repo-id-or-name> <number> --json
 ```
 
 ## `bl pr comment add`
@@ -2015,6 +2020,7 @@ bl pr comment add <project-id-or-key> <repo-id-or-name> <number> --content <cont
 
 ```bash
 bl pr comment update <project-id-or-key> <repo-id-or-name> <number> <comment-id> --content <content>
+bl pr comment update <project-id-or-key> <repo-id-or-name> <number> <comment-id> --content <content> --json
 ```
 
 ## `bl pr attachment list`
@@ -2023,6 +2029,7 @@ bl pr comment update <project-id-or-key> <repo-id-or-name> <number> <comment-id>
 
 ```bash
 bl pr attachment list <project-id-or-key> <repo-id-or-name> <number>
+bl pr attachment list <project-id-or-key> <repo-id-or-name> <number> --json
 ```
 
 ## `bl pr attachment get`
@@ -2040,6 +2047,7 @@ bl pr attachment get <project-id-or-key> <repo-id-or-name> <number> <attachment-
 
 ```bash
 bl pr attachment delete <project-id-or-key> <repo-id-or-name> <number> <attachment-id>
+bl pr attachment delete <project-id-or-key> <repo-id-or-name> <number> <attachment-id> --json
 ```
 
 ## `bl git repo list`

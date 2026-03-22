@@ -1972,6 +1972,7 @@ Create a pull request.
 
 ```bash
 bl pr create <project-id-or-key> <repo-id-or-name> --summary <summary> --base <base> --branch <branch>
+bl pr create <project-id-or-key> <repo-id-or-name> --summary <summary> --base <base> --branch <branch> --json
 bl pr create <project-id-or-key> <repo-id-or-name> --summary <summary> --base <base> --branch <branch> --description <desc> --issue-id <id> --assignee-id <id>
 ```
 
@@ -1981,6 +1982,7 @@ Update a pull request. At least one of `--summary`, `--description`, `--base`, `
 
 ```bash
 bl pr update <project-id-or-key> <repo-id-or-name> <number> --summary <summary>
+bl pr update <project-id-or-key> <repo-id-or-name> <number> --summary <summary> --json
 bl pr update <project-id-or-key> <repo-id-or-name> <number> --comment <comment>
 ```
 
@@ -1999,6 +2001,7 @@ Count comments on a pull request.
 
 ```bash
 bl pr comment count <project-id-or-key> <repo-id-or-name> <number>
+bl pr comment count <project-id-or-key> <repo-id-or-name> <number> --json
 ```
 
 ## `bl pr comment add`
@@ -2007,6 +2010,7 @@ Add a comment to a pull request.
 
 ```bash
 bl pr comment add <project-id-or-key> <repo-id-or-name> <number> --content <content>
+bl pr comment add <project-id-or-key> <repo-id-or-name> <number> --content <content> --json
 ```
 
 ## `bl pr comment update`
@@ -2015,6 +2019,7 @@ Update a comment on a pull request.
 
 ```bash
 bl pr comment update <project-id-or-key> <repo-id-or-name> <number> <comment-id> --content <content>
+bl pr comment update <project-id-or-key> <repo-id-or-name> <number> <comment-id> --content <content> --json
 ```
 
 ## `bl pr attachment list`
