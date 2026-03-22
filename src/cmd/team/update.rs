@@ -19,7 +19,8 @@ impl TeamUpdateArgs {
         members: Option<Vec<u64>>,
         json: bool,
     ) -> anyhow::Result<Self> {
-        if name.is_none() && members.is_none() {
+        let no_members = members.as_ref().is_none_or(|m| m.is_empty());
+        if name.is_none() && no_members {
             anyhow::bail!("at least one of --name or --member must be provided");
         }
         Ok(Self {
@@ -142,5 +143,11 @@ mod tests {
     #[test]
     fn try_new_succeeds_with_members_only() {
         assert!(TeamUpdateArgs::try_new(1, None, Some(vec![2, 3]), false).is_ok());
+    }
+
+    #[test]
+    fn try_new_fails_when_members_is_empty_and_name_absent() {
+        let err = TeamUpdateArgs::try_new(1, None, Some(vec![]), false).unwrap_err();
+        assert!(err.to_string().contains("at least one"));
     }
 }
