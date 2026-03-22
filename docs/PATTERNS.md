@@ -358,3 +358,30 @@ println!("[{}] {}{}{}", f.id, f.dir, sep, f.name);
   Model these as `Option<DocumentUser>` on the struct so both POST and GET responses deserialize.
 - The document list endpoint requires `count` and `offset` params (400 error if omitted).
   Always send them — default to `count=20, offset=0`.
+
+## Multipart file upload (`post_multipart`)
+
+`BacklogClient::post_multipart` takes a **factory closure** `Fn() -> Form` instead of a `Form`
+directly. This allows `execute()` to rebuild the form on 401 retry.
+
+Call-site pattern in `src/api/<resource>.rs`:
+
+```rust
+// Pre-validate so the factory can use expect() safely.
+let file_len = std::fs::metadata(file_path)
+    .with_context(|| format!("Failed to access {}", file_path.display()))?
+    .len();
+let file_path = file_path.to_path_buf();
+let value = self.post_multipart("/resource/attachment", || {
+    let file = std::fs::File::open(&file_path).expect("file open succeeded during pre-check");
+    let part = reqwest::blocking::multipart::Part::reader_with_length(file, file_len)
+        .file_name(filename.clone());
+    reqwest::blocking::multipart::Form::new().part("file", part)
+})?;
+```
+
+Key points:
+- Use `reader_with_length` (not `stream_with_length` — doesn't exist in reqwest 0.12; not `bytes` — avoids loading whole file).
+- Pre-validate with `std::fs::metadata` before the factory so early errors surface cleanly.
+- `expect` in the factory is safe because the file was just confirmed accessible.
+- Add `"multipart"` to reqwest features in `Cargo.toml` when adding the first multipart endpoint.
