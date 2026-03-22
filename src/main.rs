@@ -79,7 +79,9 @@ use cmd::space::{
     SpaceShowArgs, SpaceUpdateNotificationArgs,
 };
 use cmd::star::{StarAddArgs, StarDeleteArgs};
-use cmd::team::{TeamListArgs, TeamShowArgs};
+use cmd::team::{
+    TeamAddArgs, TeamDeleteArgs, TeamIconArgs, TeamListArgs, TeamShowArgs, TeamUpdateArgs,
+};
 use cmd::user::star::{UserStarCountArgs, UserStarListArgs};
 use cmd::user::{
     UserActivitiesArgs, UserAddArgs, UserDeleteArgs, UserListArgs, UserRecentlyViewedArgs,
@@ -1864,6 +1866,48 @@ enum TeamCommands {
         #[arg(long)]
         json: bool,
     },
+    /// Create a new team
+    Add {
+        /// Team name
+        #[arg(long)]
+        name: String,
+        /// Member user IDs to add (repeatable)
+        #[arg(long = "member")]
+        members: Vec<u64>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Update a team
+    Update {
+        /// Team numeric ID
+        id: u64,
+        /// New team name
+        #[arg(long)]
+        name: Option<String>,
+        /// Replace member list with these user IDs (repeatable)
+        #[arg(long = "member")]
+        members: Vec<u64>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Delete a team
+    Delete {
+        /// Team numeric ID
+        id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Download team icon
+    Icon {
+        /// Team numeric ID
+        id: u64,
+        /// Output file path (default: server-provided filename)
+        #[arg(long, short = 'o')]
+        output: Option<std::path::PathBuf>,
+    },
 }
 
 #[derive(Subcommand)]
@@ -3306,6 +3350,26 @@ fn run() -> Result<()> {
                 offset,
             )?),
             TeamCommands::Show { id, json } => cmd::team::show(&TeamShowArgs::new(id, json)),
+            TeamCommands::Add {
+                name,
+                members,
+                json,
+            } => cmd::team::add(&TeamAddArgs::new(name, members, json)),
+            TeamCommands::Update {
+                id,
+                name,
+                members,
+                json,
+            } => {
+                let members = if members.is_empty() {
+                    None
+                } else {
+                    Some(members)
+                };
+                cmd::team::update(&TeamUpdateArgs::try_new(id, name, members, json)?)
+            }
+            TeamCommands::Delete { id, json } => cmd::team::delete(&TeamDeleteArgs::new(id, json)),
+            TeamCommands::Icon { id, output } => cmd::team::icon(&TeamIconArgs::new(id, output)),
         },
         Commands::Notification { action } => match action {
             NotificationCommands::List {

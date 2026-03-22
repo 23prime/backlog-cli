@@ -1492,6 +1492,72 @@ Members:
     [3] Engineer
 ```
 
+## `bl team add`
+
+Create a new team.
+Depending on the Backlog space configuration, this command may return `403 Forbidden`.
+
+```bash
+bl team add --name <name>
+bl team add --name <name> --member <user-id> --member <user-id>
+bl team add --name <name> --json
+```
+
+Example output:
+
+```text
+Created: [1] dev-team (0 members)
+```
+
+## `bl team update`
+
+Update a team. At least one of `--name` or `--member` must be provided.
+Depending on the Backlog space configuration, this command may return `403 Forbidden`.
+
+```bash
+bl team update <id> --name <new-name>
+bl team update <id> --member <user-id> --member <user-id>
+bl team update <id> --name <new-name> --json
+```
+
+Example output:
+
+```text
+Updated: [1] dev-team (3 members)
+```
+
+## `bl team delete`
+
+Delete a team.
+Depending on the Backlog space configuration, this command may return `403 Forbidden`.
+
+```bash
+bl team delete <id>
+bl team delete <id> --json
+```
+
+Example output:
+
+```text
+Deleted: [1] dev-team (3 members)
+```
+
+## `bl team icon`
+
+Download the team icon image.
+Depending on the Backlog space configuration, this command may return `403 Forbidden`.
+
+```bash
+bl team icon <id>
+bl team icon <id> --output <path>
+```
+
+Example output:
+
+```text
+Saved: icon.png (10240 bytes)
+```
+
 ## `bl user activities`
 
 Show recent activities of a specific user.
@@ -2320,10 +2386,10 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | --- | --- | --- |
 | `bl team list` | `GET /api/v2/teams` | ✅ Implemented |
 | `bl team show <id>` | `GET /api/v2/teams/{teamId}` | ✅ Implemented |
-| `bl team add` | `POST /api/v2/teams` | Planned |
-| `bl team update <id>` | `PATCH /api/v2/teams/{teamId}` | Planned |
-| `bl team delete <id>` | `DELETE /api/v2/teams/{teamId}` | Planned |
-| — | `GET /api/v2/teams/{teamId}/icon` | Planned |
+| `bl team add` | `POST /api/v2/teams` | ✅ Implemented |
+| `bl team update <id>` | `PATCH /api/v2/teams/{teamId}` | ✅ Implemented |
+| `bl team delete <id>` | `DELETE /api/v2/teams/{teamId}` | ✅ Implemented |
+| `bl team icon <id>` | `GET /api/v2/teams/{teamId}/icon` | ✅ Implemented |
 
 ### System
 
