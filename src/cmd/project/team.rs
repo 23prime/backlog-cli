@@ -25,7 +25,7 @@ pub fn list_with(args: &ProjectTeamListArgs, api: &dyn BacklogApi) -> Result<()>
         crate::cmd::print_json(&teams)?;
     } else {
         for t in &teams {
-            println!("{}", format_team_row(t));
+            println!("{}", format_project_team_row(t));
         }
     }
     Ok(())
@@ -53,7 +53,7 @@ pub fn add_with(args: &ProjectTeamAddArgs, api: &dyn BacklogApi) -> Result<()> {
     if args.json {
         crate::cmd::print_json(&team)?;
     } else {
-        println!("Added: {}", format_team_row(&team));
+        println!("Added: {}", format_project_team_row(&team));
     }
     Ok(())
 }
@@ -80,12 +80,12 @@ pub fn delete_with(args: &ProjectTeamDeleteArgs, api: &dyn BacklogApi) -> Result
     if args.json {
         crate::cmd::print_json(&team)?;
     } else {
-        println!("Deleted: {}", format_team_row(&team));
+        println!("Deleted: {}", format_project_team_row(&team));
     }
     Ok(())
 }
 
-fn format_team_row(t: &Team) -> String {
+fn format_project_team_row(t: &Team) -> String {
     format!("[{}] {}", t.id, t.name)
 }
 
@@ -127,8 +127,8 @@ mod tests {
     }
 
     #[test]
-    fn format_team_row_shows_id_and_name() {
-        let text = format_team_row(&sample_team());
+    fn format_project_team_row_shows_id_and_name() {
+        let text = format_project_team_row(&sample_team());
         assert!(text.contains("[1]"));
         assert!(text.contains("dev-team"));
     }
