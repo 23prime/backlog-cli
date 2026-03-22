@@ -232,6 +232,34 @@ fn format_webhook_detail(h: &ProjectWebhook) -> String {
 This pattern prevents `show` from looking identical to `list` in non-JSON mode,
 which is confusing to users.
 
+## Cross-resource shared helpers — `src/cmd/<name>_shared.rs`
+
+When multiple resource groups (e.g. `space`, `project`, `user`) share the same
+formatting, param-building, or validation logic for a concept that doesn't belong
+to a single resource, create a dedicated `src/cmd/<concept>_shared.rs` file:
+
+```rust
+// src/cmd/activity_shared.rs
+pub(crate) fn validate_activity_query(...) -> anyhow::Result<()> { ... }
+pub(crate) fn build_activity_params(...) -> Vec<(String, String)> { ... }
+pub(crate) fn format_activity_row(a: &Activity) -> String { ... }
+```
+
+Register it in `src/cmd/mod.rs`:
+
+```rust
+pub mod activity_shared;
+```
+
+Import in callers:
+
+```rust
+use crate::cmd::activity_shared::{build_activity_params, format_activity_row, validate_activity_query};
+```
+
+**Do not** put these helpers in `src/api/` — the `api/` layer handles HTTP and
+deserialization only. Formatting, validation, and param-building belong in `cmd/`.
+
 ## Shared row formatters in `mod.rs`
 
 When multiple subcommands under the same resource group (e.g. `list`, `add`, `delete`,
