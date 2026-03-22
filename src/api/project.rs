@@ -3,6 +3,7 @@ use std::collections::BTreeMap;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
+use super::deserialize;
 use super::{BacklogClient, activity::Activity};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -162,24 +163,12 @@ pub struct UpdateProjectVersionParams<'a> {
 impl BacklogClient {
     pub fn get_projects(&self) -> Result<Vec<Project>> {
         let value = self.get("/projects")?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize projects response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn get_project(&self, key: &str) -> Result<Project> {
         let value = self.get(&format!("/projects/{}", key))?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize project response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn get_project_activities(
@@ -188,57 +177,27 @@ impl BacklogClient {
         params: &[(String, String)],
     ) -> Result<Vec<Activity>> {
         let value = self.get_with_query(&format!("/projects/{}/activities", key), params)?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize project activities response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn get_project_disk_usage(&self, key: &str) -> Result<ProjectDiskUsage> {
         let value = self.get(&format!("/projects/{}/diskUsage", key))?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize project disk usage response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn get_project_users(&self, key: &str) -> Result<Vec<ProjectUser>> {
         let value = self.get(&format!("/projects/{}/users", key))?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize project users response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn get_project_statuses(&self, key: &str) -> Result<Vec<ProjectStatus>> {
         let value = self.get(&format!("/projects/{}/statuses", key))?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize project statuses response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn get_project_issue_types(&self, key: &str) -> Result<Vec<ProjectIssueType>> {
         let value = self.get(&format!("/projects/{}/issueTypes", key))?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize project issue types response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn add_project_issue_type(
@@ -252,13 +211,7 @@ impl BacklogClient {
             ("color".to_string(), color.to_string()),
         ];
         let value = self.post_form(&format!("/projects/{}/issueTypes", key), &params)?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize add project issue type response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn update_project_issue_type(
@@ -271,13 +224,7 @@ impl BacklogClient {
             &format!("/projects/{}/issueTypes/{}", key, issue_type_id),
             params,
         )?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize update project issue type response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn delete_project_issue_type(
@@ -294,36 +241,18 @@ impl BacklogClient {
             &format!("/projects/{}/issueTypes/{}", key, issue_type_id),
             &params,
         )?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize delete project issue type response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn get_project_categories(&self, key: &str) -> Result<Vec<ProjectCategory>> {
         let value = self.get(&format!("/projects/{}/categories", key))?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize project categories response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn add_project_category(&self, key: &str, name: &str) -> Result<ProjectCategory> {
         let params = vec![("name".to_string(), name.to_string())];
         let value = self.post_form(&format!("/projects/{}/categories", key), &params)?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize add project category response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn update_project_category(
@@ -337,24 +266,12 @@ impl BacklogClient {
             &format!("/projects/{}/categories/{}", key, category_id),
             &params,
         )?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize update project category response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn delete_project_category(&self, key: &str, category_id: u64) -> Result<ProjectCategory> {
         let value = self.delete_req(&format!("/projects/{}/categories/{}", key, category_id))?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize delete project category response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn add_project_version(
@@ -376,13 +293,7 @@ impl BacklogClient {
             params.push(("releaseDueDate".to_string(), r.to_string()));
         }
         let value = self.post_form(&format!("/projects/{}/versions", key), &params)?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize add project version response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn update_project_version(
@@ -406,68 +317,32 @@ impl BacklogClient {
         }
         let value =
             self.patch_form(&format!("/projects/{}/versions/{}", key, version_id), &form)?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize update project version response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn delete_project_version(&self, key: &str, version_id: u64) -> Result<ProjectVersion> {
         let value = self.delete_req(&format!("/projects/{}/versions/{}", key, version_id))?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize delete project version response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn get_project_versions(&self, key: &str) -> Result<Vec<ProjectVersion>> {
         let value = self.get(&format!("/projects/{}/versions", key))?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize project versions response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn create_project(&self, params: &[(String, String)]) -> Result<Project> {
         let value = self.post_form("/projects", params)?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize create project response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn update_project(&self, key: &str, params: &[(String, String)]) -> Result<Project> {
         let value = self.patch_form(&format!("/projects/{}", key), params)?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize update project response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn delete_project(&self, key: &str) -> Result<Project> {
         let value = self.delete_req(&format!("/projects/{}", key))?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize delete project response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn add_project_status(&self, key: &str, name: &str, color: &str) -> Result<ProjectStatus> {
@@ -476,13 +351,7 @@ impl BacklogClient {
             ("color".to_string(), color.to_string()),
         ];
         let value = self.post_form(&format!("/projects/{}/statuses", key), &params)?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize add project status response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn update_project_status(
@@ -493,13 +362,7 @@ impl BacklogClient {
     ) -> Result<ProjectStatus> {
         let value =
             self.patch_form(&format!("/projects/{}/statuses/{}", key, status_id), params)?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize update project status response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn delete_project_status(
@@ -516,13 +379,7 @@ impl BacklogClient {
             &format!("/projects/{}/statuses/{}", key, status_id),
             &params,
         )?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize delete project status response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn reorder_project_statuses(
@@ -538,83 +395,41 @@ impl BacklogClient {
             &format!("/projects/{}/statuses/updateDisplayOrder", key),
             &params,
         )?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize reorder project statuses response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn add_project_user(&self, key: &str, user_id: u64) -> Result<ProjectUser> {
         let params = vec![("userId".to_string(), user_id.to_string())];
         let value = self.post_form(&format!("/projects/{}/users", key), &params)?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize add project user response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn delete_project_user(&self, key: &str, user_id: u64) -> Result<ProjectUser> {
         let params = vec![("userId".to_string(), user_id.to_string())];
         let value = self.delete_form(&format!("/projects/{}/users", key), &params)?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize delete project user response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn get_project_administrators(&self, key: &str) -> Result<Vec<ProjectUser>> {
         let value = self.get(&format!("/projects/{}/administrators", key))?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize project administrators response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn add_project_administrator(&self, key: &str, user_id: u64) -> Result<ProjectUser> {
         let params = vec![("userId".to_string(), user_id.to_string())];
         let value = self.post_form(&format!("/projects/{}/administrators", key), &params)?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize add project administrator response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn delete_project_administrator(&self, key: &str, user_id: u64) -> Result<ProjectUser> {
         let params = vec![("userId".to_string(), user_id.to_string())];
         let value = self.delete_form(&format!("/projects/{}/administrators", key), &params)?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize delete project administrator response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn get_project_custom_fields(&self, key: &str) -> Result<Vec<ProjectCustomField>> {
         let value = self.get(&format!("/projects/{}/customFields", key))?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize project custom fields response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn add_project_custom_field(
@@ -636,13 +451,7 @@ impl BacklogClient {
             params.push(("required".to_string(), r.to_string()));
         }
         let value = self.post_form(&format!("/projects/{}/customFields", key), &params)?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize add project custom field response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn update_project_custom_field(
@@ -667,13 +476,7 @@ impl BacklogClient {
             &format!("/projects/{}/customFields/{}", key, custom_field_id),
             &params,
         )?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize update project custom field response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn delete_project_custom_field(
@@ -685,13 +488,7 @@ impl BacklogClient {
             "/projects/{}/customFields/{}",
             key, custom_field_id
         ))?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize delete project custom field response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn add_project_custom_field_item(
@@ -705,13 +502,7 @@ impl BacklogClient {
             &format!("/projects/{}/customFields/{}/items", key, custom_field_id),
             &params,
         )?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize add project custom field item response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn update_project_custom_field_item(
@@ -729,13 +520,7 @@ impl BacklogClient {
             ),
             &params,
         )?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize update project custom field item response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn delete_project_custom_field_item(
@@ -748,35 +533,17 @@ impl BacklogClient {
             "/projects/{}/customFields/{}/items/{}",
             key, custom_field_id, item_id
         ))?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize delete project custom field item response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn get_project_webhooks(&self, key: &str) -> Result<Vec<ProjectWebhook>> {
         let value = self.get(&format!("/projects/{key}/webhooks"))?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize project webhooks response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn get_project_webhook(&self, key: &str, webhook_id: u64) -> Result<ProjectWebhook> {
         let value = self.get(&format!("/projects/{key}/webhooks/{webhook_id}"))?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize project webhook response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn add_project_webhook(
@@ -802,13 +569,7 @@ impl BacklogClient {
             params.push(("activityTypeIds[]".to_string(), id.to_string()));
         }
         let value = self.post_form(&format!("/projects/{key}/webhooks"), &params)?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize add project webhook response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn update_project_webhook(
@@ -836,24 +597,12 @@ impl BacklogClient {
             }
         }
         let value = self.patch_form(&format!("/projects/{key}/webhooks/{webhook_id}"), &form)?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize update project webhook response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 
     pub fn delete_project_webhook(&self, key: &str, webhook_id: u64) -> Result<ProjectWebhook> {
         let value = self.delete_req(&format!("/projects/{key}/webhooks/{webhook_id}"))?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize delete project webhook response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 }
 

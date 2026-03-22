@@ -2,6 +2,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 use super::BacklogClient;
+use super::deserialize;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -20,13 +21,7 @@ pub struct RateLimit {
 impl BacklogClient {
     pub fn get_rate_limit(&self) -> Result<RateLimit> {
         let value = self.get("/rateLimit")?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize rate limit response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 }
 

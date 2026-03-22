@@ -2,6 +2,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 use super::BacklogClient;
+use super::deserialize;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -19,13 +20,7 @@ pub struct Space {
 impl BacklogClient {
     pub fn get_space(&self) -> Result<Space> {
         let value = self.get("/space")?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize space response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        deserialize(value)
     }
 }
 

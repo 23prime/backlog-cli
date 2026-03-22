@@ -1,7 +1,14 @@
 use anyhow::{Context, Result};
 use reqwest::blocking::Client;
+use serde::de::DeserializeOwned;
 use std::cell::RefCell;
 use std::time::Duration;
+
+pub(crate) fn deserialize<T: DeserializeOwned>(value: serde_json::Value) -> Result<T> {
+    let pretty = serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string());
+    serde_json::from_value(value)
+        .map_err(|e| anyhow::anyhow!("Failed to deserialize response: {e}\nRaw JSON:\n{pretty}"))
+}
 
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);

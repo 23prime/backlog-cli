@@ -3,19 +3,11 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 use super::BacklogClient;
+use super::deserialize;
 use crate::api::activity::Activity;
 use crate::api::issue::Issue;
 use crate::api::project::Project;
 use crate::api::wiki::WikiListItem;
-
-fn deserialize<T: serde::de::DeserializeOwned>(value: serde_json::Value, ctx: &str) -> Result<T> {
-    serde_json::from_value(value.clone()).map_err(|e| {
-        anyhow::anyhow!(
-            "Failed to deserialize {ctx}: {e}\nRaw JSON:\n{}",
-            serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-        )
-    })
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -83,17 +75,17 @@ pub struct StarCount {
 impl BacklogClient {
     pub fn get_myself(&self) -> Result<User> {
         let value = self.get("/users/myself")?;
-        deserialize(value, "user response")
+        deserialize(value)
     }
 
     pub fn get_users(&self) -> Result<Vec<User>> {
         let value = self.get("/users")?;
-        deserialize(value, "users response")
+        deserialize(value)
     }
 
     pub fn get_user(&self, user_id: u64) -> Result<User> {
         let value = self.get(&format!("/users/{user_id}"))?;
-        deserialize(value, "user response")
+        deserialize(value)
     }
 
     pub fn get_user_activities(
@@ -102,7 +94,7 @@ impl BacklogClient {
         params: &[(String, String)],
     ) -> Result<Vec<Activity>> {
         let value = self.get_with_query(&format!("/users/{user_id}/activities"), params)?;
-        deserialize(value, "user activities response")
+        deserialize(value)
     }
 
     pub fn get_recently_viewed_issues(
@@ -110,22 +102,22 @@ impl BacklogClient {
         params: &[(String, String)],
     ) -> Result<Vec<RecentlyViewedIssue>> {
         let value = self.get_with_query("/users/myself/recentlyViewedIssues", params)?;
-        deserialize(value, "recently viewed issues response")
+        deserialize(value)
     }
 
     pub fn add_user(&self, params: &[(String, String)]) -> Result<User> {
         let value = self.post_form("/users", params)?;
-        deserialize(value, "user response")
+        deserialize(value)
     }
 
     pub fn update_user(&self, user_id: u64, params: &[(String, String)]) -> Result<User> {
         let value = self.patch_form(&format!("/users/{user_id}"), params)?;
-        deserialize(value, "user response")
+        deserialize(value)
     }
 
     pub fn delete_user(&self, user_id: u64) -> Result<User> {
         let value = self.delete_req(&format!("/users/{user_id}"))?;
-        deserialize(value, "user response")
+        deserialize(value)
     }
 
     pub fn get_recently_viewed_projects(
@@ -133,7 +125,7 @@ impl BacklogClient {
         params: &[(String, String)],
     ) -> Result<Vec<RecentlyViewedProject>> {
         let value = self.get_with_query("/users/myself/recentlyViewedProjects", params)?;
-        deserialize(value, "recently viewed projects response")
+        deserialize(value)
     }
 
     pub fn get_recently_viewed_wikis(
@@ -141,17 +133,17 @@ impl BacklogClient {
         params: &[(String, String)],
     ) -> Result<Vec<RecentlyViewedWiki>> {
         let value = self.get_with_query("/users/myself/recentlyViewedWikis", params)?;
-        deserialize(value, "recently viewed wikis response")
+        deserialize(value)
     }
 
     pub fn get_user_stars(&self, user_id: u64, params: &[(String, String)]) -> Result<Vec<Star>> {
         let value = self.get_with_query(&format!("/users/{user_id}/stars"), params)?;
-        deserialize(value, "user stars response")
+        deserialize(value)
     }
 
     pub fn count_user_stars(&self, user_id: u64, params: &[(String, String)]) -> Result<StarCount> {
         let value = self.get_with_query(&format!("/users/{user_id}/stars/count"), params)?;
-        deserialize(value, "star count response")
+        deserialize(value)
     }
 
     pub fn add_star(&self, params: &[(String, String)]) -> Result<()> {

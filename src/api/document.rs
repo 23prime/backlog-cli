@@ -4,6 +4,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 use super::BacklogClient;
+use super::deserialize;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -75,16 +76,6 @@ pub struct DocumentTree {
     pub trash_tree: DocumentTreeNode,
     #[serde(flatten)]
     pub extra: BTreeMap<String, serde_json::Value>,
-}
-
-fn deserialize<T: serde::de::DeserializeOwned>(value: serde_json::Value) -> Result<T> {
-    serde_json::from_value(value.clone()).map_err(|e| {
-        anyhow::anyhow!(
-            "Failed to deserialize document response: {}\nRaw JSON:\n{}",
-            e,
-            serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-        )
-    })
 }
 
 impl BacklogClient {

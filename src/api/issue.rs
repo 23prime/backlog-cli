@@ -4,6 +4,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 use super::BacklogClient;
+use super::deserialize;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -143,17 +144,6 @@ pub struct IssueAttachment {
     pub size: u64,
     pub created_user: IssueUser,
     pub created: String,
-}
-
-fn deserialize<T: serde::de::DeserializeOwned>(value: serde_json::Value) -> Result<T> {
-    let pretty = serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string());
-    serde_json::from_value(value).map_err(|e| {
-        anyhow::anyhow!(
-            "Failed to deserialize response: {}\nRaw JSON:\n{}",
-            e,
-            pretty
-        )
-    })
 }
 
 impl BacklogClient {
