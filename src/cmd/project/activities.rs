@@ -1,7 +1,10 @@
 use anstream::println;
 use anyhow::{Context, Result};
 
-use crate::api::{BacklogApi, BacklogClient, activity::format_activity_row};
+use crate::api::{
+    BacklogApi, BacklogClient,
+    activity::{build_activity_params, format_activity_row},
+};
 
 pub struct ProjectActivitiesArgs {
     key: String,
@@ -49,20 +52,13 @@ pub fn activities(args: &ProjectActivitiesArgs) -> Result<()> {
 }
 
 pub fn activities_with(args: &ProjectActivitiesArgs, api: &dyn BacklogApi) -> Result<()> {
-    let mut params: Vec<(String, String)> = Vec::new();
-    for id in &args.activity_type_ids {
-        params.push(("activityTypeId[]".to_string(), id.to_string()));
-    }
-    if let Some(min) = args.min_id {
-        params.push(("minId".to_string(), min.to_string()));
-    }
-    if let Some(max) = args.max_id {
-        params.push(("maxId".to_string(), max.to_string()));
-    }
-    params.push(("count".to_string(), args.count.to_string()));
-    if let Some(ref order) = args.order {
-        params.push(("order".to_string(), order.clone()));
-    }
+    let params = build_activity_params(
+        &args.activity_type_ids,
+        args.min_id,
+        args.max_id,
+        args.count,
+        args.order.as_deref(),
+    );
     let activities = api.get_project_activities(&args.key, &params)?;
     if args.json {
         println!(
