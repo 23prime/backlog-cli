@@ -924,6 +924,23 @@ Example output:
 Deleted: My Project (MYPRJ)
 ```
 
+## `bl project image`
+
+Download the project icon image.
+
+The response is binary data. Use `--output` / `-o` to specify where the file is written. If omitted, the command saves the file in the current directory using the filename returned by the server (or `project_image` if none is provided).
+
+```bash
+bl project image <id-or-key>
+bl project image <id-or-key> --output my_icon.png
+```
+
+Example output:
+
+```text
+Saved: project_image.png (1234 bytes)
+```
+
 ## `bl issue list`
 
 List issues with optional filters.
@@ -2219,7 +2236,7 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | `bl project admin list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/administrators` | ✅ Implemented |
 | `bl project admin add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/administrators` | ✅ Implemented |
 | `bl project admin delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/administrators` | ✅ Implemented |
-| — | `GET /api/v2/projects/{projectIdOrKey}/image` | Planned |
+| `bl project image <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/image` | ✅ Implemented |
 | `bl project status list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/statuses` | ✅ Implemented |
 | `bl project status add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/statuses` | ✅ Implemented |
 | `bl project status update <id-or-key> --status-id <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/statuses/{id}` | ✅ Implemented |

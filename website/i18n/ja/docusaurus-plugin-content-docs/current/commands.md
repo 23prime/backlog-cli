@@ -924,6 +924,23 @@ bl project delete <id-or-key> --json
 Deleted: My Project (MYPRJ)
 ```
 
+## `bl project image`
+
+プロジェクトのアイコン画像をダウンロードします。
+
+レスポンスはバイナリデータです。`--output` / `-o` で保存先を指定してください。省略した場合は、サーバーが返すファイル名（取得できない場合は `project_image`）を使ってカレントディレクトリに保存します。
+
+```bash
+bl project image <id-or-key>
+bl project image <id-or-key> --output my_icon.png
+```
+
+出力例:
+
+```text
+Saved: project_image.png (1234 bytes)
+```
+
 ## `bl issue list`
 
 オプションのフィルターで課題を一覧表示します。
@@ -2221,7 +2238,7 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl project admin list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/administrators` | ✅ 実装済み |
 | `bl project admin add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/administrators` | ✅ 実装済み |
 | `bl project admin delete <id-or-key>` | `DELETE /api/v2/projects/{projectIdOrKey}/administrators` | ✅ 実装済み |
-| — | `GET /api/v2/projects/{projectIdOrKey}/image` | 計画中 |
+| `bl project image <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/image` | ✅ 実装済み |
 | `bl project status list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/statuses` | ✅ 実装済み |
 | `bl project status add <id-or-key>` | `POST /api/v2/projects/{projectIdOrKey}/statuses` | ✅ 実装済み |
 | `bl project status update <id-or-key> --status-id <id>` | `PATCH /api/v2/projects/{projectIdOrKey}/statuses/{id}` | ✅ 実装済み |
