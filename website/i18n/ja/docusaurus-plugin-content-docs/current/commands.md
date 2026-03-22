@@ -1943,6 +1943,114 @@ bl resolution list [--json]
 [4] 再現しない
 ```
 
+## `bl pr list`
+
+リポジトリのプルリクエスト一覧を表示します。
+
+```bash
+bl pr list <project-id-or-key> <repo-id-or-name>
+bl pr list <project-id-or-key> <repo-id-or-name> --json
+```
+
+## `bl pr count`
+
+リポジトリのプルリクエスト数を表示します。
+
+```bash
+bl pr count <project-id-or-key> <repo-id-or-name>
+bl pr count <project-id-or-key> <repo-id-or-name> --json
+```
+
+## `bl pr show`
+
+プルリクエストの詳細を表示します。
+
+```bash
+bl pr show <project-id-or-key> <repo-id-or-name> <number>
+bl pr show <project-id-or-key> <repo-id-or-name> <number> --json
+```
+
+## `bl pr create`
+
+プルリクエストを作成します。
+
+```bash
+bl pr create <project-id-or-key> <repo-id-or-name> --summary <summary> --base <base> --branch <branch>
+bl pr create <project-id-or-key> <repo-id-or-name> --summary <summary> --base <base> --branch <branch> --json
+```
+
+## `bl pr update`
+
+プルリクエストを更新します。`--summary`、`--description`、`--base`、`--issue-id`、`--assignee-id`、`--comment` のいずれか1つ以上が必要です。
+
+```bash
+bl pr update <project-id-or-key> <repo-id-or-name> <number> --summary <summary>
+bl pr update <project-id-or-key> <repo-id-or-name> <number> --summary <summary> --json
+```
+
+## `bl pr comment list`
+
+プルリクエストのコメント一覧を表示します。
+
+```bash
+bl pr comment list <project-id-or-key> <repo-id-or-name> <number>
+bl pr comment list <project-id-or-key> <repo-id-or-name> <number> --json
+```
+
+## `bl pr comment count`
+
+プルリクエストのコメント数を表示します。
+
+```bash
+bl pr comment count <project-id-or-key> <repo-id-or-name> <number>
+bl pr comment count <project-id-or-key> <repo-id-or-name> <number> --json
+```
+
+## `bl pr comment add`
+
+プルリクエストにコメントを追加します。
+
+```bash
+bl pr comment add <project-id-or-key> <repo-id-or-name> <number> --content <content>
+bl pr comment add <project-id-or-key> <repo-id-or-name> <number> --content <content> --json
+```
+
+## `bl pr comment update`
+
+プルリクエストのコメントを更新します。
+
+```bash
+bl pr comment update <project-id-or-key> <repo-id-or-name> <number> <comment-id> --content <content>
+bl pr comment update <project-id-or-key> <repo-id-or-name> <number> <comment-id> --content <content> --json
+```
+
+## `bl pr attachment list`
+
+プルリクエストの添付ファイル一覧を表示します。
+
+```bash
+bl pr attachment list <project-id-or-key> <repo-id-or-name> <number>
+bl pr attachment list <project-id-or-key> <repo-id-or-name> <number> --json
+```
+
+## `bl pr attachment get`
+
+プルリクエストの添付ファイルをダウンロードします。
+
+```bash
+bl pr attachment get <project-id-or-key> <repo-id-or-name> <number> <attachment-id>
+bl pr attachment get <project-id-or-key> <repo-id-or-name> <number> <attachment-id> --output <path>
+```
+
+## `bl pr attachment delete`
+
+プルリクエストの添付ファイルを削除します。
+
+```bash
+bl pr attachment delete <project-id-or-key> <repo-id-or-name> <number> <attachment-id>
+bl pr attachment delete <project-id-or-key> <repo-id-or-name> <number> <attachment-id> --json
+```
+
 ## `bl git repo list`
 
 プロジェクトの Git リポジトリ一覧を表示します。
@@ -2149,18 +2257,18 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 
 | コマンド | API エンドポイント | 状態 |
 | --- | --- | --- |
-| `bl pr list <id-or-key> <repo>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests` | 計画中 |
-| `bl pr count <id-or-key> <repo>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/count` | 計画中 |
-| `bl pr show <id-or-key> <repo> <number>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}` | 計画中 |
-| `bl pr create <id-or-key> <repo>` | `POST /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests` | 計画中 |
-| `bl pr update <id-or-key> <repo> <number>` | `PATCH /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}` | 計画中 |
-| `bl pr comment list <id-or-key> <repo> <number>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/comments` | 計画中 |
-| `bl pr comment count <id-or-key> <repo> <number>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/comments/count` | 計画中 |
-| `bl pr comment add <id-or-key> <repo> <number>` | `POST /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/comments` | 計画中 |
-| `bl pr comment update <id-or-key> <repo> <number> <comment-id>` | `PATCH /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/comments/{commentId}` | 計画中 |
-| `bl pr attachment list <id-or-key> <repo> <number>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/attachments` | 計画中 |
-| `bl pr attachment get <id-or-key> <repo> <number> <attachment-id>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/attachments/{attachmentId}` | 計画中 |
-| `bl pr attachment delete <id-or-key> <repo> <number> <attachment-id>` | `DELETE /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/attachments/{attachmentId}` | 計画中 |
+| `bl pr list <id-or-key> <repo>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests` | ✅ 実装済み |
+| `bl pr count <id-or-key> <repo>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/count` | ✅ 実装済み |
+| `bl pr show <id-or-key> <repo> <number>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}` | ✅ 実装済み |
+| `bl pr create <id-or-key> <repo>` | `POST /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests` | ✅ 実装済み |
+| `bl pr update <id-or-key> <repo> <number>` | `PATCH /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}` | ✅ 実装済み |
+| `bl pr comment list <id-or-key> <repo> <number>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/comments` | ✅ 実装済み |
+| `bl pr comment count <id-or-key> <repo> <number>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/comments/count` | ✅ 実装済み |
+| `bl pr comment add <id-or-key> <repo> <number>` | `POST /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/comments` | ✅ 実装済み |
+| `bl pr comment update <id-or-key> <repo> <number> <comment-id>` | `PATCH /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/comments/{commentId}` | ✅ 実装済み |
+| `bl pr attachment list <id-or-key> <repo> <number>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/attachments` | ✅ 実装済み |
+| `bl pr attachment get <id-or-key> <repo> <number> <attachment-id>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/attachments/{attachmentId}` | ✅ 実装済み |
+| `bl pr attachment delete <id-or-key> <repo> <number> <attachment-id>` | `DELETE /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/attachments/{attachmentId}` | ✅ 実装済み |
 
 ### Git Repositories
 

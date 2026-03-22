@@ -4,6 +4,7 @@ pub mod document;
 pub mod git;
 pub mod issue;
 pub mod notification;
+pub mod pr;
 pub mod priority;
 pub mod project;
 pub mod rate_limit;

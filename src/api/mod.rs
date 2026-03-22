@@ -15,6 +15,7 @@ pub mod licence;
 pub mod notification;
 pub mod priority;
 pub mod project;
+pub mod pull_request;
 pub mod rate_limit;
 pub mod resolution;
 pub mod shared_file;
@@ -40,6 +41,10 @@ use project::{
     Project, ProjectCategory, ProjectCustomField, ProjectDiskUsage, ProjectIssueType,
     ProjectStatus, ProjectUser, ProjectVersion, ProjectWebhook, UpdateProjectVersionParams,
     UpdateProjectWebhookParams,
+};
+use pull_request::{
+    PullRequest, PullRequestAttachment, PullRequestComment, PullRequestCommentCount,
+    PullRequestCount,
 };
 use rate_limit::RateLimit;
 use resolution::Resolution;
@@ -622,6 +627,109 @@ pub trait BacklogApi {
         _project_id_or_key: &str,
         _repo_id_or_name: &str,
     ) -> Result<GitRepository> {
+        unimplemented!()
+    }
+    fn get_pull_requests(
+        &self,
+        _project_id_or_key: &str,
+        _repo_id_or_name: &str,
+        _params: &[(String, String)],
+    ) -> Result<Vec<PullRequest>> {
+        unimplemented!()
+    }
+    fn count_pull_requests(
+        &self,
+        _project_id_or_key: &str,
+        _repo_id_or_name: &str,
+        _params: &[(String, String)],
+    ) -> Result<PullRequestCount> {
+        unimplemented!()
+    }
+    fn get_pull_request(
+        &self,
+        _project_id_or_key: &str,
+        _repo_id_or_name: &str,
+        _number: u64,
+    ) -> Result<PullRequest> {
+        unimplemented!()
+    }
+    fn create_pull_request(
+        &self,
+        _project_id_or_key: &str,
+        _repo_id_or_name: &str,
+        _params: &[(String, String)],
+    ) -> Result<PullRequest> {
+        unimplemented!()
+    }
+    fn update_pull_request(
+        &self,
+        _project_id_or_key: &str,
+        _repo_id_or_name: &str,
+        _number: u64,
+        _params: &[(String, String)],
+    ) -> Result<PullRequest> {
+        unimplemented!()
+    }
+    fn get_pull_request_comments(
+        &self,
+        _project_id_or_key: &str,
+        _repo_id_or_name: &str,
+        _number: u64,
+        _params: &[(String, String)],
+    ) -> Result<Vec<PullRequestComment>> {
+        unimplemented!()
+    }
+    fn count_pull_request_comments(
+        &self,
+        _project_id_or_key: &str,
+        _repo_id_or_name: &str,
+        _number: u64,
+    ) -> Result<PullRequestCommentCount> {
+        unimplemented!()
+    }
+    fn add_pull_request_comment(
+        &self,
+        _project_id_or_key: &str,
+        _repo_id_or_name: &str,
+        _number: u64,
+        _params: &[(String, String)],
+    ) -> Result<PullRequestComment> {
+        unimplemented!()
+    }
+    fn update_pull_request_comment(
+        &self,
+        _project_id_or_key: &str,
+        _repo_id_or_name: &str,
+        _number: u64,
+        _comment_id: u64,
+        _params: &[(String, String)],
+    ) -> Result<PullRequestComment> {
+        unimplemented!()
+    }
+    fn get_pull_request_attachments(
+        &self,
+        _project_id_or_key: &str,
+        _repo_id_or_name: &str,
+        _number: u64,
+    ) -> Result<Vec<PullRequestAttachment>> {
+        unimplemented!()
+    }
+    fn download_pull_request_attachment(
+        &self,
+        _project_id_or_key: &str,
+        _repo_id_or_name: &str,
+        _number: u64,
+        _attachment_id: u64,
+    ) -> Result<(Vec<u8>, String)> {
+        unimplemented!()
+    }
+    fn delete_pull_request_attachment(
+        &self,
+        _project_id_or_key: &str,
+        _repo_id_or_name: &str,
+        _number: u64,
+        _attachment_id: u64,
+    ) -> Result<PullRequestAttachment> {
         unimplemented!()
     }
 }
@@ -1294,6 +1402,125 @@ impl BacklogApi for BacklogClient {
         repo_id_or_name: &str,
     ) -> Result<GitRepository> {
         self.get_git_repository(project_id_or_key, repo_id_or_name)
+    }
+    fn get_pull_requests(
+        &self,
+        project_id_or_key: &str,
+        repo_id_or_name: &str,
+        params: &[(String, String)],
+    ) -> Result<Vec<PullRequest>> {
+        self.get_pull_requests(project_id_or_key, repo_id_or_name, params)
+    }
+    fn count_pull_requests(
+        &self,
+        project_id_or_key: &str,
+        repo_id_or_name: &str,
+        params: &[(String, String)],
+    ) -> Result<PullRequestCount> {
+        self.count_pull_requests(project_id_or_key, repo_id_or_name, params)
+    }
+    fn get_pull_request(
+        &self,
+        project_id_or_key: &str,
+        repo_id_or_name: &str,
+        number: u64,
+    ) -> Result<PullRequest> {
+        self.get_pull_request(project_id_or_key, repo_id_or_name, number)
+    }
+    fn create_pull_request(
+        &self,
+        project_id_or_key: &str,
+        repo_id_or_name: &str,
+        params: &[(String, String)],
+    ) -> Result<PullRequest> {
+        self.create_pull_request(project_id_or_key, repo_id_or_name, params)
+    }
+    fn update_pull_request(
+        &self,
+        project_id_or_key: &str,
+        repo_id_or_name: &str,
+        number: u64,
+        params: &[(String, String)],
+    ) -> Result<PullRequest> {
+        self.update_pull_request(project_id_or_key, repo_id_or_name, number, params)
+    }
+    fn get_pull_request_comments(
+        &self,
+        project_id_or_key: &str,
+        repo_id_or_name: &str,
+        number: u64,
+        params: &[(String, String)],
+    ) -> Result<Vec<PullRequestComment>> {
+        self.get_pull_request_comments(project_id_or_key, repo_id_or_name, number, params)
+    }
+    fn count_pull_request_comments(
+        &self,
+        project_id_or_key: &str,
+        repo_id_or_name: &str,
+        number: u64,
+    ) -> Result<PullRequestCommentCount> {
+        self.count_pull_request_comments(project_id_or_key, repo_id_or_name, number)
+    }
+    fn add_pull_request_comment(
+        &self,
+        project_id_or_key: &str,
+        repo_id_or_name: &str,
+        number: u64,
+        params: &[(String, String)],
+    ) -> Result<PullRequestComment> {
+        self.add_pull_request_comment(project_id_or_key, repo_id_or_name, number, params)
+    }
+    fn update_pull_request_comment(
+        &self,
+        project_id_or_key: &str,
+        repo_id_or_name: &str,
+        number: u64,
+        comment_id: u64,
+        params: &[(String, String)],
+    ) -> Result<PullRequestComment> {
+        self.update_pull_request_comment(
+            project_id_or_key,
+            repo_id_or_name,
+            number,
+            comment_id,
+            params,
+        )
+    }
+    fn get_pull_request_attachments(
+        &self,
+        project_id_or_key: &str,
+        repo_id_or_name: &str,
+        number: u64,
+    ) -> Result<Vec<PullRequestAttachment>> {
+        self.get_pull_request_attachments(project_id_or_key, repo_id_or_name, number)
+    }
+    fn download_pull_request_attachment(
+        &self,
+        project_id_or_key: &str,
+        repo_id_or_name: &str,
+        number: u64,
+        attachment_id: u64,
+    ) -> Result<(Vec<u8>, String)> {
+        self.download_pull_request_attachment(
+            project_id_or_key,
+            repo_id_or_name,
+            number,
+            attachment_id,
+        )
+    }
+    fn delete_pull_request_attachment(
+        &self,
+        project_id_or_key: &str,
+        repo_id_or_name: &str,
+        number: u64,
+        attachment_id: u64,
+    ) -> Result<PullRequestAttachment> {
+        self.delete_pull_request_attachment(
+            project_id_or_key,
+            repo_id_or_name,
+            number,
+            attachment_id,
+        )
     }
 }
 
