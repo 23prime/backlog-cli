@@ -2012,6 +2012,7 @@ bl pr comment count <project-id-or-key> <repo-id-or-name> <number> --json
 
 ```bash
 bl pr comment add <project-id-or-key> <repo-id-or-name> <number> --content <content>
+bl pr comment add <project-id-or-key> <repo-id-or-name> <number> --content <content> --json
 ```
 
 ## `bl pr comment update`
