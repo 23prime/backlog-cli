@@ -9,6 +9,7 @@ const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 pub mod activity;
 pub mod disk_usage;
 pub mod document;
+pub mod git;
 pub mod issue;
 pub mod licence;
 pub mod notification;
@@ -27,6 +28,7 @@ pub mod wiki;
 use activity::Activity;
 use disk_usage::DiskUsage;
 use document::{Document, DocumentTree};
+use git::GitRepository;
 use issue::{
     Issue, IssueAttachment, IssueComment, IssueCommentCount, IssueCommentNotification, IssueCount,
     IssueParticipant, IssueSharedFile,
@@ -610,6 +612,16 @@ pub trait BacklogApi {
         unimplemented!()
     }
     fn read_watching(&self, _watching_id: u64) -> Result<()> {
+        unimplemented!()
+    }
+    fn get_git_repositories(&self, _project_id_or_key: &str) -> Result<Vec<GitRepository>> {
+        unimplemented!()
+    }
+    fn get_git_repository(
+        &self,
+        _project_id_or_key: &str,
+        _repo_id_or_name: &str,
+    ) -> Result<GitRepository> {
         unimplemented!()
     }
 }
@@ -1272,6 +1284,16 @@ impl BacklogApi for BacklogClient {
     }
     fn read_watching(&self, watching_id: u64) -> Result<()> {
         self.read_watching(watching_id)
+    }
+    fn get_git_repositories(&self, project_id_or_key: &str) -> Result<Vec<GitRepository>> {
+        self.get_git_repositories(project_id_or_key)
+    }
+    fn get_git_repository(
+        &self,
+        project_id_or_key: &str,
+        repo_id_or_name: &str,
+    ) -> Result<GitRepository> {
+        self.get_git_repository(project_id_or_key, repo_id_or_name)
     }
 }
 

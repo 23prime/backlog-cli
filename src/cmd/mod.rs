@@ -1,6 +1,7 @@
 pub mod auth;
 pub mod banner;
 pub mod document;
+pub mod git;
 pub mod issue;
 pub mod notification;
 pub mod priority;

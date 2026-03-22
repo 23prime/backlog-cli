@@ -13,6 +13,7 @@ use cmd::document::attachment::DocumentAttachmentGetArgs;
 use cmd::document::{
     DocumentCreateArgs, DocumentDeleteArgs, DocumentListArgs, DocumentShowArgs, DocumentTreeArgs,
 };
+use cmd::git::{GitRepoListArgs, GitRepoShowArgs};
 use cmd::issue::attachment::{
     IssueAttachmentDeleteArgs, IssueAttachmentGetArgs, IssueAttachmentListArgs,
 };
@@ -195,6 +196,11 @@ enum Commands {
     Star {
         #[command(subcommand)]
         action: StarCommands,
+    },
+    /// Manage Git repositories
+    Git {
+        #[command(subcommand)]
+        action: GitCommands,
     },
 }
 
@@ -2061,6 +2067,37 @@ enum StarCommands {
 }
 
 #[derive(Subcommand)]
+enum GitCommands {
+    /// List Git repositories in a project
+    Repo {
+        #[command(subcommand)]
+        action: GitRepoCommands,
+    },
+}
+
+#[derive(Subcommand)]
+enum GitRepoCommands {
+    /// List Git repositories in a project
+    List {
+        /// Project ID or key
+        project_id_or_key: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Show a Git repository
+    Show {
+        /// Project ID or key
+        project_id_or_key: String,
+        /// Repository ID or name
+        repo_id_or_name: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
 enum AuthCommands {
     /// Login with your API key
     Login {
@@ -3167,6 +3204,23 @@ fn run() -> Result<()> {
                 pull_request_comment_id,
             )?),
             StarCommands::Delete { id } => cmd::star::delete(&StarDeleteArgs::new(id)),
+        },
+        Commands::Git { action } => match action {
+            GitCommands::Repo { action } => match action {
+                GitRepoCommands::List {
+                    project_id_or_key,
+                    json,
+                } => cmd::git::list(&GitRepoListArgs::new(project_id_or_key, json)),
+                GitRepoCommands::Show {
+                    project_id_or_key,
+                    repo_id_or_name,
+                    json,
+                } => cmd::git::show(&GitRepoShowArgs::new(
+                    project_id_or_key,
+                    repo_id_or_name,
+                    json,
+                )),
+            },
         },
         Commands::Space { action, json } => match action {
             None => cmd::space::show(&SpaceShowArgs::new(json)),

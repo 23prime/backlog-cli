@@ -1943,6 +1943,42 @@ bl resolution list [--json]
 [4] 再現しない
 ```
 
+## `bl git repo list`
+
+プロジェクトの Git リポジトリ一覧を表示します。
+
+```bash
+bl git repo list <project-id-or-key>
+bl git repo list <project-id-or-key> --json
+```
+
+出力例:
+
+```text
+main
+develop
+```
+
+## `bl git repo show`
+
+Git リポジトリの詳細を表示します。
+
+```bash
+bl git repo show <project-id-or-key> <repo-id-or-name>
+bl git repo show <project-id-or-key> <repo-id-or-name> --json
+```
+
+出力例:
+
+```text
+main
+  Description: メインリポジトリ
+  HTTP URL:    https://example.backlog.com/git/TEST/main.git
+  SSH URL:     git@example.backlog.com:/TEST/main.git
+  Created:     2024-01-01T00:00:00Z
+  Updated:     2024-01-02T00:00:00Z
+```
+
 ## `bl rate-limit`
 
 API レート制限の現在の状況を表示します。
@@ -2130,8 +2166,8 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 
 | コマンド | API エンドポイント | 状態 |
 | --- | --- | --- |
-| `bl git repo list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories` | 計画中 |
-| `bl git repo show <id-or-key> <repo>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}` | 計画中 |
+| `bl git repo list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories` | ✅ 実装済み |
+| `bl git repo show <id-or-key> <repo>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}` | ✅ 実装済み |
 
 ### Users
 
