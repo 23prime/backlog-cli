@@ -1,7 +1,8 @@
 use anstream::println;
 use anyhow::{Context, Result};
 
-use crate::api::{BacklogApi, BacklogClient, project::ProjectUser};
+use super::format_project_user_row;
+use crate::api::{BacklogApi, BacklogClient};
 
 pub struct ProjectUserListArgs {
     key: String,
@@ -28,7 +29,7 @@ pub fn list_with(args: &ProjectUserListArgs, api: &dyn BacklogApi) -> Result<()>
         );
     } else {
         for u in &users {
-            println!("{}", format_user_row(u));
+            println!("{}", format_project_user_row(u));
         }
     }
     Ok(())
@@ -59,7 +60,7 @@ pub fn add_with(args: &ProjectUserAddArgs, api: &dyn BacklogApi) -> Result<()> {
             serde_json::to_string_pretty(&user).context("Failed to serialize JSON")?
         );
     } else {
-        println!("Added: {}", format_user_row(&user));
+        println!("Added: {}", format_project_user_row(&user));
     }
     Ok(())
 }
@@ -89,21 +90,15 @@ pub fn delete_with(args: &ProjectUserDeleteArgs, api: &dyn BacklogApi) -> Result
             serde_json::to_string_pretty(&user).context("Failed to serialize JSON")?
         );
     } else {
-        println!("Deleted: {}", format_user_row(&user));
+        println!("Deleted: {}", format_project_user_row(&user));
     }
     Ok(())
-}
-
-fn format_user_row(u: &ProjectUser) -> String {
-    match u.user_id.as_deref() {
-        Some(user_id) if !user_id.is_empty() => format!("[{}] {}", user_id, u.name),
-        _ => format!("[{}] {}", u.id, u.name),
-    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::api::project::ProjectUser;
     use anyhow::anyhow;
     use std::collections::BTreeMap;
 
@@ -140,17 +135,17 @@ mod tests {
     }
 
     #[test]
-    fn format_user_row_with_user_id() {
-        let text = format_user_row(&sample_user());
+    fn format_project_user_row_with_user_id() {
+        let text = format_project_user_row(&sample_user());
         assert!(text.contains("[john]"));
         assert!(text.contains("John Doe"));
     }
 
     #[test]
-    fn format_user_row_without_user_id() {
+    fn format_project_user_row_without_user_id() {
         let mut u = sample_user();
         u.user_id = None;
-        let text = format_user_row(&u);
+        let text = format_project_user_row(&u);
         assert!(text.contains("[1]"));
         assert!(text.contains("John Doe"));
     }
