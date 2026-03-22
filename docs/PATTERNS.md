@@ -20,18 +20,14 @@ pub struct MyResource {
 impl BacklogClient {
     pub fn get_my_resource(&self, params: &[(String, String)]) -> Result<MyResource> {
         let value = self.get_with_query("/my-resource", params)?;
-        serde_json::from_value(value.clone()).map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to deserialize response: {}\nRaw JSON:\n{}",
-                e,
-                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
-            )
-        })
+        super::deserialize(value)
     }
 }
 ```
 
-Always include raw JSON in deserialization errors to diagnose null-field issues.
+Use `super::deserialize(value)` — defined in `src/api/mod.rs` — instead of inlining
+`serde_json::from_value(...).map_err(...)`. It includes raw JSON in the error message
+and only builds the pretty-printed string on the error path (no cost on success).
 
 ### `src/api/mod.rs`
 
