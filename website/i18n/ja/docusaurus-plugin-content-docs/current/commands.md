@@ -150,6 +150,23 @@ Updated: 2024-07-01T00:00:00Z
 メンテナンスのお知らせ
 ```
 
+## `bl space image`
+
+スペースのアイコン画像をダウンロードします。
+
+レスポンスはバイナリデータです。`--output` / `-o` で保存先を指定してください。省略した場合は、サーバーが返すファイル名（取得できない場合は `space_image`）を使ってカレントディレクトリに保存します。
+
+```bash
+bl space image
+bl space image --output my_icon.png
+```
+
+出力例:
+
+```text
+Saved: space_image.png (1234 bytes)
+```
+
 ## `bl project list`
 
 アクセス可能なプロジェクトを一覧表示します。
@@ -2184,7 +2201,7 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl space notification` | `GET /api/v2/space/notification` | ✅ 実装済み |
 | `bl space licence` | `GET /api/v2/space/licence` | ✅ 実装済み |
 | `bl space update-notification` | `PUT /api/v2/space/notification` | ✅ 実装済み |
-| — | `GET /api/v2/space/image` | 計画中 |
+| `bl space image` | `GET /api/v2/space/image` | ✅ 実装済み |
 | — | `POST /api/v2/space/attachment` | 計画中 |
 
 ### Projects

@@ -151,6 +151,23 @@ Updated: 2024-07-01T00:00:00Z
 Scheduled maintenance on 2024-07-01.
 ```
 
+## `bl space image`
+
+Download the space icon image.
+
+The response is binary data. Use `--output` / `-o` to specify where the file is written. If omitted, the command saves the file in the current directory using the filename returned by the server (or `space_image` if none is provided).
+
+```bash
+bl space image
+bl space image --output my_icon.png
+```
+
+Example output:
+
+```text
+Saved: space_image.png (1234 bytes)
+```
+
 ## `bl project list`
 
 List all projects you have access to.
@@ -2182,7 +2199,7 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | `bl space notification` | `GET /api/v2/space/notification` | ✅ Implemented |
 | `bl space licence` | `GET /api/v2/space/licence` | ✅ Implemented |
 | `bl space update-notification` | `PUT /api/v2/space/notification` | ✅ Implemented |
-| — | `GET /api/v2/space/image` | Planned |
+| `bl space image` | `GET /api/v2/space/image` | ✅ Implemented |
 | — | `POST /api/v2/space/attachment` | Planned |
 
 ### Projects
