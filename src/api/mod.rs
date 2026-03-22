@@ -115,6 +115,9 @@ pub trait BacklogApi {
     fn get_projects(&self) -> Result<Vec<Project>> {
         unimplemented!()
     }
+    fn download_project_image(&self, _key: &str) -> Result<(Vec<u8>, String)> {
+        unimplemented!()
+    }
     fn get_project(&self, _key: &str) -> Result<Project> {
         unimplemented!()
     }
@@ -801,6 +804,10 @@ impl BacklogApi for BacklogClient {
 
     fn get_projects(&self) -> Result<Vec<Project>> {
         self.get_projects()
+    }
+
+    fn download_project_image(&self, key: &str) -> Result<(Vec<u8>, String)> {
+        self.download_project_image(key)
     }
 
     fn get_project(&self, key: &str) -> Result<Project> {

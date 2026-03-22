@@ -69,7 +69,7 @@ use cmd::project::webhook::{
 };
 use cmd::project::{
     ProjectActivitiesArgs, ProjectCreateArgs, ProjectDeleteArgs, ProjectDiskUsageArgs,
-    ProjectListArgs, ProjectShowArgs, ProjectUpdateArgs,
+    ProjectImageArgs, ProjectListArgs, ProjectShowArgs, ProjectUpdateArgs,
 };
 use cmd::rate_limit::RateLimitArgs;
 use cmd::resolution::ResolutionListArgs;
@@ -445,6 +445,14 @@ enum ProjectCommands {
         /// Output as JSON
         #[arg(long)]
         json: bool,
+    },
+    /// Download the project icon image
+    Image {
+        /// Project ID or key
+        id_or_key: String,
+        /// Output file path (default: server-provided filename, or "project_image" if none)
+        #[arg(long, short = 'o')]
+        output: Option<std::path::PathBuf>,
     },
     /// Manage project users
     User {
@@ -2518,6 +2526,9 @@ fn run() -> Result<()> {
             )?),
             ProjectCommands::Delete { id_or_key, json } => {
                 cmd::project::delete(&ProjectDeleteArgs::new(id_or_key, json))
+            }
+            ProjectCommands::Image { id_or_key, output } => {
+                cmd::project::image(&ProjectImageArgs::new(id_or_key, output))
             }
             ProjectCommands::User { action } => match action {
                 ProjectUserCommands::List { id_or_key, json } => {

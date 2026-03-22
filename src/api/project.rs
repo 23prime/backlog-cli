@@ -604,6 +604,10 @@ impl BacklogClient {
         let value = self.delete_req(&format!("/projects/{key}/webhooks/{webhook_id}"))?;
         deserialize(value)
     }
+
+    pub fn download_project_image(&self, key: &str) -> Result<(Vec<u8>, String)> {
+        self.download(&format!("/projects/{key}/image"))
+    }
 }
 
 #[cfg(test)]
