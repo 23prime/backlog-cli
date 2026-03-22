@@ -1939,6 +1939,42 @@ Example output:
 [4] Cannot Reproduce
 ```
 
+## `bl git repo list`
+
+List Git repositories in a project.
+
+```bash
+bl git repo list <project-id-or-key>
+bl git repo list <project-id-or-key> --json
+```
+
+Example output:
+
+```text
+main
+develop
+```
+
+## `bl git repo show`
+
+Show details of a Git repository.
+
+```bash
+bl git repo show <project-id-or-key> <repo-id-or-name>
+bl git repo show <project-id-or-key> <repo-id-or-name> --json
+```
+
+Example output:
+
+```text
+main
+  Description: Main repository
+  HTTP URL:    https://example.backlog.com/git/TEST/main.git
+  SSH URL:     git@example.backlog.com:/TEST/main.git
+  Created:     2024-01-01T00:00:00Z
+  Updated:     2024-01-02T00:00:00Z
+```
+
 ## `bl rate-limit`
 
 Show the current API rate limit status.
@@ -2126,8 +2162,8 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 
 | Command | API endpoint | Status |
 | --- | --- | --- |
-| `bl git repo list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories` | Planned |
-| `bl git repo show <id-or-key> <repo>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}` | Planned |
+| `bl git repo list <id-or-key>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories` | ✅ Implemented |
+| `bl git repo show <id-or-key> <repo>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}` | ✅ Implemented |
 
 ### Users
 
