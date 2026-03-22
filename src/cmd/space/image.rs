@@ -31,10 +31,14 @@ pub fn image_with(args: &SpaceImageArgs, api: &dyn BacklogApi) -> Result<()> {
 }
 
 fn default_output_path(filename: &str) -> PathBuf {
-    let effective = if filename.is_empty() || filename == "attachment" {
+    let normalized = filename.trim();
+    let lower = normalized.to_ascii_lowercase();
+    let is_generic_attachment = lower == "attachment" || lower.starts_with("attachment.");
+
+    let effective = if normalized.is_empty() || is_generic_attachment {
         "space_image"
     } else {
-        filename
+        normalized
     };
     let base = std::path::Path::new(effective)
         .file_name()
@@ -118,6 +122,14 @@ mod tests {
     fn default_output_path_falls_back_for_attachment() {
         assert_eq!(
             default_output_path("attachment"),
+            PathBuf::from("space_image")
+        );
+    }
+
+    #[test]
+    fn default_output_path_falls_back_for_attachment_with_extension() {
+        assert_eq!(
+            default_output_path("attachment.png"),
             PathBuf::from("space_image")
         );
     }
