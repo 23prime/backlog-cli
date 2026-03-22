@@ -91,6 +91,43 @@ impl BacklogClient {
             )
         })
     }
+
+    pub fn create_team(&self, params: &[(String, String)]) -> Result<Team> {
+        let value = self.post_form("/teams", params)?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize create team response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn update_team(&self, team_id: u64, params: &[(String, String)]) -> Result<Team> {
+        let value = self.patch_form(&format!("/teams/{team_id}"), params)?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize update team response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn delete_team(&self, team_id: u64) -> Result<Team> {
+        let value = self.delete_req(&format!("/teams/{team_id}"))?;
+        serde_json::from_value(value.clone()).map_err(|e| {
+            anyhow::anyhow!(
+                "Failed to deserialize delete team response: {}\nRaw JSON:\n{}",
+                e,
+                serde_json::to_string_pretty(&value).unwrap_or_else(|_| value.to_string())
+            )
+        })
+    }
+
+    pub fn download_team_icon(&self, team_id: u64) -> Result<(Vec<u8>, String)> {
+        self.download(&format!("/teams/{team_id}/icon"))
+    }
 }
 
 #[cfg(test)]
@@ -270,5 +307,65 @@ mod tests {
         let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
         let err = client.delete_project_team("TEST", 1).unwrap_err();
         assert!(err.to_string().contains("No team"));
+    }
+
+    #[test]
+    fn create_team_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(POST).path("/teams");
+            then.status(201).json_body(team_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let params = vec![("name".to_string(), "dev-team".to_string())];
+        let team = client.create_team(&params).unwrap();
+        assert_eq!(team.id, 1);
+        assert_eq!(team.name, "dev-team");
+    }
+
+    #[test]
+    fn update_team_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(httpmock::Method::PATCH).path("/teams/1");
+            then.status(200).json_body(team_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let params = vec![("name".to_string(), "dev-team".to_string())];
+        let team = client.update_team(1, &params).unwrap();
+        assert_eq!(team.id, 1);
+        assert_eq!(team.name, "dev-team");
+    }
+
+    #[test]
+    fn delete_team_returns_parsed_struct() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(DELETE).path("/teams/1");
+            then.status(200).json_body(team_json());
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let team = client.delete_team(1).unwrap();
+        assert_eq!(team.id, 1);
+        assert_eq!(team.name, "dev-team");
+    }
+
+    #[test]
+    fn download_team_icon_returns_bytes() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/teams/1/icon");
+            then.status(200)
+                .header("Content-Disposition", "attachment; filename=\"icon.png\"")
+                .body(b"png-data");
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let (bytes, filename) = client.download_team_icon(1).unwrap();
+        assert_eq!(bytes, b"png-data");
+        assert_eq!(filename, "icon.png");
     }
 }

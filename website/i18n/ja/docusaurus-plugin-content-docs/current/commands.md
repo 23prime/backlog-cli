@@ -1493,6 +1493,72 @@ Members:
     [3] Engineer
 ```
 
+## `bl team add`
+
+チームを作成します。
+スペースの設定によっては `403 Forbidden` が返ることがあります。
+
+```bash
+bl team add --name <name>
+bl team add --name <name> --member <user-id> --member <user-id>
+bl team add --name <name> --json
+```
+
+出力例:
+
+```text
+Created: [1] dev-team (0 members)
+```
+
+## `bl team update`
+
+チームを更新します。`--name` または `--member` のいずれか1つ以上が必要です。
+スペースの設定によっては `403 Forbidden` が返ることがあります。
+
+```bash
+bl team update <id> --name <new-name>
+bl team update <id> --member <user-id> --member <user-id>
+bl team update <id> --name <new-name> --json
+```
+
+出力例:
+
+```text
+Updated: [1] dev-team (3 members)
+```
+
+## `bl team delete`
+
+チームを削除します。
+スペースの設定によっては `403 Forbidden` が返ることがあります。
+
+```bash
+bl team delete <id>
+bl team delete <id> --json
+```
+
+出力例:
+
+```text
+Deleted: [1] dev-team (3 members)
+```
+
+## `bl team icon`
+
+チームアイコン画像をダウンロードします。
+スペースの設定によっては `403 Forbidden` が返ることがあります。
+
+```bash
+bl team icon <id>
+bl team icon <id> --output <path>
+```
+
+出力例:
+
+```text
+Saved: icon.png (10240 bytes)
+```
+
 ## `bl user activities`
 
 特定のユーザーの最近のアクティビティを表示します。
@@ -2322,10 +2388,10 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | --- | --- | --- |
 | `bl team list` | `GET /api/v2/teams` | ✅ 実装済み |
 | `bl team show <id>` | `GET /api/v2/teams/{teamId}` | ✅ 実装済み |
-| `bl team add` | `POST /api/v2/teams` | 計画中 |
-| `bl team update <id>` | `PATCH /api/v2/teams/{teamId}` | 計画中 |
-| `bl team delete <id>` | `DELETE /api/v2/teams/{teamId}` | 計画中 |
-| — | `GET /api/v2/teams/{teamId}/icon` | 計画中 |
+| `bl team add` | `POST /api/v2/teams` | ✅ 実装済み |
+| `bl team update <id>` | `PATCH /api/v2/teams/{teamId}` | ✅ 実装済み |
+| `bl team delete <id>` | `DELETE /api/v2/teams/{teamId}` | ✅ 実装済み |
+| `bl team icon <id>` | `GET /api/v2/teams/{teamId}/icon` | ✅ 実装済み |
 
 ### System
 
