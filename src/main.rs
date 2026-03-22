@@ -33,6 +33,11 @@ use cmd::issue::{
     IssueUpdateArgs, ParentChild,
 };
 use cmd::notification::{NotificationCountArgs, NotificationListArgs, NotificationReadArgs};
+use cmd::pr::attachment::{PrAttachmentDeleteArgs, PrAttachmentGetArgs, PrAttachmentListArgs};
+use cmd::pr::comment::{
+    PrCommentAddArgs, PrCommentCountArgs, PrCommentListArgs, PrCommentUpdateArgs,
+};
+use cmd::pr::{PrCountArgs, PrCreateArgs, PrListArgs, PrShowArgs, PrUpdateArgs};
 use cmd::priority::PriorityListArgs;
 use cmd::project::admin::{ProjectAdminAddArgs, ProjectAdminDeleteArgs, ProjectAdminListArgs};
 use cmd::project::category::{
@@ -201,6 +206,11 @@ enum Commands {
     Git {
         #[command(subcommand)]
         action: GitCommands,
+    },
+    /// Manage pull requests
+    Pr {
+        #[command(subcommand)]
+        action: PrCommands,
     },
 }
 
@@ -2098,6 +2108,214 @@ enum GitRepoCommands {
 }
 
 #[derive(Subcommand)]
+enum PrCommands {
+    /// List pull requests in a repository
+    List {
+        /// Project ID or key
+        project_id_or_key: String,
+        /// Repository ID or name
+        repo_id_or_name: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Count pull requests in a repository
+    Count {
+        /// Project ID or key
+        project_id_or_key: String,
+        /// Repository ID or name
+        repo_id_or_name: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Show a pull request
+    Show {
+        /// Project ID or key
+        project_id_or_key: String,
+        /// Repository ID or name
+        repo_id_or_name: String,
+        /// Pull request number
+        number: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Create a pull request
+    Create {
+        /// Project ID or key
+        project_id_or_key: String,
+        /// Repository ID or name
+        repo_id_or_name: String,
+        /// Pull request summary
+        #[arg(long)]
+        summary: String,
+        /// Pull request description
+        #[arg(long)]
+        description: Option<String>,
+        /// Base branch (merge target)
+        #[arg(long)]
+        base: String,
+        /// Source branch
+        #[arg(long)]
+        branch: String,
+        /// Linked issue ID
+        #[arg(long)]
+        issue_id: Option<u64>,
+        /// Assignee user ID
+        #[arg(long)]
+        assignee_id: Option<u64>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Update a pull request
+    Update {
+        /// Project ID or key
+        project_id_or_key: String,
+        /// Repository ID or name
+        repo_id_or_name: String,
+        /// Pull request number
+        number: u64,
+        /// New summary
+        #[arg(long)]
+        summary: Option<String>,
+        /// New description
+        #[arg(long)]
+        description: Option<String>,
+        /// New base branch
+        #[arg(long)]
+        base: Option<String>,
+        /// Linked issue ID
+        #[arg(long)]
+        issue_id: Option<u64>,
+        /// Assignee user ID
+        #[arg(long)]
+        assignee_id: Option<u64>,
+        /// Comment to add when updating
+        #[arg(long)]
+        comment: Option<String>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Manage pull request comments
+    Comment {
+        #[command(subcommand)]
+        action: PrCommentCommands,
+    },
+    /// Manage pull request attachments
+    Attachment {
+        #[command(subcommand)]
+        action: PrAttachmentCommands,
+    },
+}
+
+#[derive(Subcommand)]
+enum PrCommentCommands {
+    /// List comments on a pull request
+    List {
+        /// Project ID or key
+        project_id_or_key: String,
+        /// Repository ID or name
+        repo_id_or_name: String,
+        /// Pull request number
+        number: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Count comments on a pull request
+    Count {
+        /// Project ID or key
+        project_id_or_key: String,
+        /// Repository ID or name
+        repo_id_or_name: String,
+        /// Pull request number
+        number: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Add a comment to a pull request
+    Add {
+        /// Project ID or key
+        project_id_or_key: String,
+        /// Repository ID or name
+        repo_id_or_name: String,
+        /// Pull request number
+        number: u64,
+        /// Comment content
+        #[arg(long)]
+        content: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Update a comment on a pull request
+    Update {
+        /// Project ID or key
+        project_id_or_key: String,
+        /// Repository ID or name
+        repo_id_or_name: String,
+        /// Pull request number
+        number: u64,
+        /// Comment ID
+        comment_id: u64,
+        /// New comment content
+        #[arg(long)]
+        content: String,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
+enum PrAttachmentCommands {
+    /// List attachments of a pull request
+    List {
+        /// Project ID or key
+        project_id_or_key: String,
+        /// Repository ID or name
+        repo_id_or_name: String,
+        /// Pull request number
+        number: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Download an attachment from a pull request
+    Get {
+        /// Project ID or key
+        project_id_or_key: String,
+        /// Repository ID or name
+        repo_id_or_name: String,
+        /// Pull request number
+        number: u64,
+        /// Attachment ID
+        attachment_id: u64,
+        /// Output file path
+        #[arg(long, short)]
+        output: Option<std::path::PathBuf>,
+    },
+    /// Delete an attachment from a pull request
+    Delete {
+        /// Project ID or key
+        project_id_or_key: String,
+        /// Repository ID or name
+        repo_id_or_name: String,
+        /// Pull request number
+        number: u64,
+        /// Attachment ID
+        attachment_id: u64,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(Subcommand)]
 enum AuthCommands {
     /// Login with your API key
     Login {
@@ -3218,6 +3436,164 @@ fn run() -> Result<()> {
                 } => cmd::git::show(&GitRepoShowArgs::new(
                     project_id_or_key,
                     repo_id_or_name,
+                    json,
+                )),
+            },
+        },
+        Commands::Pr { action } => match action {
+            PrCommands::List {
+                project_id_or_key,
+                repo_id_or_name,
+                json,
+            } => cmd::pr::list(&PrListArgs::new(project_id_or_key, repo_id_or_name, json)),
+            PrCommands::Count {
+                project_id_or_key,
+                repo_id_or_name,
+                json,
+            } => cmd::pr::count(&PrCountArgs::new(project_id_or_key, repo_id_or_name, json)),
+            PrCommands::Show {
+                project_id_or_key,
+                repo_id_or_name,
+                number,
+                json,
+            } => cmd::pr::show(&PrShowArgs::new(
+                project_id_or_key,
+                repo_id_or_name,
+                number,
+                json,
+            )),
+            PrCommands::Create {
+                project_id_or_key,
+                repo_id_or_name,
+                summary,
+                description,
+                base,
+                branch,
+                issue_id,
+                assignee_id,
+                json,
+            } => cmd::pr::create(&PrCreateArgs::new(
+                project_id_or_key,
+                repo_id_or_name,
+                summary,
+                description,
+                base,
+                branch,
+                issue_id,
+                assignee_id,
+                json,
+            )),
+            PrCommands::Update {
+                project_id_or_key,
+                repo_id_or_name,
+                number,
+                summary,
+                description,
+                base,
+                issue_id,
+                assignee_id,
+                comment,
+                json,
+            } => cmd::pr::update(&PrUpdateArgs::try_new(
+                project_id_or_key,
+                repo_id_or_name,
+                number,
+                summary,
+                description,
+                base,
+                issue_id,
+                assignee_id,
+                comment,
+                json,
+            )?),
+            PrCommands::Comment { action } => match action {
+                PrCommentCommands::List {
+                    project_id_or_key,
+                    repo_id_or_name,
+                    number,
+                    json,
+                } => cmd::pr::comment::list(&PrCommentListArgs::new(
+                    project_id_or_key,
+                    repo_id_or_name,
+                    number,
+                    json,
+                )),
+                PrCommentCommands::Count {
+                    project_id_or_key,
+                    repo_id_or_name,
+                    number,
+                    json,
+                } => cmd::pr::comment::count(&PrCommentCountArgs::new(
+                    project_id_or_key,
+                    repo_id_or_name,
+                    number,
+                    json,
+                )),
+                PrCommentCommands::Add {
+                    project_id_or_key,
+                    repo_id_or_name,
+                    number,
+                    content,
+                    json,
+                } => cmd::pr::comment::add(&PrCommentAddArgs::new(
+                    project_id_or_key,
+                    repo_id_or_name,
+                    number,
+                    content,
+                    json,
+                )),
+                PrCommentCommands::Update {
+                    project_id_or_key,
+                    repo_id_or_name,
+                    number,
+                    comment_id,
+                    content,
+                    json,
+                } => cmd::pr::comment::update(&PrCommentUpdateArgs::new(
+                    project_id_or_key,
+                    repo_id_or_name,
+                    number,
+                    comment_id,
+                    content,
+                    json,
+                )),
+            },
+            PrCommands::Attachment { action } => match action {
+                PrAttachmentCommands::List {
+                    project_id_or_key,
+                    repo_id_or_name,
+                    number,
+                    json,
+                } => cmd::pr::attachment::list(&PrAttachmentListArgs::new(
+                    project_id_or_key,
+                    repo_id_or_name,
+                    number,
+                    json,
+                )),
+                PrAttachmentCommands::Get {
+                    project_id_or_key,
+                    repo_id_or_name,
+                    number,
+                    attachment_id,
+                    output,
+                } => cmd::pr::attachment::get(&PrAttachmentGetArgs::new(
+                    project_id_or_key,
+                    repo_id_or_name,
+                    number,
+                    attachment_id,
+                    output,
+                )),
+                PrAttachmentCommands::Delete {
+                    project_id_or_key,
+                    repo_id_or_name,
+                    number,
+                    attachment_id,
+                    json,
+                } => cmd::pr::attachment::delete(&PrAttachmentDeleteArgs::new(
+                    project_id_or_key,
+                    repo_id_or_name,
+                    number,
+                    attachment_id,
                     json,
                 )),
             },

@@ -1939,6 +1939,111 @@ Example output:
 [4] Cannot Reproduce
 ```
 
+## `bl pr list`
+
+List pull requests in a repository.
+
+```bash
+bl pr list <project-id-or-key> <repo-id-or-name>
+bl pr list <project-id-or-key> <repo-id-or-name> --json
+```
+
+## `bl pr count`
+
+Count pull requests in a repository.
+
+```bash
+bl pr count <project-id-or-key> <repo-id-or-name>
+bl pr count <project-id-or-key> <repo-id-or-name> --json
+```
+
+## `bl pr show`
+
+Show details of a pull request.
+
+```bash
+bl pr show <project-id-or-key> <repo-id-or-name> <number>
+bl pr show <project-id-or-key> <repo-id-or-name> <number> --json
+```
+
+## `bl pr create`
+
+Create a pull request.
+
+```bash
+bl pr create <project-id-or-key> <repo-id-or-name> --summary <summary> --base <base> --branch <branch>
+bl pr create <project-id-or-key> <repo-id-or-name> --summary <summary> --base <base> --branch <branch> --description <desc> --issue-id <id> --assignee-id <id>
+```
+
+## `bl pr update`
+
+Update a pull request. At least one of `--summary`, `--description`, `--base`, `--issue-id`, `--assignee-id`, or `--comment` is required.
+
+```bash
+bl pr update <project-id-or-key> <repo-id-or-name> <number> --summary <summary>
+bl pr update <project-id-or-key> <repo-id-or-name> <number> --comment <comment>
+```
+
+## `bl pr comment list`
+
+List comments on a pull request.
+
+```bash
+bl pr comment list <project-id-or-key> <repo-id-or-name> <number>
+bl pr comment list <project-id-or-key> <repo-id-or-name> <number> --json
+```
+
+## `bl pr comment count`
+
+Count comments on a pull request.
+
+```bash
+bl pr comment count <project-id-or-key> <repo-id-or-name> <number>
+```
+
+## `bl pr comment add`
+
+Add a comment to a pull request.
+
+```bash
+bl pr comment add <project-id-or-key> <repo-id-or-name> <number> --content <content>
+```
+
+## `bl pr comment update`
+
+Update a comment on a pull request.
+
+```bash
+bl pr comment update <project-id-or-key> <repo-id-or-name> <number> <comment-id> --content <content>
+```
+
+## `bl pr attachment list`
+
+List attachments of a pull request.
+
+```bash
+bl pr attachment list <project-id-or-key> <repo-id-or-name> <number>
+bl pr attachment list <project-id-or-key> <repo-id-or-name> <number> --json
+```
+
+## `bl pr attachment get`
+
+Download an attachment from a pull request.
+
+```bash
+bl pr attachment get <project-id-or-key> <repo-id-or-name> <number> <attachment-id>
+bl pr attachment get <project-id-or-key> <repo-id-or-name> <number> <attachment-id> --output <path>
+```
+
+## `bl pr attachment delete`
+
+Delete an attachment from a pull request.
+
+```bash
+bl pr attachment delete <project-id-or-key> <repo-id-or-name> <number> <attachment-id>
+bl pr attachment delete <project-id-or-key> <repo-id-or-name> <number> <attachment-id> --json
+```
+
 ## `bl git repo list`
 
 List Git repositories in a project.
@@ -2145,18 +2250,18 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 
 | Command | API endpoint | Status |
 | --- | --- | --- |
-| `bl pr list <id-or-key> <repo>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests` | Planned |
-| `bl pr count <id-or-key> <repo>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/count` | Planned |
-| `bl pr show <id-or-key> <repo> <number>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}` | Planned |
-| `bl pr create <id-or-key> <repo>` | `POST /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests` | Planned |
-| `bl pr update <id-or-key> <repo> <number>` | `PATCH /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}` | Planned |
-| `bl pr comment list <id-or-key> <repo> <number>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/comments` | Planned |
-| `bl pr comment count <id-or-key> <repo> <number>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/comments/count` | Planned |
-| `bl pr comment add <id-or-key> <repo> <number>` | `POST /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/comments` | Planned |
-| `bl pr comment update <id-or-key> <repo> <number> <comment-id>` | `PATCH /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/comments/{commentId}` | Planned |
-| `bl pr attachment list <id-or-key> <repo> <number>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/attachments` | Planned |
-| `bl pr attachment get <id-or-key> <repo> <number> <attachment-id>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/attachments/{attachmentId}` | Planned |
-| `bl pr attachment delete <id-or-key> <repo> <number> <attachment-id>` | `DELETE /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/attachments/{attachmentId}` | Planned |
+| `bl pr list <id-or-key> <repo>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests` | ✅ Implemented |
+| `bl pr count <id-or-key> <repo>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/count` | ✅ Implemented |
+| `bl pr show <id-or-key> <repo> <number>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}` | ✅ Implemented |
+| `bl pr create <id-or-key> <repo>` | `POST /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests` | ✅ Implemented |
+| `bl pr update <id-or-key> <repo> <number>` | `PATCH /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}` | ✅ Implemented |
+| `bl pr comment list <id-or-key> <repo> <number>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/comments` | ✅ Implemented |
+| `bl pr comment count <id-or-key> <repo> <number>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/comments/count` | ✅ Implemented |
+| `bl pr comment add <id-or-key> <repo> <number>` | `POST /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/comments` | ✅ Implemented |
+| `bl pr comment update <id-or-key> <repo> <number> <comment-id>` | `PATCH /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/comments/{commentId}` | ✅ Implemented |
+| `bl pr attachment list <id-or-key> <repo> <number>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/attachments` | ✅ Implemented |
+| `bl pr attachment get <id-or-key> <repo> <number> <attachment-id>` | `GET /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/attachments/{attachmentId}` | ✅ Implemented |
+| `bl pr attachment delete <id-or-key> <repo> <number> <attachment-id>` | `DELETE /api/v2/projects/{projectIdOrKey}/git/repositories/{repoIdOrName}/pullRequests/{number}/attachments/{attachmentId}` | ✅ Implemented |
 
 ### Git Repositories
 
