@@ -22,10 +22,9 @@ pub fn icon(args: &UserIconArgs) -> Result<()> {
 
 pub fn icon_with(args: &UserIconArgs, api: &dyn BacklogApi) -> Result<()> {
     let (bytes, filename) = api.download_user_icon(args.id)?;
-    let path = args
-        .output
-        .clone()
-        .unwrap_or_else(|| default_output_path(&filename));
+    let path = args.output.clone().unwrap_or_else(|| {
+        crate::cmd::with_image_extension(default_output_path(&filename), &bytes)
+    });
     std::fs::write(&path, &bytes).with_context(|| format!("Failed to write {}", path.display()))?;
     println!("Saved: {} ({} bytes)", path.display(), bytes.len());
     Ok(())

@@ -26,7 +26,7 @@ pub fn icon_with(args: &TeamIconArgs, api: &dyn BacklogApi) -> Result<()> {
         let base = std::path::Path::new(&filename)
             .file_name()
             .unwrap_or(std::ffi::OsStr::new("icon"));
-        PathBuf::from(base)
+        crate::cmd::with_image_extension(PathBuf::from(base), &bytes)
     });
     std::fs::write(&path, &bytes).with_context(|| format!("Failed to write {}", path.display()))?;
     println!("Saved: {} ({} bytes)", path.display(), bytes.len());
