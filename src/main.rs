@@ -338,7 +338,7 @@ enum SpaceCommands {
     },
     /// Download the space icon image
     Image {
-        /// Output file path (default: server-provided filename)
+        /// Output file path (default: server-provided filename, or "space_image" if none)
         #[arg(long, short = 'o')]
         output: Option<std::path::PathBuf>,
     },

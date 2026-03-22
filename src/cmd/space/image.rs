@@ -21,15 +21,25 @@ pub fn image(args: &SpaceImageArgs) -> Result<()> {
 
 pub fn image_with(args: &SpaceImageArgs, api: &dyn BacklogApi) -> Result<()> {
     let (bytes, filename) = api.download_space_image()?;
-    let path = args.output.clone().unwrap_or_else(|| {
-        let base = std::path::Path::new(&filename)
-            .file_name()
-            .unwrap_or(std::ffi::OsStr::new("space_image"));
-        PathBuf::from(base)
-    });
+    let path = args
+        .output
+        .clone()
+        .unwrap_or_else(|| default_output_path(&filename));
     std::fs::write(&path, &bytes).with_context(|| format!("Failed to write {}", path.display()))?;
     println!("Saved: {} ({} bytes)", path.display(), bytes.len());
     Ok(())
+}
+
+fn default_output_path(filename: &str) -> PathBuf {
+    let effective = if filename.is_empty() || filename == "attachment" {
+        "space_image"
+    } else {
+        filename
+    };
+    let base = std::path::Path::new(effective)
+        .file_name()
+        .unwrap_or(std::ffi::OsStr::new("space_image"));
+    PathBuf::from(base)
 }
 
 #[cfg(test)]
@@ -94,5 +104,26 @@ mod tests {
         let api = MockApi { result: None };
         let err = image_with(&args(None), &api).unwrap_err();
         assert!(err.to_string().contains("download failed"));
+    }
+
+    #[test]
+    fn default_output_path_uses_server_filename() {
+        assert_eq!(
+            default_output_path("space_image.png"),
+            PathBuf::from("space_image.png")
+        );
+    }
+
+    #[test]
+    fn default_output_path_falls_back_for_attachment() {
+        assert_eq!(
+            default_output_path("attachment"),
+            PathBuf::from("space_image")
+        );
+    }
+
+    #[test]
+    fn default_output_path_falls_back_for_empty() {
+        assert_eq!(default_output_path(""), PathBuf::from("space_image"));
     }
 }
