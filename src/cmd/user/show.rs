@@ -94,7 +94,7 @@ mod tests {
     #[test]
     fn format_user_text_contains_fields() {
         let text = format_user_text(&sample_user());
-        assert!(text.contains("1"));
+        assert!(text.contains("User ID:      john"));
         assert!(text.contains("john"));
         assert!(text.contains("John Doe"));
         assert!(text.contains("john@example.com"));
