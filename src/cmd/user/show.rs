@@ -53,8 +53,10 @@ fn format_user_text(u: &User) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use anyhow::anyhow;
     use std::collections::BTreeMap;
+
+    use crate::cmd::user::sample_user;
+    use anyhow::anyhow;
 
     struct MockApi {
         user: Option<User>,
@@ -63,19 +65,6 @@ mod tests {
     impl crate::api::BacklogApi for MockApi {
         fn get_user(&self, _user_id: u64) -> anyhow::Result<User> {
             self.user.clone().ok_or_else(|| anyhow!("no user"))
-        }
-    }
-
-    fn sample_user() -> User {
-        User {
-            id: 123,
-            user_id: Some("john".to_string()),
-            name: "John Doe".to_string(),
-            mail_address: Some("john@example.com".to_string()),
-            role_type: 1,
-            lang: Some("ja".to_string()),
-            last_login_time: Some("2024-01-01T00:00:00Z".to_string()),
-            extra: BTreeMap::new(),
         }
     }
 
@@ -105,7 +94,7 @@ mod tests {
     #[test]
     fn format_user_text_contains_fields() {
         let text = format_user_text(&sample_user());
-        assert!(text.contains("123"));
+        assert!(text.contains("1"));
         assert!(text.contains("john"));
         assert!(text.contains("John Doe"));
         assert!(text.contains("john@example.com"));

@@ -60,9 +60,8 @@ pub fn create_with(args: &WikiCreateArgs, api: &dyn BacklogApi) -> Result<()> {
 mod tests {
     use super::*;
     use crate::api::wiki::Wiki;
-    use crate::cmd::wiki::list::tests_helper::sample_wiki_user;
+    use crate::cmd::wiki::list::tests_helper::sample_wiki;
     use anyhow::anyhow;
-    use std::collections::BTreeMap;
 
     struct MockApi {
         wiki: Option<Wiki>,
@@ -71,21 +70,6 @@ mod tests {
     impl crate::api::BacklogApi for MockApi {
         fn create_wiki(&self, _params: &[(String, String)]) -> anyhow::Result<Wiki> {
             self.wiki.clone().ok_or_else(|| anyhow!("create failed"))
-        }
-    }
-
-    fn sample_wiki() -> Wiki {
-        Wiki {
-            id: 1,
-            project_id: 1,
-            name: "Home".to_string(),
-            content: "# Home".to_string(),
-            tags: vec![],
-            created_user: sample_wiki_user(),
-            created: "2024-01-01T00:00:00Z".to_string(),
-            updated_user: sample_wiki_user(),
-            updated: "2024-01-01T00:00:00Z".to_string(),
-            extra: BTreeMap::new(),
         }
     }
 

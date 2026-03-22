@@ -61,9 +61,9 @@ pub fn list_with(args: &TeamListArgs, api: &dyn BacklogApi) -> Result<()> {
 mod tests {
     use super::*;
     use anyhow::anyhow;
-    use std::collections::BTreeMap;
 
-    use crate::api::team::{Team, TeamMember};
+    use crate::api::team::Team;
+    use crate::cmd::team::sample_team;
 
     struct MockApi {
         teams: Option<Vec<Team>>,
@@ -72,31 +72,6 @@ mod tests {
     impl crate::api::BacklogApi for MockApi {
         fn get_teams(&self, _: &[(String, String)]) -> anyhow::Result<Vec<Team>> {
             self.teams.clone().ok_or_else(|| anyhow!("no teams"))
-        }
-    }
-
-    fn sample_member() -> TeamMember {
-        TeamMember {
-            id: 2,
-            user_id: Some("dev".to_string()),
-            name: "Developer".to_string(),
-            role_type: 2,
-            lang: None,
-            mail_address: Some("dev@example.com".to_string()),
-            last_login_time: None,
-            extra: BTreeMap::new(),
-        }
-    }
-
-    fn sample_team() -> Team {
-        Team {
-            id: 1,
-            name: "dev-team".to_string(),
-            members: vec![sample_member()],
-            display_order: None,
-            created: "2024-01-01T00:00:00Z".to_string(),
-            updated: "2024-06-01T00:00:00Z".to_string(),
-            extra: BTreeMap::new(),
         }
     }
 

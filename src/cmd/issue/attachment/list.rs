@@ -43,31 +43,9 @@ pub fn list_with(args: &IssueAttachmentListArgs, api: &dyn BacklogApi) -> Result
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::issue::{IssueAttachment, IssueUser};
+    use crate::api::issue::IssueAttachment;
+    use crate::cmd::issue::attachment::sample_attachment;
     use anyhow::anyhow;
-    use std::collections::BTreeMap;
-
-    fn sample_user() -> IssueUser {
-        IssueUser {
-            id: 1,
-            user_id: Some("john".to_string()),
-            name: "John Doe".to_string(),
-            role_type: 1,
-            lang: None,
-            mail_address: None,
-            extra: BTreeMap::new(),
-        }
-    }
-
-    fn sample_attachment() -> IssueAttachment {
-        IssueAttachment {
-            id: 1,
-            name: "file.txt".to_string(),
-            size: 1024,
-            created_user: sample_user(),
-            created: "2024-01-01T00:00:00Z".to_string(),
-        }
-    }
 
     struct MockApi {
         attachments: Option<Vec<IssueAttachment>>,

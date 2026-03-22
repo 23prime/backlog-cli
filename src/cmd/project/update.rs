@@ -100,8 +100,8 @@ pub fn update_with(args: &ProjectUpdateArgs, api: &dyn BacklogApi) -> Result<()>
 mod tests {
     use super::*;
     use crate::api::project::Project;
+    use crate::cmd::project::sample_project;
     use anyhow::anyhow;
-    use std::collections::BTreeMap;
 
     struct MockApi {
         project: Option<Project>,
@@ -114,20 +114,6 @@ mod tests {
             _params: &[(String, String)],
         ) -> anyhow::Result<Project> {
             self.project.clone().ok_or_else(|| anyhow!("update failed"))
-        }
-    }
-
-    fn sample_project() -> Project {
-        Project {
-            id: 1,
-            project_key: "TEST".to_string(),
-            name: "Test Project".to_string(),
-            chart_enabled: false,
-            subtasking_enabled: false,
-            project_leader_can_edit_project_leader: false,
-            text_formatting_rule: "markdown".to_string(),
-            archived: false,
-            extra: BTreeMap::new(),
         }
     }
 

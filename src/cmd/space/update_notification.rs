@@ -48,6 +48,7 @@ fn format_notification_text(n: &SpaceNotification) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::cmd::space::sample_notification;
     use anyhow::anyhow;
 
     use std::cell::RefCell;
@@ -72,13 +73,6 @@ mod tests {
             self.result
                 .clone()
                 .ok_or_else(|| anyhow!("put notification failed"))
-        }
-    }
-
-    fn sample_notification() -> SpaceNotification {
-        SpaceNotification {
-            content: "Hello world.".to_string(),
-            updated: Some("2024-07-01T00:00:00Z".to_string()),
         }
     }
 
@@ -128,7 +122,7 @@ mod tests {
     #[test]
     fn format_notification_text_contains_fields() {
         let text = format_notification_text(&sample_notification());
-        assert!(text.contains("2024-07-01T00:00:00Z"));
-        assert!(text.contains("Hello world."));
+        assert!(text.contains("2024-06-18T07:55:37Z"));
+        assert!(text.contains("Scheduled maintenance on 2024-07-01."));
     }
 }

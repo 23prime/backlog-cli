@@ -99,8 +99,8 @@ pub fn delete_with(args: &ProjectAdminDeleteArgs, api: &dyn BacklogApi) -> Resul
 mod tests {
     use super::*;
     use crate::api::project::ProjectUser;
+    use crate::cmd::project::sample_project_user;
     use anyhow::anyhow;
-    use std::collections::BTreeMap;
 
     struct MockApi {
         users: Option<Vec<ProjectUser>>,
@@ -129,23 +129,10 @@ mod tests {
         }
     }
 
-    fn sample_user() -> ProjectUser {
-        ProjectUser {
-            id: 1,
-            user_id: Some("john".to_string()),
-            name: "John Doe".to_string(),
-            role_type: 1,
-            lang: Some("ja".to_string()),
-            mail_address: Some("john@example.com".to_string()),
-            last_login_time: None,
-            extra: BTreeMap::new(),
-        }
-    }
-
     #[test]
     fn list_with_text_output_succeeds() {
         let api = MockApi {
-            users: Some(vec![sample_user()]),
+            users: Some(vec![sample_project_user()]),
             user: None,
         };
         assert!(list_with(&ProjectAdminListArgs::new("TEST".to_string(), false), &api).is_ok());
@@ -154,7 +141,7 @@ mod tests {
     #[test]
     fn list_with_json_output_succeeds() {
         let api = MockApi {
-            users: Some(vec![sample_user()]),
+            users: Some(vec![sample_project_user()]),
             user: None,
         };
         assert!(list_with(&ProjectAdminListArgs::new("TEST".to_string(), true), &api).is_ok());
@@ -175,7 +162,7 @@ mod tests {
     fn add_with_text_output_succeeds() {
         let api = MockApi {
             users: None,
-            user: Some(sample_user()),
+            user: Some(sample_project_user()),
         };
         assert!(
             add_with(
@@ -190,7 +177,7 @@ mod tests {
     fn add_with_json_output_succeeds() {
         let api = MockApi {
             users: None,
-            user: Some(sample_user()),
+            user: Some(sample_project_user()),
         };
         assert!(add_with(&ProjectAdminAddArgs::new("TEST".to_string(), 1, true), &api).is_ok());
     }
@@ -213,7 +200,7 @@ mod tests {
     fn delete_with_text_output_succeeds() {
         let api = MockApi {
             users: None,
-            user: Some(sample_user()),
+            user: Some(sample_project_user()),
         };
         assert!(
             delete_with(
@@ -228,7 +215,7 @@ mod tests {
     fn delete_with_json_output_succeeds() {
         let api = MockApi {
             users: None,
-            user: Some(sample_user()),
+            user: Some(sample_project_user()),
         };
         assert!(
             delete_with(

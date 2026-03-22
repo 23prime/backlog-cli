@@ -83,6 +83,7 @@ pub fn list_with(args: &WatchListArgs, api: &dyn BacklogApi) -> Result<()> {
 mod tests {
     use super::*;
     use crate::api::watch::Watching;
+    use crate::cmd::watch::sample_watching;
     use anyhow::anyhow;
 
     struct MockApi {
@@ -99,35 +100,6 @@ mod tests {
                 .clone()
                 .ok_or_else(|| anyhow!("no watchings"))
         }
-    }
-
-    fn sample_watching() -> Watching {
-        serde_json::from_value(sample_watching_json()).unwrap()
-    }
-
-    fn sample_watching_json() -> serde_json::Value {
-        serde_json::json!({
-            "id": 1,
-            "resourceAlreadyRead": false,
-            "note": "test note",
-            "type": "issue",
-            "issue": {
-                "id": 10, "projectId": 1, "issueKey": "TEST-1", "keyId": 1,
-                "issueType": {"id":1,"projectId":1,"name":"Bug","color":"#990000","displayOrder":0},
-                "summary": "Test issue", "description": null, "resolution": null,
-                "priority": {"id":3,"name":"Normal"},
-                "status": {"id":1,"projectId":1,"name":"Open","color":"#ed8077","displayOrder":1000},
-                "assignee": null, "startDate": null, "dueDate": null,
-                "estimatedHours": null, "actualHours": null, "parentIssueId": null,
-                "createdUser": {"id":1,"userId":"alice","name":"Alice","roleType":1,"lang":null,"mailAddress":null,"lastLoginTime":null},
-                "created": "2024-01-01T00:00:00Z",
-                "updatedUser": {"id":1,"userId":"alice","name":"Alice","roleType":1,"lang":null,"mailAddress":null,"lastLoginTime":null},
-                "updated": "2024-01-01T00:00:00Z"
-            },
-            "lastContentUpdated": "2024-01-01T00:00:00Z",
-            "created": "2024-01-01T00:00:00Z",
-            "updated": "2024-01-01T00:00:00Z"
-        })
     }
 
     fn args(json: bool) -> WatchListArgs {
