@@ -1,4 +1,6 @@
-use anyhow::Result;
+use std::collections::BTreeMap;
+
+use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 
 use super::BacklogClient;
@@ -17,6 +19,26 @@ pub struct Space {
     pub updated: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SpaceAttachmentUser {
+    pub id: u64,
+    pub user_id: Option<String>,
+    pub name: String,
+    #[serde(flatten)]
+    pub extra: BTreeMap<String, serde_json::Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SpaceAttachment {
+    pub id: u64,
+    pub name: String,
+    pub size: u64,
+    pub created_user: SpaceAttachmentUser,
+    pub created: String,
+}
+
 impl BacklogClient {
     pub fn get_space(&self) -> Result<Space> {
         let value = self.get("/space")?;
@@ -25,6 +47,20 @@ impl BacklogClient {
 
     pub fn download_space_image(&self) -> Result<(Vec<u8>, String)> {
         self.download("/space/image")
+    }
+
+    pub fn upload_space_attachment(&self, file_path: &std::path::Path) -> Result<SpaceAttachment> {
+        let filename = file_path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("attachment")
+            .to_string();
+        let bytes = std::fs::read(file_path)
+            .with_context(|| format!("Failed to read {}", file_path.display()))?;
+        let part = reqwest::blocking::multipart::Part::bytes(bytes).file_name(filename);
+        let form = reqwest::blocking::multipart::Form::new().part("file", part);
+        let value = self.post_multipart("/space/attachment", form)?;
+        deserialize(value)
     }
 }
 

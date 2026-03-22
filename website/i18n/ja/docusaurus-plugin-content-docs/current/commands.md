@@ -167,6 +167,24 @@ bl space image --output my_icon.png
 Saved: space_image.png (1234 bytes)
 ```
 
+## `bl space upload-attachment`
+
+ファイルをスペースの添付ファイルとしてアップロードします。アップロードされた添付ファイルのメタデータを返します。
+
+```bash
+bl space upload-attachment ./report.pdf
+bl space upload-attachment ./image.png --json
+```
+
+出力例:
+
+```text
+ID:      1
+Name:    report.pdf
+Size:    204800 bytes
+Created: 2024-01-01T00:00:00Z
+```
+
 ## `bl project list`
 
 アクセス可能なプロジェクトを一覧表示します。
@@ -2236,7 +2254,7 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl space licence` | `GET /api/v2/space/licence` | ✅ 実装済み |
 | `bl space update-notification` | `PUT /api/v2/space/notification` | ✅ 実装済み |
 | `bl space image` | `GET /api/v2/space/image` | ✅ 実装済み |
-| — | `POST /api/v2/space/attachment` | 計画中 |
+| `bl space upload-attachment <file>` | `POST /api/v2/space/attachment` | ✅ 実装済み |
 
 ### Projects
 

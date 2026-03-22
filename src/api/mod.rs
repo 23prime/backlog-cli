@@ -62,7 +62,7 @@ use pull_request::{
 use rate_limit::RateLimit;
 use resolution::Resolution;
 use shared_file::SharedFile;
-use space::Space;
+use space::{Space, SpaceAttachment};
 use space_notification::SpaceNotification;
 use team::Team;
 use user::{RecentlyViewedIssue, RecentlyViewedProject, RecentlyViewedWiki, Star, StarCount, User};
@@ -89,6 +89,9 @@ pub trait BacklogApi {
         unimplemented!()
     }
     fn download_space_image(&self) -> Result<(Vec<u8>, String)> {
+        unimplemented!()
+    }
+    fn upload_space_attachment(&self, _file_path: &std::path::Path) -> Result<SpaceAttachment> {
         unimplemented!()
     }
     fn get_rate_limit(&self) -> Result<RateLimit> {
@@ -775,6 +778,10 @@ impl BacklogApi for BacklogClient {
 
     fn download_space_image(&self) -> Result<(Vec<u8>, String)> {
         self.download_space_image()
+    }
+
+    fn upload_space_attachment(&self, file_path: &std::path::Path) -> Result<SpaceAttachment> {
+        self.upload_space_attachment(file_path)
     }
 
     fn get_rate_limit(&self) -> Result<RateLimit> {
@@ -1750,6 +1757,26 @@ impl BacklogClient {
                 .send()
                 .with_context(|| format!("Failed to POST {url}"))
         })
+    }
+
+    /// Post a multipart/form-data request.
+    ///
+    /// Note: unlike [`Self::execute`], this method does not retry on 401 because
+    /// `reqwest::blocking::multipart::Form` is consumed on the first send and cannot be
+    /// reconstructed for a retry.
+    pub fn post_multipart(
+        &self,
+        path: &str,
+        form: reqwest::blocking::multipart::Form,
+    ) -> Result<serde_json::Value> {
+        let url = format!("{}{}", self.base_url, path);
+        crate::logger::verbose(&format!("→ POST {url}"));
+        let response = self
+            .apply_auth(self.client.post(&url))
+            .multipart(form)
+            .send()
+            .with_context(|| format!("Failed to POST {url}"))?;
+        self.finish_response(response)
     }
 
     pub fn patch_form(&self, path: &str, params: &[(String, String)]) -> Result<serde_json::Value> {

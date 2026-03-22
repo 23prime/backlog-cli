@@ -76,7 +76,7 @@ use cmd::resolution::ResolutionListArgs;
 use cmd::shared_file::{SharedFileGetArgs, SharedFileListArgs};
 use cmd::space::{
     SpaceActivitiesArgs, SpaceDiskUsageArgs, SpaceImageArgs, SpaceLicenceArgs,
-    SpaceNotificationArgs, SpaceShowArgs, SpaceUpdateNotificationArgs,
+    SpaceNotificationArgs, SpaceShowArgs, SpaceUpdateNotificationArgs, SpaceUploadAttachmentArgs,
 };
 use cmd::star::{StarAddArgs, StarDeleteArgs};
 use cmd::team::{
@@ -342,6 +342,15 @@ enum SpaceCommands {
         /// Output file path (default: server-provided filename, or "space_image" if none)
         #[arg(long, short = 'o')]
         output: Option<std::path::PathBuf>,
+    },
+    /// Upload a file as a space attachment
+    UploadAttachment {
+        /// File to upload
+        #[arg(value_name = "FILE")]
+        file: std::path::PathBuf,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
     },
 }
 
@@ -3725,6 +3734,13 @@ fn run() -> Result<()> {
             Some(SpaceCommands::Image { output }) => {
                 cmd::space::image(&SpaceImageArgs::new(output))
             }
+            Some(SpaceCommands::UploadAttachment {
+                file,
+                json: sub_json,
+            }) => cmd::space::upload_attachment(&SpaceUploadAttachmentArgs::new(
+                file,
+                json || sub_json,
+            )),
         },
     }
 }

@@ -168,6 +168,24 @@ Example output:
 Saved: space_image.png (1234 bytes)
 ```
 
+## `bl space upload-attachment`
+
+Upload a file as a space attachment. Returns the uploaded attachment metadata.
+
+```bash
+bl space upload-attachment ./report.pdf
+bl space upload-attachment ./image.png --json
+```
+
+Example output:
+
+```text
+ID:      1
+Name:    report.pdf
+Size:    204800 bytes
+Created: 2024-01-01T00:00:00Z
+```
+
 ## `bl project list`
 
 List all projects you have access to.
@@ -2234,7 +2252,7 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | `bl space licence` | `GET /api/v2/space/licence` | ✅ Implemented |
 | `bl space update-notification` | `PUT /api/v2/space/notification` | ✅ Implemented |
 | `bl space image` | `GET /api/v2/space/image` | ✅ Implemented |
-| — | `POST /api/v2/space/attachment` | Planned |
+| `bl space upload-attachment <file>` | `POST /api/v2/space/attachment` | ✅ Implemented |
 
 ### Projects
 
