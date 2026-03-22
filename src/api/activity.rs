@@ -40,6 +40,22 @@ pub struct ActivityUser {
     pub extra: BTreeMap<String, serde_json::Value>,
 }
 
+pub(crate) fn validate_activity_query(
+    count: u32,
+    min_id: Option<u64>,
+    max_id: Option<u64>,
+) -> anyhow::Result<()> {
+    if !(1..=100).contains(&count) {
+        anyhow::bail!("count must be between 1 and 100");
+    }
+    if let (Some(min), Some(max)) = (min_id, max_id)
+        && min > max
+    {
+        anyhow::bail!("min-id must be less than or equal to max-id");
+    }
+    Ok(())
+}
+
 pub(crate) fn build_activity_params(
     activity_type_ids: &[u32],
     min_id: Option<u64>,

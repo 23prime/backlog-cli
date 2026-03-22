@@ -3,7 +3,7 @@ use anyhow::{Context, Result};
 
 use crate::api::{
     BacklogApi, BacklogClient,
-    activity::{build_activity_params, format_activity_row},
+    activity::{build_activity_params, format_activity_row, validate_activity_query},
 };
 
 pub struct UserActivitiesArgs {
@@ -26,14 +26,7 @@ impl UserActivitiesArgs {
         count: u32,
         order: Option<String>,
     ) -> anyhow::Result<Self> {
-        if !(1..=100).contains(&count) {
-            anyhow::bail!("count must be between 1 and 100");
-        }
-        if let (Some(min), Some(max)) = (min_id, max_id)
-            && min > max
-        {
-            anyhow::bail!("min-id must be less than or equal to max-id");
-        }
+        validate_activity_query(count, min_id, max_id)?;
         Ok(Self {
             user_id,
             json,
