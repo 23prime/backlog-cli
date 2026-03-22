@@ -18,6 +18,8 @@ pub mod user;
 pub mod watch;
 pub mod wiki;
 
+use anyhow::Context;
+
 pub(crate) fn print_json<T: serde::Serialize>(value: &T) -> anyhow::Result<()> {
     anstream::println!(
         "{}",
@@ -25,5 +27,3 @@ pub(crate) fn print_json<T: serde::Serialize>(value: &T) -> anyhow::Result<()> {
     );
     Ok(())
 }
-
-use anyhow::Context;
