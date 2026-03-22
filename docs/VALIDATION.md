@@ -67,6 +67,25 @@ pub fn try_new(id: u64, name: Option<String>, /* … */, json: bool) -> anyhow::
 }
 ```
 
+### `Option<Vec<T>>` fields in update commands
+
+When an update command accepts `Option<Vec<T>>` for a list field (e.g. `--member`),
+treat `Some(vec![])` as equivalent to `None`. An empty list provides no meaningful
+update and should fail the same validation. Use `is_none_or`:
+
+```rust
+pub fn try_new(id: u64, name: Option<String>, members: Option<Vec<u64>>, json: bool) -> anyhow::Result<Self> {
+    let no_members = members.as_ref().is_none_or(|m| m.is_empty());
+    if name.is_none() && no_members {
+        anyhow::bail!("at least one of --name or --member must be provided");
+    }
+    Ok(Self { id, name, members, json })
+}
+```
+
+This matters because clap's `num_args(0..)` can produce `Some(vec![])` when the
+flag is passed with no arguments — which would otherwise silently pass validation.
+
 ### ID range validation (`min_id` / `max_id`)
 
 When both `min_id` and `max_id` are provided, verify that `min_id <= max_id`:

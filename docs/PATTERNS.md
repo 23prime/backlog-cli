@@ -236,6 +236,29 @@ fn format_webhook_detail(h: &ProjectWebhook) -> String {
 This pattern prevents `show` from looking identical to `list` in non-JSON mode,
 which is confusing to users.
 
+## Shared row formatters in `mod.rs`
+
+When multiple subcommands under the same resource group (e.g. `list`, `add`, `delete`,
+`update`) all print the same single-line row format, define the formatter once as
+`pub(crate)` in `mod.rs` and import it via `use super::format_*_row` in each subcommand:
+
+```rust
+// src/cmd/team/mod.rs
+pub(crate) fn format_team_row(t: &crate::api::team::Team) -> String {
+    format!("[{}] {} ({} members)", t.id, t.name, t.members.len())
+}
+```
+
+```rust
+// src/cmd/team/add.rs  (and delete.rs, update.rs)
+use super::format_team_row;
+// …
+println!("Created: {}", format_team_row(&team));
+```
+
+Without this, each file grows its own private copy that drifts — e.g. `delete`
+might omit the member count that `list` includes.
+
 ## Project-scoped API methods — module placement
 
 When a project-scoped endpoint (e.g. `/projects/{key}/teams`) returns a type
