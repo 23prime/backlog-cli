@@ -17,3 +17,13 @@ pub mod team;
 pub mod user;
 pub mod watch;
 pub mod wiki;
+
+pub(crate) fn print_json<T: serde::Serialize>(value: &T) -> anyhow::Result<()> {
+    anstream::println!(
+        "{}",
+        serde_json::to_string_pretty(value).context("Failed to serialize JSON")?
+    );
+    Ok(())
+}
+
+use anyhow::Context;

@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient};
 use crate::cmd::activity_shared::{
@@ -51,10 +51,7 @@ pub fn activities_with(args: &SpaceActivitiesArgs, api: &dyn BacklogApi) -> Resu
     );
     let activities = api.get_space_activities(&params)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&activities).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&activities)?;
     } else {
         for a in &activities {
             println!("{}", format_activity_row(a));

@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient};
 
@@ -42,10 +42,7 @@ pub fn delete_with(args: &PrAttachmentDeleteArgs, api: &dyn BacklogApi) -> Resul
         args.attachment_id,
     )?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&attachment).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&attachment)?;
     } else {
         println!("Deleted: {} ({} bytes)", attachment.name, attachment.size);
     }

@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient, space::Space};
 
@@ -21,10 +21,7 @@ pub fn show(args: &SpaceShowArgs) -> Result<()> {
 pub fn show_with(args: &SpaceShowArgs, api: &dyn BacklogApi) -> Result<()> {
     let space = api.get_space()?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&space).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&space)?;
     } else {
         println!("{}", format_space_text(&space));
     }

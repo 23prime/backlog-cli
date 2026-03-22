@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::notification::Notification;
 use crate::api::{BacklogApi, BacklogClient};
@@ -68,10 +68,7 @@ pub fn list_with(args: &NotificationListArgs, api: &dyn BacklogApi) -> Result<()
         notifications.retain(|n| !n.already_read);
     }
     if args.json {
-        anstream::println!(
-            "{}",
-            serde_json::to_string_pretty(&notifications).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&notifications)?;
     } else {
         for n in &notifications {
             anstream::println!("{}", format_notification(n));

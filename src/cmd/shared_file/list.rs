@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient};
 
@@ -51,10 +51,7 @@ pub fn list_with(args: &SharedFileListArgs, api: &dyn BacklogApi) -> Result<()> 
     }
     let files = api.list_shared_files(&args.project_id_or_key, &args.path, &params)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&files).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&files)?;
     } else {
         for f in &files {
             let sep = if f.dir.ends_with('/') { "" } else { "/" };

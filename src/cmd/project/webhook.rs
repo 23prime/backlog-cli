@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result, bail};
+use anyhow::{Result, bail};
 
 use crate::api::{
     BacklogApi, BacklogClient,
@@ -25,10 +25,7 @@ pub fn list(args: &ProjectWebhookListArgs) -> Result<()> {
 pub fn list_with(args: &ProjectWebhookListArgs, api: &dyn BacklogApi) -> Result<()> {
     let hooks = api.get_project_webhooks(&args.key)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&hooks).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&hooks)?;
     } else {
         for h in &hooks {
             println!("{}", format_webhook_row(h));
@@ -61,10 +58,7 @@ pub fn show(args: &ProjectWebhookShowArgs) -> Result<()> {
 pub fn show_with(args: &ProjectWebhookShowArgs, api: &dyn BacklogApi) -> Result<()> {
     let hook = api.get_project_webhook(&args.key, args.webhook_id)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&hook).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&hook)?;
     } else {
         println!("{}", format_webhook_detail(&hook));
     }
@@ -118,10 +112,7 @@ pub fn add_with(args: &ProjectWebhookAddArgs, api: &dyn BacklogApi) -> Result<()
         &args.activity_type_ids,
     )?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&hook).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&hook)?;
     } else {
         println!("Added: {}", format_webhook_row(&hook));
     }
@@ -190,10 +181,7 @@ pub fn update_with(args: &ProjectWebhookUpdateArgs, api: &dyn BacklogApi) -> Res
     };
     let hook = api.update_project_webhook(&args.key, args.webhook_id, &params)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&hook).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&hook)?;
     } else {
         println!("Updated: {}", format_webhook_row(&hook));
     }
@@ -224,10 +212,7 @@ pub fn delete(args: &ProjectWebhookDeleteArgs) -> Result<()> {
 pub fn delete_with(args: &ProjectWebhookDeleteArgs, api: &dyn BacklogApi) -> Result<()> {
     let hook = api.delete_project_webhook(&args.key, args.webhook_id)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&hook).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&hook)?;
     } else {
         println!("Deleted: {}", format_webhook_row(&hook));
     }

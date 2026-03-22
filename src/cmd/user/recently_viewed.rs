@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient, user::RecentlyViewedIssue};
 
@@ -43,10 +43,7 @@ pub fn recently_viewed_with(args: &UserRecentlyViewedArgs, api: &dyn BacklogApi)
     }
     let items = api.get_recently_viewed_issues(&params)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&items).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&items)?;
     } else {
         for item in &items {
             println!("{}", format_row(item));

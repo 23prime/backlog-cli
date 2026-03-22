@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result, bail};
+use anyhow::{Result, bail};
 
 use crate::api::{BacklogApi, BacklogClient};
 
@@ -31,10 +31,7 @@ pub fn link(args: &IssueSharedFileLinkArgs) -> Result<()> {
 pub fn link_with(args: &IssueSharedFileLinkArgs, api: &dyn BacklogApi) -> Result<()> {
     let files = api.link_issue_shared_files(&args.key, &args.shared_file_ids)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&files).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&files)?;
     } else {
         println!("Linked {} file(s).", files.len());
     }

@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient};
 
@@ -27,10 +27,7 @@ pub fn count(args: &PrCountArgs) -> Result<()> {
 pub fn count_with(args: &PrCountArgs, api: &dyn BacklogApi) -> Result<()> {
     let result = api.count_pull_requests(&args.project_id_or_key, &args.repo_id_or_name, &[])?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&result).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&result)?;
     } else {
         println!("{}", result.count);
     }

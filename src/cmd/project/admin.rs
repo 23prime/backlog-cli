@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use super::format_project_user_row;
 use crate::api::{BacklogApi, BacklogClient};
@@ -23,10 +23,7 @@ pub fn list(args: &ProjectAdminListArgs) -> Result<()> {
 pub fn list_with(args: &ProjectAdminListArgs, api: &dyn BacklogApi) -> Result<()> {
     let users = api.get_project_administrators(&args.key)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&users).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&users)?;
     } else {
         for u in &users {
             println!("{}", format_project_user_row(u));
@@ -55,10 +52,7 @@ pub fn add(args: &ProjectAdminAddArgs) -> Result<()> {
 pub fn add_with(args: &ProjectAdminAddArgs, api: &dyn BacklogApi) -> Result<()> {
     let user = api.add_project_administrator(&args.key, args.user_id)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&user).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&user)?;
     } else {
         println!("Added: {}", format_project_user_row(&user));
     }
@@ -85,10 +79,7 @@ pub fn delete(args: &ProjectAdminDeleteArgs) -> Result<()> {
 pub fn delete_with(args: &ProjectAdminDeleteArgs, api: &dyn BacklogApi) -> Result<()> {
     let user = api.delete_project_administrator(&args.key, args.user_id)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&user).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&user)?;
     } else {
         println!("Deleted: {}", format_project_user_row(&user));
     }

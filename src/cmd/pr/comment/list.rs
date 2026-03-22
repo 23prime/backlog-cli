@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient};
 
@@ -39,10 +39,7 @@ pub fn list_with(args: &PrCommentListArgs, api: &dyn BacklogApi) -> Result<()> {
         &[],
     )?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&comments).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&comments)?;
     } else {
         for c in &comments {
             let content = c.content.as_deref().unwrap_or("(no content)");

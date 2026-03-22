@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient};
 
@@ -47,10 +47,7 @@ pub fn add_with(args: &UserAddArgs, api: &dyn BacklogApi) -> Result<()> {
     ];
     let user = api.add_user(&params)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&user).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&user)?;
     } else {
         println!(
             "Added: {} ({}) [roleType: {}]",

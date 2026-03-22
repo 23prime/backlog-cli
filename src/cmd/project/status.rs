@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient, project::ProjectStatus};
 
@@ -22,10 +22,7 @@ pub fn list(args: &ProjectStatusListArgs) -> Result<()> {
 pub fn list_with(args: &ProjectStatusListArgs, api: &dyn BacklogApi) -> Result<()> {
     let statuses = api.get_project_statuses(&args.key)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&statuses).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&statuses)?;
     } else {
         for s in &statuses {
             println!("{}", format_status_row(s));
@@ -62,10 +59,7 @@ pub fn add(args: &ProjectStatusAddArgs) -> Result<()> {
 pub fn add_with(args: &ProjectStatusAddArgs, api: &dyn BacklogApi) -> Result<()> {
     let status = api.add_project_status(&args.key, &args.name, &args.color)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&status).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&status)?;
     } else {
         println!("Added: {}", format_status_row(&status));
     }
@@ -122,10 +116,7 @@ pub fn update_with(args: &ProjectStatusUpdateArgs, api: &dyn BacklogApi) -> Resu
     }
     let status = api.update_project_status(&args.key, args.status_id, &params)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&status).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&status)?;
     } else {
         println!("Updated: {}", format_status_row(&status));
     }
@@ -169,10 +160,7 @@ pub fn delete(args: &ProjectStatusDeleteArgs) -> Result<()> {
 pub fn delete_with(args: &ProjectStatusDeleteArgs, api: &dyn BacklogApi) -> Result<()> {
     let status = api.delete_project_status(&args.key, args.status_id, args.substitute_status_id)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&status).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&status)?;
     } else {
         println!("Deleted: {}", format_status_row(&status));
     }
@@ -219,10 +207,7 @@ pub fn reorder(args: &ProjectStatusReorderArgs) -> Result<()> {
 pub fn reorder_with(args: &ProjectStatusReorderArgs, api: &dyn BacklogApi) -> Result<()> {
     let statuses = api.reorder_project_statuses(&args.key, &args.status_ids)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&statuses).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&statuses)?;
     } else {
         for s in &statuses {
             println!("{}", format_status_row(s));

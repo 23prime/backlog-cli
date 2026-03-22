@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use super::format_team_row;
 use crate::api::{BacklogApi, BacklogClient};
@@ -32,10 +32,7 @@ pub fn add_with(args: &TeamAddArgs, api: &dyn BacklogApi) -> Result<()> {
     }
     let team = api.create_team(&params)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&team).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&team)?;
     } else {
         println!("Created: {}", format_team_row(&team));
     }

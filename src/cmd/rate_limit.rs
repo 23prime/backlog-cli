@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient, rate_limit::RateLimit};
 
@@ -21,10 +21,7 @@ pub fn show(args: &RateLimitArgs) -> Result<()> {
 pub fn show_with(args: &RateLimitArgs, api: &dyn BacklogApi) -> Result<()> {
     let rl = api.get_rate_limit()?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&rl).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&rl)?;
     } else {
         println!("{}", format_rate_limit_text(&rl));
     }

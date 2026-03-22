@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient};
 
@@ -21,10 +21,7 @@ pub fn list(args: &ResolutionListArgs) -> Result<()> {
 pub fn list_with(args: &ResolutionListArgs, api: &dyn BacklogApi) -> Result<()> {
     let resolutions = api.get_resolutions()?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&resolutions).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&resolutions)?;
     } else {
         for r in &resolutions {
             println!("[{}] {}", r.id, r.name);

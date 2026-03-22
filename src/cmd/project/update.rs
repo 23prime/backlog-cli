@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient};
 
@@ -79,10 +79,7 @@ pub fn update_with(args: &ProjectUpdateArgs, api: &dyn BacklogApi) -> Result<()>
 
     let project = api.update_project(&args.key, &params)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&project).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&project)?;
     } else {
         println!(
             "ID:         {}\nKey:        {}\nName:       {}\nFormatting: {}\nArchived:   {}",

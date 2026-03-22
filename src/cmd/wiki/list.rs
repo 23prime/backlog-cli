@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 use owo_colors::OwoColorize;
 
 use crate::api::{BacklogApi, BacklogClient, wiki::WikiListItem};
@@ -33,10 +33,7 @@ pub fn list_with(args: &WikiListArgs, api: &dyn BacklogApi) -> Result<()> {
     }
     let wikis = api.get_wikis(&params)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&wikis).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&wikis)?;
     } else {
         for wiki in &wikis {
             println!("{}", format_wiki_row(wiki));

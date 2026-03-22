@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result, bail};
+use anyhow::{Result, bail};
 
 use crate::api::{BacklogApi, BacklogClient};
 use crate::cmd::wiki::attachment::list::format_attachment_row;
@@ -32,10 +32,7 @@ pub fn add(args: &WikiAttachmentAddArgs) -> Result<()> {
 pub fn add_with(args: &WikiAttachmentAddArgs, api: &dyn BacklogApi) -> Result<()> {
     let attachments = api.add_wiki_attachments(args.wiki_id, &args.attachment_ids)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&attachments).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&attachments)?;
     } else {
         for a in &attachments {
             println!("{}", format_attachment_row(a));

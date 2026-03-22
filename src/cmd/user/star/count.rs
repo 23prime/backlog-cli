@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::api::{BacklogApi, BacklogClient};
 
@@ -36,10 +36,7 @@ pub fn count_with(args: &UserStarCountArgs, api: &dyn BacklogApi) -> Result<()> 
     }
     let result = api.count_user_stars(args.user_id, &params)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&result).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&result)?;
     } else {
         println!("{}", result.count);
     }

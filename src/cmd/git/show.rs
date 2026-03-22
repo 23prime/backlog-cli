@@ -1,5 +1,5 @@
 use anstream::println;
-use anyhow::{Context, Result};
+use anyhow::Result;
 use owo_colors::OwoColorize;
 
 use crate::api::{BacklogApi, BacklogClient, git::GitRepository};
@@ -28,10 +28,7 @@ pub fn show(args: &GitRepoShowArgs) -> Result<()> {
 pub fn show_with(args: &GitRepoShowArgs, api: &dyn BacklogApi) -> Result<()> {
     let repo = api.get_git_repository(&args.project_id_or_key, &args.repo_id_or_name)?;
     if args.json {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&repo).context("Failed to serialize JSON")?
-        );
+        crate::cmd::print_json(&repo)?;
     } else {
         print_repo(&repo);
     }
