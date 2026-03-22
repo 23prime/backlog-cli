@@ -928,7 +928,7 @@ Deleted: My Project (MYPRJ)
 
 プロジェクトのアイコン画像をダウンロードします。
 
-レスポンスはバイナリデータです。`--output` / `-o` で保存先を指定してください。省略した場合は、サーバーが返すファイル名（取得できない場合は `project_image`）を使ってカレントディレクトリに保存します。
+レスポンスはバイナリデータです。`--output` / `-o` で保存先を指定してください。省略した場合は、サーバーが返すファイル名（ファイル名がない場合や `attachment` などの汎用プレースホルダーの場合は `project_image`）を使ってカレントディレクトリに保存します。
 
 ```bash
 bl project image <id-or-key>
@@ -938,7 +938,7 @@ bl project image <id-or-key> --output my_icon.png
 出力例:
 
 ```text
-Saved: project_image.png (1234 bytes)
+Saved: project_image (1234 bytes)
 ```
 
 ## `bl issue list`

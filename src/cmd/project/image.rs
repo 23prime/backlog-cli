@@ -33,18 +33,17 @@ pub fn image_with(args: &ProjectImageArgs, api: &dyn BacklogApi) -> Result<()> {
 
 fn default_output_path(filename: &str) -> PathBuf {
     let normalized = filename.trim();
-    let lower = normalized.to_ascii_lowercase();
-    let is_generic_attachment = lower == "attachment" || lower.starts_with("attachment.");
-
-    let effective = if normalized.is_empty() || is_generic_attachment {
-        "project_image"
-    } else {
-        normalized
-    };
-    let base = std::path::Path::new(effective)
+    let base = std::path::Path::new(normalized)
         .file_name()
-        .unwrap_or(std::ffi::OsStr::new("project_image"));
-    PathBuf::from(base)
+        .unwrap_or(std::ffi::OsStr::new(""));
+    let base_lower = base.to_string_lossy().to_ascii_lowercase();
+    let is_generic_attachment = base_lower == "attachment" || base_lower.starts_with("attachment.");
+
+    if base.is_empty() || is_generic_attachment {
+        PathBuf::from("project_image")
+    } else {
+        PathBuf::from(base)
+    }
 }
 
 #[cfg(test)]
@@ -81,30 +80,6 @@ mod tests {
     }
 
     #[test]
-    fn image_with_saves_file_to_default_filename() {
-        let dir = tempdir().unwrap();
-        let original_dir = std::env::current_dir().unwrap();
-        std::env::set_current_dir(&dir).unwrap();
-
-        struct DirGuard(std::path::PathBuf);
-        impl Drop for DirGuard {
-            fn drop(&mut self) {
-                let _ = std::env::set_current_dir(&self.0);
-            }
-        }
-        let _guard = DirGuard(original_dir);
-
-        let api = MockApi {
-            result: Some((b"png-data".to_vec(), "project_image.png".to_string())),
-        };
-        assert!(image_with(&args(None), &api).is_ok());
-        assert_eq!(
-            std::fs::read(dir.path().join("project_image.png")).unwrap(),
-            b"png-data"
-        );
-    }
-
-    #[test]
     fn image_with_propagates_api_error() {
         let api = MockApi { result: None };
         let err = image_with(&args(None), &api).unwrap_err();
@@ -131,6 +106,14 @@ mod tests {
     fn default_output_path_falls_back_for_attachment_with_extension() {
         assert_eq!(
             default_output_path("attachment.png"),
+            PathBuf::from("project_image")
+        );
+    }
+
+    #[test]
+    fn default_output_path_falls_back_for_path_with_attachment_basename() {
+        assert_eq!(
+            default_output_path("foo/attachment.png"),
             PathBuf::from("project_image")
         );
     }

@@ -928,7 +928,7 @@ Deleted: My Project (MYPRJ)
 
 Download the project icon image.
 
-The response is binary data. Use `--output` / `-o` to specify where the file is written. If omitted, the command saves the file in the current directory using the filename returned by the server (or `project_image` if none is provided).
+The response is binary data. Use `--output` / `-o` to specify where the file is written. If omitted, the command saves the file in the current directory using the filename returned by the server (or `project_image` when the filename is missing or a generic `attachment` placeholder).
 
 ```bash
 bl project image <id-or-key>
@@ -938,7 +938,7 @@ bl project image <id-or-key> --output my_icon.png
 Example output:
 
 ```text
-Saved: project_image.png (1234 bytes)
+Saved: project_image (1234 bytes)
 ```
 
 ## `bl issue list`
