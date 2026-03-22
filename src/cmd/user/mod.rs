@@ -1,6 +1,7 @@
 mod activities;
 mod add;
 mod delete;
+mod icon;
 mod list;
 mod recently_viewed;
 mod recently_viewed_projects;
@@ -10,6 +11,7 @@ pub mod star;
 mod update;
 
 pub use activities::{UserActivitiesArgs, activities};
+pub use icon::{UserIconArgs, icon};
 
 #[cfg(test)]
 pub(crate) fn sample_user() -> crate::api::user::User {

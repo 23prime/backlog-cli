@@ -146,6 +146,10 @@ impl BacklogClient {
         deserialize(value)
     }
 
+    pub fn download_user_icon(&self, user_id: u64) -> Result<(Vec<u8>, String)> {
+        self.download(&format!("/users/{user_id}/icon"))
+    }
+
     pub fn add_star(&self, params: &[(String, String)]) -> Result<()> {
         self.post_form("/stars", params)?;
         Ok(())

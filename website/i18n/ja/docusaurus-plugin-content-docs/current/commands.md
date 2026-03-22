@@ -1817,6 +1817,23 @@ bl user star count <id> --since 2024-01-01 --until 2024-12-31 --json
 42
 ```
 
+## `bl user icon`
+
+ユーザーのアイコン画像をダウンロードします。
+
+レスポンスはバイナリデータです。`--output` / `-o` で保存先を指定してください。省略した場合は、サーバーが返すファイル名（ファイル名がない場合や `attachment` などの汎用プレースホルダーの場合は `user_icon`）を使ってカレントディレクトリに保存します。
+
+```bash
+bl user icon <id>
+bl user icon <id> --output my_icon.png
+```
+
+出力例:
+
+```text
+Saved: user_icon (1234 bytes)
+```
+
 ## `bl user list`
 
 スペース内のユーザーを一覧表示します。
@@ -2393,7 +2410,7 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | `bl user recently-viewed-wikis` | `GET /api/v2/users/myself/recentlyViewedWikis` | ✅ 実装済み |
 | `bl user star list <id>` | `GET /api/v2/users/{userId}/stars` | ✅ 実装済み |
 | `bl user star count <id>` | `GET /api/v2/users/{userId}/stars/count` | ✅ 実装済み |
-| — | `GET /api/v2/users/{userId}/icon` | 計画中 |
+| `bl user icon <id>` | `GET /api/v2/users/{userId}/icon` | ✅ 実装済み |
 
 ### Notifications
 

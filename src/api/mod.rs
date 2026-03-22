@@ -595,6 +595,9 @@ pub trait BacklogApi {
     fn count_user_stars(&self, _user_id: u64, _params: &[(String, String)]) -> Result<StarCount> {
         unimplemented!()
     }
+    fn download_user_icon(&self, _user_id: u64) -> Result<(Vec<u8>, String)> {
+        unimplemented!()
+    }
     fn add_star(&self, _params: &[(String, String)]) -> Result<()> {
         unimplemented!()
     }
@@ -1388,6 +1391,10 @@ impl BacklogApi for BacklogClient {
 
     fn count_user_stars(&self, user_id: u64, params: &[(String, String)]) -> Result<StarCount> {
         self.count_user_stars(user_id, params)
+    }
+
+    fn download_user_icon(&self, user_id: u64) -> Result<(Vec<u8>, String)> {
+        self.download_user_icon(user_id)
     }
 
     fn add_star(&self, params: &[(String, String)]) -> Result<()> {

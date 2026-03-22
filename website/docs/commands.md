@@ -1814,6 +1814,23 @@ Example output:
 42
 ```
 
+## `bl user icon`
+
+Download a user's icon image.
+
+The response is binary data. Use `--output` / `-o` to specify where the file is written. If omitted, the command saves the file in the current directory using the filename returned by the server (or `user_icon` when the filename is missing or a generic `attachment` placeholder).
+
+```bash
+bl user icon <id>
+bl user icon <id> --output my_icon.png
+```
+
+Example output:
+
+```text
+Saved: user_icon (1234 bytes)
+```
+
 ## `bl user list`
 
 List all users in the space.
@@ -2391,7 +2408,7 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | `bl user recently-viewed-wikis` | `GET /api/v2/users/myself/recentlyViewedWikis` | ✅ Implemented |
 | `bl user star list <id>` | `GET /api/v2/users/{userId}/stars` | ✅ Implemented |
 | `bl user star count <id>` | `GET /api/v2/users/{userId}/stars/count` | ✅ Implemented |
-| — | `GET /api/v2/users/{userId}/icon` | Planned |
+| `bl user icon <id>` | `GET /api/v2/users/{userId}/icon` | ✅ Implemented |
 
 ### Notifications
 
