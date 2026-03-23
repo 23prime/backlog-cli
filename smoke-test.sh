@@ -74,15 +74,15 @@ run "project list"                  project list --json
 run_capture "project show" PROJ_JSON  project show "$PROJECT_KEY" --json
 run "project activities"            project activities "$PROJECT_KEY" --json
 run "project disk-usage"            project disk-usage "$PROJECT_KEY" --json
-run "project user list"             project user "$PROJECT_KEY" list --json
-run "project admin list"            project admin "$PROJECT_KEY" list --json
-run "project status list"           project status "$PROJECT_KEY" list --json
-run "project issue-type list"       project issue-type "$PROJECT_KEY" list --json
-run "project category list"         project category "$PROJECT_KEY" list --json
-run "project version list"          project version "$PROJECT_KEY" list --json
-run "project team list"             project team "$PROJECT_KEY" list --json
-run "project webhook list"          project webhook "$PROJECT_KEY" list --json
-run "project custom-field list"     project custom-field "$PROJECT_KEY" list --json
+run "project user list"             project user list "$PROJECT_KEY" --json
+run "project admin list"            project admin list "$PROJECT_KEY" --json
+run "project status list"           project status list "$PROJECT_KEY" --json
+run "project issue-type list"       project issue-type list "$PROJECT_KEY" --json
+run "project category list"         project category list "$PROJECT_KEY" --json
+run "project version list"          project version list "$PROJECT_KEY" --json
+run "project team list"             project team list "$PROJECT_KEY" --json
+run "project webhook list"          project webhook list "$PROJECT_KEY" --json
+run "project custom-field list"     project custom-field list "$PROJECT_KEY" --json
 
 PROJECT_ID=$(jq_or_empty "$PROJ_JSON" '.id')
 
