@@ -3,5 +3,19 @@
     "allow": [
       "Bash(mise run:*)"
     ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "mise run fix 2>&1 || true",
+            "statusMessage": "Running fix..."
+          }
+        ]
+      }
+    ]
   }
 }
