@@ -35,3 +35,8 @@ burndown
 splitn
 hexdigit
 PRRT
+gantt
+sattg
+varname
+CMTS
+DOTS

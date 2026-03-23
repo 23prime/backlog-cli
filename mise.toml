@@ -110,6 +110,11 @@ description = "Run Rust tests"
 run = ["cargo test -- --nocapture"]
 alias = "rt"
 
+[tasks.rs-run]
+description = "Run Rust application"
+run = "cargo run"
+alias = "rr"
+
 [tasks.rs-build]
 description = "Build Rust application"
 run = "cargo build"
