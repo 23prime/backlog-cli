@@ -8,17 +8,19 @@ PROJECT_KEY="${2:-DOTS_TEST}"
 BL="${BL:-$(command -v bl 2>/dev/null || echo "./target/debug/bl")}"
 PASS=0
 FAIL=0
+BL_OUT=$(mktemp)
+trap 'rm -f "$BL_OUT"' EXIT
 
 # ── helpers ────────────────────────────────────────────────────────────────────
 
 run() {
     local label="$1"; shift
-    if "$BL" --space "$SPACE_KEY" "$@" > /tmp/bl_out 2>&1; then
+    if "$BL" --space "$SPACE_KEY" "$@" > "$BL_OUT" 2>&1; then
         echo "  PASS  $label"
         PASS=$((PASS + 1))
     else
         echo "  FAIL  $label"
-        cat /tmp/bl_out | sed 's/^/        /'
+        sed 's/^/        /' "$BL_OUT"
         FAIL=$((FAIL + 1))
     fi
 }
@@ -26,15 +28,17 @@ run() {
 # Run command and capture stdout for later use; still reports PASS/FAIL.
 run_capture() {
     local label="$1"; local varname="$2"; shift 2
-    if "$BL" --space "$SPACE_KEY" "$@" > /tmp/bl_out 2>&1; then
+    local output
+    if "$BL" --space "$SPACE_KEY" "$@" > "$BL_OUT" 2>&1; then
         echo "  PASS  $label"
         PASS=$((PASS + 1))
-        eval "$varname"'=$(cat /tmp/bl_out)'
+        output="$(cat "$BL_OUT")"
+        printf -v "$varname" '%s' "$output"
     else
         echo "  FAIL  $label"
-        cat /tmp/bl_out | sed 's/^/        /'
+        sed 's/^/        /' "$BL_OUT"
         FAIL=$((FAIL + 1))
-        eval "$varname"'=""'
+        printf -v "$varname" ''
     fi
 }
 
