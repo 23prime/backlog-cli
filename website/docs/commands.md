@@ -134,6 +134,15 @@ Storage:   5242880 / 1073741824 bytes
 Start:     2020-01-01
 ```
 
+Some fields (`startDate`, `storageUsage`) may be absent depending on the Backlog plan.
+In that case those fields are shown as `(not set)` or `(unknown)`:
+
+```text
+Contract:  (not set)
+Storage:   (unknown) / 107374182400 bytes
+Start:     (not set)
+```
+
 ## `bl space update-notification`
 
 Update the notification message set for your Backlog space.
@@ -2232,10 +2241,13 @@ bl rate-limit --json
 Example output:
 
 ```text
-Limit:     600
-Remaining: 599
-Reset:     1698230400
+Read:    limit=600, remaining=599, reset=1698230400
+Update:  limit=150, remaining=150, reset=1698230400
+Search:  limit=150, remaining=150, reset=1698230400
+Icon:    limit=60, remaining=60, reset=1698230400
 ```
+
+The `Icon` row is only shown when the Backlog plan includes the icon rate limit category.
 
 ## Command coverage
 

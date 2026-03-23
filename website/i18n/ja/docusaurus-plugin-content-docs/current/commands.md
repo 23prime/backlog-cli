@@ -133,6 +133,15 @@ Storage:   5242880 / 1073741824 bytes
 Start:     2020-01-01
 ```
 
+Backlog プランによっては `startDate` や `storageUsage` が API レスポンスに含まれない場合があります。
+その場合、該当フィールドは `(not set)` または `(unknown)` として表示されます:
+
+```text
+Contract:  (not set)
+Storage:   (unknown) / 107374182400 bytes
+Start:     (not set)
+```
+
 ## `bl space update-notification`
 
 Backlog スペースの通知メッセージを更新します。
@@ -2234,10 +2243,13 @@ bl rate-limit --json
 出力例:
 
 ```text
-Limit:     600
-Remaining: 599
-Reset:     1698230400
+Read:    limit=600, remaining=599, reset=1698230400
+Update:  limit=150, remaining=150, reset=1698230400
+Search:  limit=150, remaining=150, reset=1698230400
+Icon:    limit=60, remaining=60, reset=1698230400
 ```
+
+`Icon` 行は Backlog プランにアイコンのレート制限カテゴリが含まれる場合のみ表示されます。
 
 ## コマンドカバレッジ
 
