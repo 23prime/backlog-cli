@@ -8,10 +8,10 @@ use super::deserialize;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Licence {
-    pub start_date: String,
+    pub start_date: Option<String>,
     pub contract_type: Option<String>,
-    pub storage_limit: u64,
-    pub storage_usage: u64,
+    pub storage_limit: Option<u64>,
+    pub storage_usage: Option<u64>,
     #[serde(flatten)]
     pub extra: BTreeMap<String, serde_json::Value>,
 }
@@ -50,10 +50,27 @@ mod tests {
 
         let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
         let l = client.get_space_licence().unwrap();
-        assert_eq!(l.start_date, "2020-01-01");
+        assert_eq!(l.start_date, Some("2020-01-01".to_string()));
         assert_eq!(l.contract_type, Some("premium".to_string()));
-        assert_eq!(l.storage_limit, 1073741824);
-        assert_eq!(l.storage_usage, 5242880);
+        assert_eq!(l.storage_limit, Some(1073741824));
+        assert_eq!(l.storage_usage, Some(5242880));
+    }
+
+    #[test]
+    fn get_space_licence_without_start_date() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/space/licence");
+            then.status(200).json_body(json!({
+                "contractType": "premium",
+                "storageLimit": 1073741824u64
+            }));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let l = client.get_space_licence().unwrap();
+        assert_eq!(l.start_date, None);
+        assert_eq!(l.storage_usage, None);
     }
 
     #[test]

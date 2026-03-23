@@ -29,16 +29,34 @@ pub fn show_with(args: &RateLimitArgs, api: &dyn BacklogApi) -> Result<()> {
 }
 
 fn format_rate_limit_text(rl: &RateLimit) -> String {
-    format!(
-        "Limit:     {}\nRemaining: {}\nReset:     {}",
-        rl.rate_limit.limit, rl.rate_limit.remaining, rl.rate_limit.reset,
-    )
+    let info = &rl.rate_limit;
+    let mut out = format!(
+        "Read:    limit={}, remaining={}, reset={}\n\
+         Update:  limit={}, remaining={}, reset={}\n\
+         Search:  limit={}, remaining={}, reset={}",
+        info.read.limit,
+        info.read.remaining,
+        info.read.reset,
+        info.update.limit,
+        info.update.remaining,
+        info.update.reset,
+        info.search.limit,
+        info.search.remaining,
+        info.search.reset,
+    );
+    if let Some(icon) = &info.icon {
+        out.push_str(&format!(
+            "\nIcon:    limit={}, remaining={}, reset={}",
+            icon.limit, icon.remaining, icon.reset
+        ));
+    }
+    out
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::rate_limit::RateLimitInfo;
+    use crate::api::rate_limit::{RateLimitCategory, RateLimitInfo};
     use anyhow::anyhow;
 
     struct MockApi {
@@ -56,9 +74,26 @@ mod tests {
     fn sample_rate_limit() -> RateLimit {
         RateLimit {
             rate_limit: RateLimitInfo {
-                limit: 600,
-                remaining: 599,
-                reset: 1698230400,
+                read: RateLimitCategory {
+                    limit: 600,
+                    remaining: 591,
+                    reset: 1774268714,
+                },
+                update: RateLimitCategory {
+                    limit: 150,
+                    remaining: 150,
+                    reset: 1774268655,
+                },
+                search: RateLimitCategory {
+                    limit: 150,
+                    remaining: 150,
+                    reset: 1774268655,
+                },
+                icon: Some(RateLimitCategory {
+                    limit: 60,
+                    remaining: 60,
+                    reset: 1774268655,
+                }),
             },
         }
     }
@@ -87,10 +122,21 @@ mod tests {
     }
 
     #[test]
-    fn format_rate_limit_text_contains_all_fields() {
+    fn format_rate_limit_text_contains_all_categories() {
         let text = format_rate_limit_text(&sample_rate_limit());
+        assert!(text.contains("Read:"));
+        assert!(text.contains("Update:"));
+        assert!(text.contains("Search:"));
+        assert!(text.contains("Icon:"));
         assert!(text.contains("600"));
-        assert!(text.contains("599"));
-        assert!(text.contains("1698230400"));
+        assert!(text.contains("591"));
+    }
+
+    #[test]
+    fn format_rate_limit_text_without_icon() {
+        let mut rl = sample_rate_limit();
+        rl.rate_limit.icon = None;
+        let text = format_rate_limit_text(&rl);
+        assert!(!text.contains("Icon:"));
     }
 }

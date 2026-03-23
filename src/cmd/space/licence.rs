@@ -32,10 +32,13 @@ pub fn licence_with(args: &SpaceLicenceArgs, api: &dyn BacklogApi) -> Result<()>
 
 fn format_licence_text(l: &Licence) -> String {
     let contract = l.contract_type.as_deref().unwrap_or("(not set)");
-    format!(
-        "Contract:  {}\nStorage:   {} / {} bytes\nStart:     {}",
-        contract, l.storage_usage, l.storage_limit, l.start_date
-    )
+    let start = l.start_date.as_deref().unwrap_or("(not set)");
+    let storage = match (l.storage_usage, l.storage_limit) {
+        (Some(usage), Some(limit)) => format!("{usage} / {limit} bytes"),
+        (None, Some(limit)) => format!("(unknown) / {limit} bytes"),
+        _ => "(not set)".to_string(),
+    };
+    format!("Contract:  {contract}\nStorage:   {storage}\nStart:     {start}")
 }
 
 #[cfg(test)]
@@ -56,10 +59,10 @@ mod tests {
 
     fn sample_licence() -> Licence {
         Licence {
-            start_date: "2020-01-01".to_string(),
+            start_date: Some("2020-01-01".to_string()),
             contract_type: Some("premium".to_string()),
-            storage_limit: 1073741824,
-            storage_usage: 5242880,
+            storage_limit: Some(1073741824),
+            storage_usage: Some(5242880),
             extra: BTreeMap::new(),
         }
     }
@@ -99,13 +102,27 @@ mod tests {
     #[test]
     fn format_licence_text_with_null_contract_type() {
         let l = Licence {
-            start_date: "2020-01-01".to_string(),
+            start_date: Some("2020-01-01".to_string()),
             contract_type: None,
-            storage_limit: 1073741824,
-            storage_usage: 0,
+            storage_limit: Some(1073741824),
+            storage_usage: Some(0),
             extra: BTreeMap::new(),
         };
         let text = format_licence_text(&l);
         assert!(text.contains("(not set)"));
+    }
+
+    #[test]
+    fn format_licence_text_with_null_start_date() {
+        let l = Licence {
+            start_date: None,
+            contract_type: Some("premium".to_string()),
+            storage_limit: Some(1073741824),
+            storage_usage: None,
+            extra: BTreeMap::new(),
+        };
+        let text = format_licence_text(&l);
+        assert!(text.contains("(not set)"));
+        assert!(text.contains("(unknown)"));
     }
 }

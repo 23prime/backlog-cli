@@ -6,10 +6,19 @@ use super::deserialize;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct RateLimitInfo {
+pub struct RateLimitCategory {
     pub limit: u64,
     pub remaining: u64,
     pub reset: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RateLimitInfo {
+    pub read: RateLimitCategory,
+    pub update: RateLimitCategory,
+    pub search: RateLimitCategory,
+    pub icon: Option<RateLimitCategory>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -34,9 +43,10 @@ mod tests {
     fn rate_limit_json() -> serde_json::Value {
         json!({
             "rateLimit": {
-                "limit": 600,
-                "remaining": 599,
-                "reset": 1698230400
+                "read":   {"limit": 600, "remaining": 591, "reset": 1774268714},
+                "update": {"limit": 150, "remaining": 150, "reset": 1774268655},
+                "search": {"limit": 150, "remaining": 150, "reset": 1774268655},
+                "icon":   {"limit":  60, "remaining":  60, "reset": 1774268655}
             }
         })
     }
@@ -51,9 +61,30 @@ mod tests {
 
         let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
         let rl = client.get_rate_limit().unwrap();
-        assert_eq!(rl.rate_limit.limit, 600);
-        assert_eq!(rl.rate_limit.remaining, 599);
-        assert_eq!(rl.rate_limit.reset, 1698230400);
+        assert_eq!(rl.rate_limit.read.limit, 600);
+        assert_eq!(rl.rate_limit.read.remaining, 591);
+        assert_eq!(rl.rate_limit.update.limit, 150);
+        assert_eq!(rl.rate_limit.search.limit, 150);
+        assert_eq!(rl.rate_limit.icon.unwrap().limit, 60);
+    }
+
+    #[test]
+    fn get_rate_limit_without_icon() {
+        let server = MockServer::start();
+        server.mock(|when, then| {
+            when.method(GET).path("/rateLimit");
+            then.status(200).json_body(json!({
+                "rateLimit": {
+                    "read":   {"limit": 600, "remaining": 600, "reset": 1774268714},
+                    "update": {"limit": 150, "remaining": 150, "reset": 1774268655},
+                    "search": {"limit": 150, "remaining": 150, "reset": 1774268655}
+                }
+            }));
+        });
+
+        let client = BacklogClient::new_with(&server.base_url(), "test-key").unwrap();
+        let rl = client.get_rate_limit().unwrap();
+        assert!(rl.rate_limit.icon.is_none());
     }
 
     #[test]
