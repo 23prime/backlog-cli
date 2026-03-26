@@ -2,6 +2,7 @@
   "recommendations": [
     "tamasfe.even-better-toml",
     "GitHub.vscode-github-actions",
+    "zizmor.zizmor-vscode",
     "EditorConfig.EditorConfig",
     "DavidAnson.vscode-markdownlint",
     "rust-lang.rust-analyzer"

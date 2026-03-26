@@ -3,4 +3,5 @@ cooldown
 lefthook
 shellcheck
 coderabbit
-peekable
+zizmor
+zizmorcore
