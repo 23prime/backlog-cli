@@ -9,25 +9,31 @@ env:
   CARGO_TERM_COLOR: always
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   create-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
-        with:
-          generate_release_notes: true
+        run: gh release create "${GITHUB_REF_NAME}" --generate-notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build:
     name: Build ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
     needs: create-release
+    permissions:
+      contents: write
 
     strategy:
       matrix:
@@ -55,12 +61,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Install Rust
         uses: actions-rust-lang/setup-rust-toolchain@150fca883cd4034361b621bd4e6a9d34e5143606 # v1.15.4
         with:
           target: ${{ matrix.target }}
           rustflags: ""
+          cache: false
 
       - name: Install cross
         if: matrix.use_cross
@@ -119,27 +128,29 @@ jobs:
 
       - name: Upload to GitHub Release (tar)
         if: matrix.archive == 'tar'
-        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
-        with:
-          files: |
-            bl-${{ matrix.target }}.tar.gz
-            bl-${{ matrix.target }}.tar.gz.sha256
+        run: gh release upload "$GITHUB_REF_NAME" "bl-${TARGET}.tar.gz" "bl-${TARGET}.tar.gz.sha256"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET: ${{ matrix.target }}
 
       - name: Upload to GitHub Release (zip)
         if: matrix.archive == 'zip'
-        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
-        with:
-          files: |
-            bl-${{ matrix.target }}.zip
-            bl-${{ matrix.target }}.zip.sha256
+        run: gh release upload "$GITHUB_REF_NAME" "bl-${TARGET}.zip" "bl-${TARGET}.zip.sha256"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET: ${{ matrix.target }}
 
   tag-latest:
     name: Update latest tag
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Update latest tag
         run: |
