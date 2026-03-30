@@ -135,7 +135,9 @@ jobs:
 
       - name: Upload to GitHub Release (zip)
         if: matrix.archive == 'zip'
-        run: gh release upload "$GITHUB_REF_NAME" "bl-${TARGET}.zip" "bl-${TARGET}.zip.sha256"
+        shell: pwsh
+        run: |
+          gh release upload "$env:GITHUB_REF_NAME" "bl-$env:TARGET.zip" "bl-$env:TARGET.zip.sha256"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TARGET: ${{ matrix.target }}
