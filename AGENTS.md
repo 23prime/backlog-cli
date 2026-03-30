@@ -119,6 +119,5 @@ mise run fix           # auto-fix all: run before committing
 ### Release
 
 ```bash
-mise run release -- patch   # bump version and tag
-mise run tag-push           # push tag to trigger CI release
+mise run release -- patch   # Bump version (patch / minor / major) -> create tag and push to trigger CI release
 ```

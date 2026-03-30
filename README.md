@@ -64,6 +64,5 @@ mise run fix     # Auto fix
 ### Release
 
 ```bash
-mise run release -- patch   # Bump version (patch / minor / major) and tag
-mise run tag-push           # Push tag to trigger CI release
+mise run release -- patch   # Bump version (patch / minor / major) -> create tag and push to trigger CI release
 ```

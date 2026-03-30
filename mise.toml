@@ -133,11 +133,6 @@ run = "cargo build --release"
 description = "Clean Rust build artifacts"
 run = "cargo clean"
 
-# Release
-[tasks.tag-push]
-description = "Push release tags to remote"
-run = "git push --follow-tags"
-
 # Docs
 [tasks.docs-install]
 description = "Install docs dependencies"

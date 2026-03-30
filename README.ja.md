@@ -64,6 +64,5 @@ mise run fix     # 自動修正
 ### リリース
 
 ```bash
-mise run release -- patch   # バージョンバンプ（patch / minor / major）とタグ作成
-mise run tag-push           # タグをプッシュして CI リリースをトリガー
+mise run release -- patch   # バージョンバンプ（patch / minor / major） -> タグ作成とプッシュをして CI リリースをトリガー
 ```

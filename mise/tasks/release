@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # Check required commands
-for cmd in cargo git jq; do
+for cmd in cargo git jq gh; do
   if ! command -v "$cmd" >/dev/null 2>&1; then
     printf "[ERROR] Required command '%s' not found. Please install it.\n" "$cmd" >&2
     exit 1
@@ -49,8 +49,14 @@ next_version="${major}.${minor}.${patch}"
 tag="v${next_version}"
 
 # Check if tag already exists before bumping
-if git rev-parse "$tag" >/dev/null 2>&1; then
+if [ -n "$(git tag -l "$tag")" ]; then
   printf "[ERROR] Tag '%s' already exists\n" "$tag" >&2
+  exit 1
+fi
+
+# Check for a clean working tree
+if ! git diff --quiet HEAD; then
+  printf "[ERROR] Working tree has uncommitted changes. Please commit or stash them first.\n" >&2
   exit 1
 fi
 
@@ -73,5 +79,9 @@ git commit -m "chore: bump version to ${tag}"
 printf "Creating release tag: %s\n" "$tag"
 git tag -a "$tag" -m "Release ${tag}"
 
-printf "Tag '%s' created successfully\n" "$tag"
-printf "To push, run: mise run tag-push\n"
+printf "Pushing to remote...\n"
+git push --follow-tags origin HEAD
+
+REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
+printf "Release %s created and pushed successfully\n" "$tag"
+printf "See GitHub Actions for details: https://github.com/%s/actions\n" "$REPO"
