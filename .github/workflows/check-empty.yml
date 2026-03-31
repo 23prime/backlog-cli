@@ -11,6 +11,8 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
   check:
     runs-on: ubuntu-latest

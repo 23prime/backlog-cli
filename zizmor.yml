@@ -1,0 +1,8 @@
+# See:
+# - https://docs.zizmor.sh/configuration/
+# - https://docs.zizmor.sh/audits/
+
+rules:
+  dependabot-cooldown:
+    config:
+      days: 3
