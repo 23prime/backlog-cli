@@ -11,19 +11,19 @@ auto_install = false
 [tools]
 
 # Markdown
-markdownlint-cli2 = "latest"
+markdownlint-cli2 = "0.22"
 
 # GitHub Actions
-actionlint = "latest"
-shellcheck = "latest"
+actionlint = "1"
+shellcheck = "0.11"
+"github:zizmorcore/zizmor" = "1"
 
 # Docs
 node = "lts"
 
 # Other tools
-lefthook = "latest"
-cspell = "latest"
-"github:zizmorcore/zizmor" = "latest"
+lefthook = "2"
+cspell = "9"
 
 
 # ================================================================
@@ -76,7 +76,10 @@ alias = "ghf"
 
 [tasks.gh-check]
 description = "Check GitHub Actions workflows"
-run = ["actionlint .github/workflows/*.yml", "zizmor . --persona=pedantic --min-severity=medium"]
+run = [
+  "actionlint .github/workflows/*.yml",
+  "zizmor . --persona=pedantic --min-severity=medium",
+]
 alias = "ghc"
 
 # Spell Check
