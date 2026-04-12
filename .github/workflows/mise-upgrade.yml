@@ -1,0 +1,54 @@
+name: mise upgrade
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # Every day
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  list-outdated:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      tools: ${{ steps.list.outputs.tools }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
+        with:
+          install: true
+          cache: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: List outdated tools
+        id: list
+        run: |
+          tools=$(mise outdated --bump --local --json | jq -c '[.[].name]')
+          echo "tools=${tools}" >> "$GITHUB_OUTPUT"
+
+  upgrade:
+    needs: list-outdated
+    if: needs.list-outdated.outputs.tools != '[]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    strategy:
+      matrix:
+        tool: ${{ fromJson(needs.list-outdated.outputs.tools) }}
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - uses: 23prime/mise-upgrade-action@cafd0db78c71bfa861f77f68e6076901caa73f45 # v1.0.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tool: ${{ matrix.tool }}
+          install-before: "3d"
