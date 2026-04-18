@@ -35,20 +35,27 @@ jobs:
     needs: list-outdated
     if: needs.list-outdated.outputs.tools != '[]'
     runs-on: ubuntu-latest
+    environment: token-generation
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
     strategy:
       matrix:
         tool: ${{ fromJson(needs.list-outdated.outputs.tools) }}
       fail-fast: false
     steps:
+      - name: Generate token
+        id: app-token
+        uses: actions/create-github-app-token@67e27a7eb7db372a1c61a7f9bdab8699e9ee57f7 # v1.11.3
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
 
-      - uses: 23prime/mise-upgrade-action@cafd0db78c71bfa861f77f68e6076901caa73f45 # v1.0.1
+      - uses: 23prime/mise-upgrade-action@d2ea02a7cc2e05f1a4927d32b5325b383c9c7918 # v1.0.2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
           tool: ${{ matrix.tool }}
           install-before: "3d"
