@@ -167,3 +167,7 @@ url = "https://nodejs.org/dist/v24.14.0/node-v24.14.0-win-x64.zip"
 [[tools.shellcheck]]
 version = "0.11.0"
 backend = "aqua:koalaman/shellcheck"
+
+[[tools.zizmor]]
+version = "1.24.1"
+backend = "aqua:zizmorcore/zizmor"

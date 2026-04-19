@@ -17,7 +17,7 @@ markdownlint-cli2 = "0.22"
 # GitHub Actions
 actionlint = "1"
 shellcheck = "0.11"
-"github:zizmorcore/zizmor" = "1"
+zizmor = "1"
 
 # Docs
 node = "24"
