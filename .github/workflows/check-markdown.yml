@@ -8,11 +8,13 @@ on:
       - "**/*.md"
       - ".github/workflows/check-markdown.yml"
       - ".markdownlint-cli2.jsonc"
+      - "mise.lock"
   pull_request:
     paths:
       - "**/*.md"
       - ".github/workflows/check-markdown.yml"
       - ".markdownlint-cli2.jsonc"
+      - "mise.lock"
 
 permissions: {}
 

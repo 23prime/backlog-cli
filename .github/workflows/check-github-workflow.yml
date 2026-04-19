@@ -6,9 +6,11 @@ on:
       - main
     paths:
       - ".github/workflows/*.yml"
+      - "mise.lock"
   pull_request:
     paths:
       - ".github/workflows/*.yml"
+      - "mise.lock"
 
 permissions: {}
 
