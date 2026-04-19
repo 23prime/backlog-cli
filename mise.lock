@@ -40,7 +40,7 @@ url = "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_
 provenance = "github-attestations"
 
 [[tools.cspell]]
-version = "9.8.0"
+version = "10.0.0"
 backend = "npm:cspell"
 
 [[tools."github:zizmorcore/zizmor"]]
