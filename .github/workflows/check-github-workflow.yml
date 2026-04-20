@@ -6,9 +6,11 @@ on:
       - main
     paths:
       - ".github/workflows/*.yml"
+      - "mise.lock"
   pull_request:
     paths:
       - ".github/workflows/*.yml"
+      - "mise.lock"
 
 permissions: {}
 
@@ -27,7 +29,7 @@ jobs:
         uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151 # v4.0.1
         with:
           install: true
-          install_args: "actionlint shellcheck github:zizmorcore/zizmor"
+          install_args: "actionlint shellcheck zizmor"
           cache: true
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
