@@ -83,7 +83,7 @@ url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.6/lefthoo
 provenance = "github-attestations"
 
 [[tools.markdownlint-cli2]]
-version = "0.22.0"
+version = "0.22.1"
 backend = "npm:markdownlint-cli2"
 
 [[tools.node]]
