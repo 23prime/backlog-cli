@@ -9,3 +9,6 @@ pre-commit:
   jobs:
     - name: mise check
       run: mise check
+
+    - name: gitleaks protect
+      run: mise gitleaks-protect

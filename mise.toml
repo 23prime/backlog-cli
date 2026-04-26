@@ -25,6 +25,7 @@ node = "25"
 # Other tools
 lefthook = "2"
 cspell = "9"
+gitleaks = "8"
 
 
 # ================================================================
@@ -50,7 +51,7 @@ alias = "f"
 
 [tasks.check]
 description = "Check for all issues"
-depends = ["md-check", "gh-check", "spell-check", "rs-check"]
+depends = ["md-check", "gh-check", "spell-check", "gitleaks-check", "rs-check"]
 alias = "c"
 
 [tasks.fix-and-check]
@@ -88,6 +89,18 @@ alias = "ghc"
 description = "Check spelling"
 run = "cspell . --gitignore --verbose"
 alias = "sc"
+
+# Secrets
+[tasks.gitleaks-check]
+description = "Check for leaked secrets"
+run = "gitleaks detect --no-banner"
+alias = "glc"
+
+[tasks.gitleaks-protect]
+
+description = "Check staged files for leaked secrets"
+run = "gitleaks protect --staged --no-banner"
+alias = "glp"
 
 # Rust
 [tasks.rs-install]
