@@ -12,7 +12,7 @@ minimum_release_age = "3d"
 [tools]
 
 # Node.js
-node = "24"
+node = "25"
 
 # Markdown
 markdownlint-cli2 = "0.22"
@@ -24,7 +24,7 @@ zizmor = "1"
 
 # Other tools
 lefthook = "2"
-cspell = "9"
+cspell = "10"
 gitleaks = "8"
 
 
