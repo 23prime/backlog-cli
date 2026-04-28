@@ -93,13 +93,13 @@ alias = "sc"
 # Secrets
 [tasks.gitleaks-check]
 description = "Check for leaked secrets"
-run = "gitleaks detect --no-banner"
+run = "gitleaks git --redact --no-banner"
 alias = "glc"
 
 [tasks.gitleaks-protect]
 
 description = "Check staged files for leaked secrets"
-run = "gitleaks protect --staged --no-banner"
+run = "gitleaks git --pre-commit --redact --no-banner"
 alias = "glp"
 
 # Rust
