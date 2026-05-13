@@ -22,6 +22,9 @@ actionlint = "1"
 shellcheck = "0.11"
 zizmor = "1"
 
+# AI
+"github:microsoft/apm" = "0.13"
+
 # Other tools
 lefthook = "2"
 cspell = "10"

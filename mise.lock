@@ -43,6 +43,45 @@ provenance = "github-attestations"
 version = "10.0.0"
 backend = "npm:cspell"
 
+[[tools."github:microsoft/apm"]]
+version = "0.13.0"
+backend = "github:microsoft/apm"
+
+[tools."github:microsoft/apm"."platforms.linux-arm64"]
+checksum = "sha256:5356627b372ab5cc6df9bb12022beadac638e1f809ab1c7781d864d7058674eb"
+url = "https://github.com/microsoft/apm/releases/download/v0.13.0/apm-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/microsoft/apm/releases/assets/417484905"
+
+[tools."github:microsoft/apm"."platforms.linux-arm64-musl"]
+checksum = "sha256:5356627b372ab5cc6df9bb12022beadac638e1f809ab1c7781d864d7058674eb"
+url = "https://github.com/microsoft/apm/releases/download/v0.13.0/apm-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/microsoft/apm/releases/assets/417484905"
+
+[tools."github:microsoft/apm"."platforms.linux-x64"]
+checksum = "sha256:ed02b1103ef4bc49559a81f7e109b424a49d95cf978515ad224e5eeb701b1f8a"
+url = "https://github.com/microsoft/apm/releases/download/v0.13.0/apm-linux-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/microsoft/apm/releases/assets/417484903"
+
+[tools."github:microsoft/apm"."platforms.linux-x64-musl"]
+checksum = "sha256:ed02b1103ef4bc49559a81f7e109b424a49d95cf978515ad224e5eeb701b1f8a"
+url = "https://github.com/microsoft/apm/releases/download/v0.13.0/apm-linux-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/microsoft/apm/releases/assets/417484903"
+
+[tools."github:microsoft/apm"."platforms.macos-arm64"]
+checksum = "sha256:73ee687128ca995bf50c698c0035e73c099e32bdc3d23980580fc62635d1f122"
+url = "https://github.com/microsoft/apm/releases/download/v0.13.0/apm-darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/microsoft/apm/releases/assets/417484909"
+
+[tools."github:microsoft/apm"."platforms.macos-x64"]
+checksum = "sha256:df55f578a485cfd2d96a56ab6519ecea59ba072879417edda543bfd7c9bf6088"
+url = "https://github.com/microsoft/apm/releases/download/v0.13.0/apm-darwin-x86_64.tar.gz"
+url_api = "https://api.github.com/repos/microsoft/apm/releases/assets/417484904"
+
+[tools."github:microsoft/apm"."platforms.windows-x64"]
+checksum = "sha256:34d5bbad9aae454fdadf5de6c458ebb44cc0ed8b3e1cc13c8f5c7bc2bdea96c8"
+url = "https://github.com/microsoft/apm/releases/download/v0.13.0/apm-windows-x86_64.zip"
+url_api = "https://api.github.com/repos/microsoft/apm/releases/assets/417484908"
+
 [[tools.gitleaks]]
 version = "8.30.1"
 backend = "aqua:gitleaks/gitleaks"
