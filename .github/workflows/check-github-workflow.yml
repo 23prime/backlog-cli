@@ -32,6 +32,8 @@ jobs:
           install_args: "actionlint shellcheck zizmor"
           cache: true
           github_token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          MISE_LOCKED: "1"
 
       - name: Check
         run: mise gh-check

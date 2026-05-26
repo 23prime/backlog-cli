@@ -38,6 +38,7 @@ cspell = "10"
 # Global
 [tasks.setup]
 description = "Setup tools"
+env = { GITHUB_TOKEN = "{{ exec(command='gh auth token') }}" }
 run = [
   "mise trust -yq",
   "mise install",

@@ -36,6 +36,8 @@ jobs:
           install_args: "markdownlint-cli2"
           cache: true
           github_token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          MISE_LOCKED: "1"
 
       - name: Fix
         run: mise md-fix
