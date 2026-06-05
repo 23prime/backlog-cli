@@ -21,7 +21,7 @@ jobs:
           persist-credentials: false
 
       - name: Sync upstream
-        uses: 23prime/sync-upstream@1fdf8a75b9189d86dde92837b25ba0d72e4a4b55 # v1.1.0
+        uses: 23prime/sync-upstream@01b700f2e968c11b4631d6f50a28dd0750deca10 # v1.1.1
         with:
           upstream-url: https://github.com/23prime/mise-template.git
           github-token: ${{ secrets.GITHUB_TOKEN }}
