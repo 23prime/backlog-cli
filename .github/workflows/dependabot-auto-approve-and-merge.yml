@@ -4,14 +4,18 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions: {}
 
 jobs:
   approve-and-merge:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      pull-requests: write
+      contents: write # merge the PR
+      pull-requests: write # approve the PR
 
     if: github.event.pull_request.user.login == 'dependabot[bot]'
 

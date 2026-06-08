@@ -12,6 +12,10 @@ on:
       - ".github/workflows/*.yml"
       - "mise.lock"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions: {}
 
 jobs:
