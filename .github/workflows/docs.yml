@@ -6,6 +6,10 @@ on:
       - 'v*'
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
 
@@ -42,8 +46,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     permissions:
-      pages: write
-      id-token: write
+      pages: write # deploy to GitHub Pages
+      id-token: write # OIDC token for Pages deploy
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

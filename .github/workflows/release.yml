@@ -5,6 +5,10 @@ on:
     tags:
       - "v*"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 env:
   CARGO_TERM_COLOR: always
 
@@ -16,7 +20,7 @@ jobs:
     name: Create GitHub Release
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write # create the GitHub release
 
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -33,7 +37,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     needs: create-release
     permissions:
-      contents: write
+      contents: write # upload build artifacts to the release
 
     strategy:
       matrix:
@@ -77,31 +81,40 @@ jobs:
 
       - name: Build release binary
         shell: bash
+        env:
+          USE_CROSS: ${{ matrix.use_cross }}
+          TARGET: ${{ matrix.target }}
         run: |
-          if [ "${{ matrix.use_cross }}" = "true" ]; then
-            cross build --release --locked --target ${{ matrix.target }}
+          if [ "$USE_CROSS" = "true" ]; then
+            cross build --release --locked --target "$TARGET"
           else
-            cargo build --release --locked --target ${{ matrix.target }}
+            cargo build --release --locked --target "$TARGET"
           fi
 
       - name: Smoke test Windows binary
         if: matrix.archive == 'zip'
         shell: pwsh
+        env:
+          TARGET: ${{ matrix.target }}
         run: |
-          ./target/${{ matrix.target }}/release/bl.exe --help | Out-Null
+          ./target/$env:TARGET/release/bl.exe --help | Out-Null
 
       - name: Package binary (tar)
         if: matrix.archive == 'tar'
-        run: tar czf bl-${{ matrix.target }}.tar.gz -C target/${{ matrix.target }}/release bl
+        env:
+          TARGET: ${{ matrix.target }}
+        run: tar czf "bl-$TARGET.tar.gz" -C "target/$TARGET/release" bl
 
       - name: Package binary (zip)
         if: matrix.archive == 'zip'
         shell: pwsh
+        env:
+          TARGET: ${{ matrix.target }}
         run: |
-          $releaseDir = "target/${{ matrix.target }}/release"
+          $releaseDir = "target/$env:TARGET/release"
           Push-Location $releaseDir
           try {
-            Compress-Archive -Path "bl.exe" -DestinationPath "${env:GITHUB_WORKSPACE}/bl-${{ matrix.target }}.zip"
+            Compress-Archive -Path "bl.exe" -DestinationPath "${env:GITHUB_WORKSPACE}/bl-$env:TARGET.zip"
           } finally {
             Pop-Location
           }
@@ -109,11 +122,13 @@ jobs:
       - name: Generate checksum (tar)
         if: matrix.archive == 'tar'
         shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
         run: |
           if command -v sha256sum >/dev/null 2>&1; then
-            sha256sum bl-${{ matrix.target }}.tar.gz > bl-${{ matrix.target }}.tar.gz.sha256
+            sha256sum "bl-$TARGET.tar.gz" > "bl-$TARGET.tar.gz.sha256"
           elif command -v shasum >/dev/null 2>&1; then
-            shasum -a 256 bl-${{ matrix.target }}.tar.gz > bl-${{ matrix.target }}.tar.gz.sha256
+            shasum -a 256 "bl-$TARGET.tar.gz" > "bl-$TARGET.tar.gz.sha256"
           else
             echo "Error: neither sha256sum nor shasum is available." >&2
             exit 1
@@ -122,9 +137,11 @@ jobs:
       - name: Generate checksum (zip)
         if: matrix.archive == 'zip'
         shell: pwsh
+        env:
+          TARGET: ${{ matrix.target }}
         run: |
-          $hash = (Get-FileHash bl-${{ matrix.target }}.zip -Algorithm SHA256).Hash.ToLower()
-          "$hash  bl-${{ matrix.target }}.zip" | Out-File -Encoding ascii bl-${{ matrix.target }}.zip.sha256
+          $hash = (Get-FileHash "bl-$env:TARGET.zip" -Algorithm SHA256).Hash.ToLower()
+          "$hash  bl-$env:TARGET.zip" | Out-File -Encoding ascii "bl-$env:TARGET.zip.sha256"
 
       - name: Upload to GitHub Release (tar)
         if: matrix.archive == 'tar'
@@ -147,7 +164,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write # force-push the latest tag
 
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
