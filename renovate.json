@@ -8,5 +8,11 @@
   "automergeType": "pr",
   "semanticCommits": "enabled",
   "semanticCommitType": "deps",
-  "semanticCommitScope": null
+  "semanticCommitScope": null,
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    }
+  ]
 }
