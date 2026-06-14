@@ -18,14 +18,14 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 toml = "1.1"
 rpassword = "7"
-keyring = { version = "3", default-features = false, features = ["async-secret-service", "crypto-rust"] }
+keyring = { version = "4", default-features = false, features = ["async-secret-service", "crypto-rust"] }
 anstream = "1.0"
 owo-colors = "4"
 open = "5"
 getrandom = "0.4"
 
 [target.'cfg(windows)'.dependencies]
-keyring = { version = "3", features = ["windows-native"] }
+keyring = { version = "4", features = ["windows-native"] }
 
 [dev-dependencies]
 httpmock = { version = "0.8", default-features = false }
