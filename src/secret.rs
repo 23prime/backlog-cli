@@ -38,7 +38,7 @@ static KEYRING_STORE_INIT: std::sync::OnceLock<()> = std::sync::OnceLock::new();
 pub(crate) fn init_keyring_store() {
     KEYRING_STORE_INIT.get_or_init(|| {
         #[cfg(target_os = "linux")]
-        if let Ok(store) = dbus_secret_service_keyring_store::Store::new() {
+        if let Ok(store) = zbus_secret_service_keyring_store::Store::new() {
             keyring_core::set_default_store(store);
         }
 
