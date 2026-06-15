@@ -159,7 +159,7 @@ run = "cargo clean"
 # Docs
 [tasks.docs-install]
 description = "Install docs dependencies"
-run = "pnpm install --frozen-lockfile --config.confirmModulesPurge=false"
+run = "pnpm install --frozen-lockfile"
 dir = "website"
 
 [tasks.docs-serve]
