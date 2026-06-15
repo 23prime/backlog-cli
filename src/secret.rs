@@ -33,6 +33,27 @@ trait CredentialStore {
     fn delete(&self, space_key: &str) -> Result<()>;
 }
 
+static KEYRING_STORE_INIT: std::sync::OnceLock<()> = std::sync::OnceLock::new();
+
+pub(crate) fn init_keyring_store() {
+    KEYRING_STORE_INIT.get_or_init(|| {
+        #[cfg(target_os = "linux")]
+        if let Ok(store) = zbus_secret_service_keyring_store::Store::new() {
+            keyring_core::set_default_store(store);
+        }
+
+        #[cfg(target_os = "macos")]
+        if let Ok(store) = apple_native_keyring_store::Store::new() {
+            keyring_core::set_default_store(store);
+        }
+
+        #[cfg(windows)]
+        if let Ok(store) = windows_native_keyring_store::Store::new() {
+            keyring_core::set_default_store(store);
+        }
+    });
+}
+
 struct KeyringStore;
 
 impl CredentialStore for KeyringStore {
@@ -41,23 +62,27 @@ impl CredentialStore for KeyringStore {
     }
 
     fn set(&self, space_key: &str, api_key: &str) -> Result<()> {
-        keyring::Entry::new(SERVICE, space_key)
+        init_keyring_store();
+        keyring_core::Entry::new(SERVICE, space_key)
             .context("Failed to access keyring")?
             .set_password(api_key)
             .context("Failed to store API key in keyring")
     }
 
     fn get(&self, space_key: &str) -> Result<String> {
-        keyring::Entry::new(SERVICE, space_key)
+        init_keyring_store();
+        keyring_core::Entry::new(SERVICE, space_key)
             .context("Failed to access keyring")?
             .get_password()
             .context("Failed to retrieve API key from keyring")
     }
 
     fn delete(&self, space_key: &str) -> Result<()> {
-        let entry = keyring::Entry::new(SERVICE, space_key).context("Failed to access keyring")?;
+        init_keyring_store();
+        let entry =
+            keyring_core::Entry::new(SERVICE, space_key).context("Failed to access keyring")?;
         match entry.delete_credential() {
-            Ok(()) | Err(keyring::Error::NoEntry) => Ok(()),
+            Ok(()) | Err(keyring_core::Error::NoEntry) => Ok(()),
             Err(e) => Err(e).context("Failed to delete API key from keyring"),
         }
     }
@@ -187,7 +212,8 @@ pub fn remove_credentials_file() -> Result<()> {
 
 pub fn get_oauth_tokens(space_key: &str) -> Result<(OAuthTokens, Backend)> {
     // Keyring first
-    if let Ok(entry) = keyring::Entry::new(OAUTH_SERVICE, space_key)
+    init_keyring_store();
+    if let Ok(entry) = keyring_core::Entry::new(OAUTH_SERVICE, space_key)
         && let Ok(json) = entry.get_password()
     {
         return serde_json::from_str(&json)
@@ -200,7 +226,8 @@ pub fn get_oauth_tokens(space_key: &str) -> Result<(OAuthTokens, Backend)> {
 
 pub fn set_oauth_tokens(space_key: &str, tokens: &OAuthTokens) -> Result<()> {
     let json = serde_json::to_string(tokens).context("Failed to serialize OAuth tokens")?;
-    if let Ok(entry) = keyring::Entry::new(OAUTH_SERVICE, space_key)
+    init_keyring_store();
+    if let Ok(entry) = keyring_core::Entry::new(OAUTH_SERVICE, space_key)
         && entry.set_password(&json).is_ok()
     {
         return Ok(());
@@ -209,9 +236,10 @@ pub fn set_oauth_tokens(space_key: &str, tokens: &OAuthTokens) -> Result<()> {
 }
 
 pub fn delete_oauth_tokens(space_key: &str) -> Result<()> {
-    if let Ok(entry) = keyring::Entry::new(OAUTH_SERVICE, space_key) {
+    init_keyring_store();
+    if let Ok(entry) = keyring_core::Entry::new(OAUTH_SERVICE, space_key) {
         match entry.delete_credential() {
-            Ok(()) | Err(keyring::Error::NoEntry) => {}
+            Ok(()) | Err(keyring_core::Error::NoEntry) => {}
             Err(e) => return Err(e).context("Failed to delete OAuth tokens from keyring"),
         }
     }
