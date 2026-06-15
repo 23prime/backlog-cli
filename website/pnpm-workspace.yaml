@@ -1,0 +1,14 @@
+allowBuilds:
+  core-js: true
+
+blockExoticSubdeps: true
+
+minimumReleaseAge: 4320
+
+strictDepBuilds: true
+
+trustPolicy: no-downgrade
+
+trustPolicyExclude:
+  - "detect-port@1.6.1"
+  - "semver@6.3.1"
