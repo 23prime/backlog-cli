@@ -291,7 +291,8 @@ pub fn check_keyring() -> Result<()> {
     const TEST_KEY: &str = "__bl_keyring_test__";
     const TEST_VAL: &str = "ok";
 
-    let entry = match keyring::Entry::new("bl", TEST_KEY) {
+    crate::secret::init_keyring_store();
+    let entry = match keyring_core::Entry::new("bl", TEST_KEY) {
         Ok(e) => e,
         Err(e) => {
             println!("create entry ... {} ({e})", "FAIL".red());
