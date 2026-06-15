@@ -75,12 +75,10 @@ jobs:
           rustflags: ""
           cache: false
 
-      - name: Exclude target dir from Windows Defender
+      - name: Disable Windows Defender real-time monitoring
         if: runner.os == 'Windows'
         shell: pwsh
-        env:
-          WORKSPACE: ${{ github.workspace }}
-        run: Add-MpPreference -ExclusionPath "$env:WORKSPACE\target"
+        run: Set-MpPreference -DisableRealtimeMonitoring $true
 
       - name: Install cross
         if: matrix.use_cross
