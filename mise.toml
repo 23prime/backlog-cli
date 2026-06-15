@@ -14,6 +14,9 @@ minimum_release_age = "3d"
 # Node.js
 node = "26"
 
+# pnpm (docs)
+pnpm = "11"
+
 # Markdown
 markdownlint-cli2 = "0.22"
 
@@ -156,7 +159,7 @@ run = "cargo clean"
 # Docs
 [tasks.docs-install]
 description = "Install docs dependencies"
-run = ["corepack enable pnpm", "pnpm install"]
+run = "pnpm install --frozen-lockfile --config.confirmModulesPurge=false"
 dir = "website"
 
 [tasks.docs-serve]
