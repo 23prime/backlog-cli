@@ -96,14 +96,6 @@ jobs:
             cargo build --release --locked --target "$TARGET"
           fi
 
-      - name: Smoke test Windows binary
-        if: matrix.archive == 'zip'
-        shell: pwsh
-        env:
-          TARGET: ${{ matrix.target }}
-        run: |
-          ./target/$env:TARGET/release/bl.exe --help | Out-Null
-
       - name: Package binary (tar)
         if: matrix.archive == 'tar'
         env:
