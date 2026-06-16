@@ -215,6 +215,8 @@ enum Commands {
         #[command(subcommand)]
         action: PrCommands,
     },
+    /// Update bl to the latest release
+    SelfUpdate,
 }
 
 #[derive(clap::ValueEnum, Clone)]
@@ -3698,6 +3700,7 @@ fn run() -> Result<()> {
                 )),
             },
         },
+        Commands::SelfUpdate => cmd::self_update::self_update(),
         Commands::Space { action, json } => match action {
             None => cmd::space::show(&SpaceShowArgs::new(json)),
             Some(SpaceCommands::Activities {

@@ -43,3 +43,5 @@ DOTS
 peekable
 dbus
 zbus
+flate2
+flate

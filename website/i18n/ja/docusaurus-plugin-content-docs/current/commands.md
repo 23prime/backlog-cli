@@ -2479,3 +2479,4 @@ Backlog API v2 エンドポイントと `bl` コマンドの対応表です。
 | コマンド | API エンドポイント | 状態 |
 | --- | --- | --- |
 | `bl rate-limit` | `GET /api/v2/rateLimit` | ✅ 実装済み |
+| `bl self-update` | GitHub Releases | ✅ 実装済み |
