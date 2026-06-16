@@ -2477,3 +2477,4 @@ The table below maps Backlog API v2 endpoints to `bl` commands.
 | Command | API endpoint | Status |
 | --- | --- | --- |
 | `bl rate-limit` | `GET /api/v2/rateLimit` | ✅ Implemented |
+| `bl self-update` | GitHub Releases | ✅ Implemented |

@@ -23,6 +23,7 @@ anstream = "1.0"
 owo-colors = "4"
 open = "5"
 getrandom = "0.4"
+self_update = { version = "0.44", default-features = false, features = ["reqwest", "archive-tar", "archive-zip", "compression-flate2", "rustls"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 zbus-secret-service-keyring-store = { version = "1", features = ["crypto-rust"] }
