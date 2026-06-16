@@ -6,7 +6,6 @@ pub fn self_update() -> Result<()> {
         .repo_name("backlog-cli")
         .bin_name("bl")
         .show_download_progress(true)
-        .no_confirm(true)
         .current_version(self_update::cargo_crate_version!())
         .build()?
         .update()?;
