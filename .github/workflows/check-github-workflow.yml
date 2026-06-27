@@ -40,4 +40,4 @@ jobs:
           MISE_LOCKED: "1"
 
       - name: Check
-        run: mise gh-check
+        run: mise run gh-check

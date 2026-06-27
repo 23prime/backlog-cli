@@ -27,7 +27,7 @@ zizmor = "1.26.1"
 
 # Git
 lefthook = "2"
-gitleaks = "8"
+betterleaks = "1"
 
 # Spell Check
 cspell = "10"
@@ -57,7 +57,13 @@ alias = "f"
 
 [tasks.check]
 description = "Check for all issues"
-depends = ["md-check", "gh-check", "spell-check", "gitleaks-check", "rs-check"]
+depends = [
+  "md-check",
+  "gh-check",
+  "spell-check",
+  "secret-check-all",
+  "rs-check",
+]
 alias = "c"
 
 [tasks.fix-and-check]
@@ -97,16 +103,15 @@ run = "cspell . --gitignore --verbose"
 alias = "sc"
 
 # Secrets
-[tasks.gitleaks-check]
-description = "Check for leaked secrets"
-run = "gitleaks git --redact --no-banner"
-alias = "glc"
-
-[tasks.gitleaks-protect]
-
+[tasks.secret-check]
 description = "Check staged files for leaked secrets"
-run = "gitleaks git --pre-commit --redact --no-banner"
+run = "betterleaks git --pre-commit --redact --no-banner"
 alias = "glp"
+
+[tasks.secret-check-all]
+description = "Check for leaked secrets"
+run = "betterleaks git --redact --no-banner"
+alias = "glc"
 
 # Rust
 [tasks.rs-install]

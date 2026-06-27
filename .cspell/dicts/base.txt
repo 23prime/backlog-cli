@@ -6,3 +6,4 @@ coderabbit
 zizmor
 zizmorcore
 frontmatter
+betterleaks

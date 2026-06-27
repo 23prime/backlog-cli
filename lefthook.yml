@@ -2,13 +2,13 @@
 
 pre-push:
   jobs:
-    - name: mise check
-      run: mise check
+    - name: mise run check
+      run: mise run check
 
 pre-commit:
   jobs:
-    - name: mise check
-      run: mise check
+    - name: mise run check
+      run: mise run check
 
-    - name: gitleaks protect
-      run: mise gitleaks-protect
+    - name: secret check
+      run: mise run secret-check

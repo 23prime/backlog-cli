@@ -34,4 +34,4 @@ jobs:
           MISE_LOCKED: "1"
 
       - name: Check
-        run: mise spell-check
+        run: mise run spell-check

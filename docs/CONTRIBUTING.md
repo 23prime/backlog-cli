@@ -57,9 +57,9 @@ chore: Update linter configuration
 
 ## Quality Assurance
 
-- Consolidates all auto-fix commands into `mise fix`.
-- Before committing, run the `mise fix` to auto-fix.
-- If there are any errors that cannot be automatically fixed, fix them manually and verify that the `mise check` passes.
+- Consolidates all auto-fix commands into `mise run fix`.
+- Before committing, run the `mise run fix` to auto-fix.
+- If there are any errors that cannot be automatically fixed, fix them manually and verify that the `mise run check` passes.
 
 ## Pull Requests
 
