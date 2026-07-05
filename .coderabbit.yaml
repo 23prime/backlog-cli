@@ -1,0 +1,10 @@
+# See:
+# - https://docs.coderabbit.ai/reference/configuration
+# - https://docs.coderabbit.ai/configuration/path-instructions
+# - https://docs.coderabbit.ai/configuration/configuration-inheritance
+
+inheritance: true
+
+reviews:
+  path_filters:
+    - "!.cspell/dicts/**"
