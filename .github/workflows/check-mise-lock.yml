@@ -1,0 +1,58 @@
+name: Check mise lock
+
+# Note:
+# Renovate's mise manager can update mise.lock itself, but doing so runs `mise lock`,
+# which Renovate treats as an unsafe execution requiring `allowedUnsafeExecutions`
+# in the bot/admin config. That's a self-hosted-only setting, unavailable to the
+# Mend-hosted Renovate GitHub App this repo uses, so Renovate PRs only bump mise.toml
+# and leave mise.lock stale. This workflow re-locks it whenever that drift appears.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "mise.toml"
+      - "mise.lock"
+      - ".github/workflows/check-mise-lock.yml"
+  pull_request:
+    paths:
+      - "mise.toml"
+      - "mise.lock"
+      - ".github/workflows/check-mise-lock.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # push auto-fix commits
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Install mise
+        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+        with:
+          install: false
+          cache: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fix
+        run: mise run lock-fix
+
+      - name: Commit and Push
+        uses: 23prime/simple-commit-and-push@15fb653b9591afde3bffb82a906a9af2aede1616 # v1.0.0
+        with:
+          commit-message: "Auto fix by workflow"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check
+        run: mise run lock-check
