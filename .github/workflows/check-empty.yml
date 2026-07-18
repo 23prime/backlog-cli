@@ -23,5 +23,8 @@ jobs:
     permissions: {}
 
     steps:
+      - name: cicd-sensor
+        uses: cicd-sensor/cicd-sensor-action@31366296cb918b7f1413829aafc16dcf18fe8518 # v0.0.35
+
       - name: Exit successfully
         run: exit 0

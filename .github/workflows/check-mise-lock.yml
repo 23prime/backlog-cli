@@ -33,6 +33,9 @@ jobs:
     permissions:
       contents: write # push auto-fix commits
     steps:
+      - name: cicd-sensor
+        uses: cicd-sensor/cicd-sensor-action@31366296cb918b7f1413829aafc16dcf18fe8518 # v0.0.35
+
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
