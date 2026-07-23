@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#MISE description="Bump version and create release tag (usage: mise run release -- <major|minor|patch>)"
+#MISE description="Bump version and create release tag (usage: mise run release -- <major|minor|patch> [-y|--yes])"
 set -euo pipefail
 
 # Check required commands
@@ -15,10 +15,18 @@ if ! cargo set-version --help >/dev/null 2>&1; then
   exit 1
 fi
 
-# Parse bump level argument
-level="${1:-}"
+# Parse arguments
+level=""
+yes=false
+for arg in "$@"; do
+  case "$arg" in
+    -y|--yes) yes=true ;;
+    *) level="$arg" ;;
+  esac
+done
+
 if [ -z "$level" ]; then
-  printf "Usage: mise run release -- <major|minor|patch>\n" >&2
+  printf "Usage: mise run release -- <major|minor|patch> [-y|--yes]\n" >&2
   exit 1
 fi
 
@@ -61,11 +69,15 @@ if ! git diff --quiet HEAD; then
 fi
 
 # Confirm
-printf "Bump version from v%s to %s? [y/N] " "$current_version" "$tag"
-read -r answer
-if [ "$answer" != "y" ] && [ "$answer" != "Y" ]; then
-  printf "Aborted.\n"
-  exit 0
+if [ "$yes" = true ]; then
+  printf "Bump version from v%s to %s\n" "$current_version" "$tag"
+else
+  printf "Bump version from v%s to %s? [y/N] " "$current_version" "$tag"
+  read -r answer
+  if [ "$answer" != "y" ] && [ "$answer" != "Y" ]; then
+    printf "Aborted.\n"
+    exit 0
+  fi
 fi
 
 # Bump version

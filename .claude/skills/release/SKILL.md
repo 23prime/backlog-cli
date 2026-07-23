@@ -48,7 +48,7 @@ before proceeding.
 ## Step 2 — Run the release task
 
 ```bash
-mise run release -- <patch|minor|major>
+mise run release -- <patch|minor|major> -y
 ```
 
 `mise/tasks/release` will:
@@ -58,7 +58,8 @@ mise run release -- <patch|minor|major>
 3. Create annotated tag `v<X.Y.Z>`
 4. Push the commit and tag to `origin`
 
-Confirm the `y/N` prompt it shows before it proceeds.
+`-y` skips the interactive confirmation prompt — the confirmation with the user already
+happened in Step 1, so no need for a second, terminal-only confirmation here.
 
 ## Step 3 — Verify CI
 
