@@ -61,14 +61,24 @@ mise run release -- <patch|minor|major> -y
 `-y` skips the interactive confirmation prompt — the confirmation with the user already
 happened in Step 1, so no need for a second, terminal-only confirmation here.
 
-## Step 3 — Verify CI
+## Step 3 — Wait for CI to finish
 
 The pushed tag triggers `.github/workflows/release.yml`, which creates the GitHub Release,
 builds binaries for all platforms, uploads them, and moves the `latest` tag.
 
+Get the run's database ID:
+
 ```bash
-gh run list --workflow=release.yml --limit 1
+gh run list --workflow=release.yml --limit 1 --json databaseId,status,url
 ```
 
-Report the run URL to the user so they can monitor progress. If the run fails, investigate
-the failing job before telling the user the release is done.
+Take the `databaseId` printed above (e.g. `30054336679`) and watch it until it finishes,
+substituting the literal value in place of `<run_id>`:
+
+```bash
+gh run watch <run_id> --exit-status
+```
+
+If the command exits non-zero, the run failed — inspect the failing job
+(`gh run view <run_id> --log-failed`) and resolve it before telling the user the release is
+done. Once it succeeds, report the run URL and confirm the release is complete.
