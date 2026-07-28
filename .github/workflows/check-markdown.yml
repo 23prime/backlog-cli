@@ -35,6 +35,9 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # pull_request checks out a shallow merge commit by default, and its parents are missing
+          # locally, so pushing the auto-fix commit to the PR branch is rejected as non-fast-forward.
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Install mise and setup
         uses: jdx/mise-action@dad1bfd3df957f44999b559dd69dc1671cb4e9ea # v4.2.1
