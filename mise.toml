@@ -27,7 +27,7 @@ zizmor = "1.29.0"
 
 # Git
 lefthook = "2.1.10"
-betterleaks = "v1.7.3"
+betterleaks = "v1.7.4"
 
 # Spell Check
 cspell = "10"
