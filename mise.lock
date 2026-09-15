@@ -93,7 +93,7 @@ url_api = "https://api.github.com/repos/betterleaks/betterleaks/releases/assets/
 provenance = "cosign"
 
 [[tools.cspell]]
-version = "10.0.1"
+version = "10.3.0"
 backend = "npm:cspell"
 
 [[tools.lefthook]]
