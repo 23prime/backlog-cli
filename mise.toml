@@ -18,15 +18,15 @@ node = "26"
 pnpm = "11"
 
 # Markdown
-markdownlint-cli2 = "0.23.3"
+markdownlint-cli2 = "0.24.0"
 
 # GitHub Actions
 actionlint = "1"
 shellcheck = "0.11"
-zizmor = "1.30.1"
+zizmor = "1.31.1"
 
 # Git
-lefthook = "2.1.17"
+lefthook = "2.2.2"
 betterleaks = "v1.9.0"
 
 # Spell Check
