@@ -35,5 +35,5 @@ apple-native-keyring-store = { version = "1", features = ["keychain"] }
 windows-native-keyring-store = "1"
 
 [dev-dependencies]
-httpmock = { version = "0.8", default-features = false }
+httpmock = { version = "0.9", default-features = false }
 tempfile = "3"
