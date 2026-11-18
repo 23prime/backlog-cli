@@ -8,3 +8,4 @@ zizmorcore
 frontmatter
 betterleaks
 cicd
+jactionlint
