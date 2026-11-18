@@ -29,6 +29,7 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: write # push auto-fix commits
 
@@ -60,6 +61,7 @@ jobs:
 
   check-macos:
     runs-on: macos-latest
+    timeout-minutes: 30
     permissions:
       contents: read
 
@@ -78,6 +80,7 @@ jobs:
 
   check-windows:
     runs-on: windows-latest
+    timeout-minutes: 30
     permissions:
       contents: read
 
