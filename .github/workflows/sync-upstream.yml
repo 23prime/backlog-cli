@@ -14,6 +14,7 @@ permissions: {}
 jobs:
   sync-upstream:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: write # push synced commits
       pull-requests: write # create the sync PR
