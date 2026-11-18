@@ -1,3 +1,5 @@
 /target
 .claude/worktrees
 smoke-test-result.txt
+
+.mise/
