@@ -21,5 +21,6 @@ dictionaries:
 ignorePaths:
   - '.git'
   - '.vscode'
+  - '.mise/locks'
   - 'node_modules'
   - 'pnpm-lock.yaml'
