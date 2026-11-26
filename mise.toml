@@ -18,7 +18,7 @@ node = "26"
 pnpm = "11"
 
 # Markdown
-markdownlint-cli2 = "0.24.1"
+markdownlint-cli2 = "0.24.2"
 
 # GitHub Actions
 jactionlint = "2"
